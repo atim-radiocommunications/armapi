@@ -38,8 +38,13 @@
 	#endif
 #endif
 
+// ---------------------------------------------------------------------
+// Include
+// ---------------------------------------------------------------------
+
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -59,6 +64,10 @@ extern void *memmem(const void *haystack, size_t haystacklen, const void *needle
  * 
  * @{
  */
+ 
+// ---------------------------------------------------------------------
+// Enum
+// ---------------------------------------------------------------------
 
 /*!	\brief Constant to define the baudrate value.
  * 
@@ -105,6 +114,10 @@ typedef enum
 	ARMPORT_STOPBIT_2		= 2		//!< 2 stop bit.
 }armPortStopbit_t;
 
+// ---------------------------------------------------------------------
+// struct
+// ---------------------------------------------------------------------
+
 #if defined ARMPORT_WITH_nSLEEP || defined ARMPORT_WITH_nBOOT || defined ARMPORT_WITH_nRESET || __DOXYGEN__
 /*!	\brief Constant to define the pins.
  * 
@@ -123,6 +136,9 @@ typedef enum
 }armPortPin_t;
 #endif
 
+// ---------------------------------------------------------------------
+// Prototypes functions
+// ---------------------------------------------------------------------
 
 int armPortOpen(void** port);
 int armPortConfig(void* port,	armPortBaudrate_t baudrate,

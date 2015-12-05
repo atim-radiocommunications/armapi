@@ -46,17 +46,17 @@
  * 
  * 	Value for parameter \ref armN8SetRadioRemoteAdd() function.
  */
-#define ARMN8_BROADCAST 	255
+#define ARMN8_BROADCAST 		255
 
 /*!	\brief Constant to define the auto power value.
  * 
  * 	Value for parameter \p power of \ref armN8SetRadioRemoteAdd() function.
  */
-#define ARMN8_POWER_AUTO	-127
+#define ARMN8_POWER_AUTO		-127
 
 #ifndef __DOXYGEN__
 	//Number of H registers
-	#define _ARMN8_REGH_SIZE 		27
+	#define _ARMN8_REGH_SIZE 	27
 #endif //__DOXYGEN__
 
 // ---------------------------------------------------------------------
@@ -77,7 +77,7 @@ typedef enum
 	ARMN8_ERR_PORT_WRITE_READ,			//!< Port Error, at the port reading/writing.
 	ARMN8_ERR_PORT_CLOSE,				//!< Port Error, at the port closing.
 
-	ARMN8_ERR_SIGFOX_SEND,				//!< Sigfox® Error, at the send data to Sigfox.
+	ARMN8_ERR_SIGFOX_SEND_RECEIVE,		//!< Sigfox® Error, at the send/receive data to Sigfox.
 	ARMN8_ERR_SIGFOX_DATA,				//!< Sigfox® Error, too date to send Sigfox.
 
 	ARMN8_ERR_PARAM_OUT_OF_RANGE,		//!< Error, one or more of parameters is out of range.
@@ -236,7 +236,7 @@ armN8Error_t armN8Reboot(armN8_t* arm);
  * 
  * \return Error available:
  * 		- \ref ARMN8_ERR_NONE If the data have sent/receive correctly.
- * 		- \ref ARMN8_ERR_SIGFOX_SEND If the data could not be send.
+ * 		- \ref ARMN8_ERR_SIGFOX_SEND_RECEIVE If the data could not be send.
  * 		- \ref ARMN8_ERR_SIGFOX_DATA If \b nbyte bigger than 12.
  * 		- \ref ARMN8_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARMN8_ERR_PORT_READ If can't read through the port.
@@ -244,7 +244,7 @@ armN8Error_t armN8Reboot(armN8_t* arm);
  * 		- \ref ARMN8_ERR_ARM_BACK_AT If can't back AT commend.
  * 
  * \warning If \p bufRx is not \b NULL and your \b ARM don't support the Sigfox in
- * downlink the \ref ARMN8_ERR_SIGFOX_SEND is returned.
+ * downlink the \ref ARMN8_ERR_SIGFOX_SEND_RECEIVE is returned.
  * 
  * \todo Implement downlink.
  */

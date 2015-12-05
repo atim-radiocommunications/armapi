@@ -38,12 +38,14 @@
 
 // Time
 #define _ARMN8_TIME_TIMEOUT 			100		//100ms
-#define _ARMN8_TIME_SFTIMEOUT			10000	//10s
+#define _ARMN8_TIME_SF_UPLINK_TIMEOUT	10000	//10s
+#define _ARMN8_TIME_SF_DOWNLINK_TIMEOUT	45000	//45s
 #define _ARMN8_TIME_BOOTING 			3600	//3.6s
 
 // Other
 #define _ARMN8_NUMBER_OF_TRIALS_GO_AT 	3
 #define _ARMN8_SIGFOX_PAYLOAD_MAX		12
+#define _ARMN8_SIGFOX_PAYLOAD_DOWNLINK	8
 #define _ARMN8_RF_PAYLOAD_MAX			120
 #define _ARMN8_MIN_CHANNEL				1
 #define _ARMN8_MAX_CHANNEL				559
@@ -341,7 +343,8 @@ armN8Error_t armN8Reboot(armN8_t* arm)
 
 armN8Error_t armN8DataToSigfox(armN8_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx)
 {
-	armN8Error_t err = ARMN8_ERR_NONE;
+	armN8Error_t err1 = ARMN8_ERR_NONE;
+	armN8Error_t err2 = ARMN8_ERR_NONE;
 	size_t i = 0;
 	ssize_t nread;
 	uint8_t _buf[32] = "AT$SF=";
@@ -349,10 +352,6 @@ armN8Error_t armN8DataToSigfox(armN8_t* arm, const uint8_t* bufTx, size_t nbyteT
 	//Check size
 	if(nbyteTx > _ARMN8_SIGFOX_PAYLOAD_MAX)
 		return ARMN8_ERR_SIGFOX_DATA;
-	
-	//Nothing to send ?
-	if(nbyteTx == 0)
-		return ARMN8_ERR_NONE;
 		
 	//Converter bufTx to acii
 	for(i=0; i<nbyteTx; i++)
@@ -368,8 +367,9 @@ armN8Error_t armN8DataToSigfox(armN8_t* arm, const uint8_t* bufTx, size_t nbyteT
 	_buf[6+i*2] = '\r';
 		
 	//Go to AT
-	if(err = _armN8GoAt(arm))
-		return err;
+	err1 = _armN8GoAt(arm);
+	if(err1 != ARMN8_ERR_NONE)
+		return err1;
 	
 	//Write AT commend and read reply
 	nread = _armN8WriteRead(arm, _buf, 6+i*2+1, _buf, sizeof _buf, _ARMN8_TIME_TIMEOUT);
@@ -377,16 +377,36 @@ armN8Error_t armN8DataToSigfox(armN8_t* arm, const uint8_t* bufTx, size_t nbyteT
 		return ARMN8_ERR_PORT_WRITE_READ;
 		
 	//Read/Wait response
-	nread = _armN8Read(arm, _buf, sizeof _buf, _ARMN8_TIME_SFTIMEOUT);
+	nread = _armN8Read(arm, _buf, sizeof _buf, bufRx?_ARMN8_TIME_SF_DOWNLINK_TIMEOUT:_ARMN8_TIME_SF_UPLINK_TIMEOUT);
 	if(nread < 0)
 		return ARMN8_ERR_PORT_READ;
 		
-	//Check the message
-	if(memmem(_buf, nread, "OK", 2) == NULL)
-		return ARMN8_ERR_SIGFOX_SEND;
-		
+	//Check the message if downlink
+	if(bufRx)
+	{
+		uint8_t* pbuf = memmem(_buf, nread, "+RX=", 2);
+		if(pbuf == NULL)
+			err1 = ARMN8_ERR_SIGFOX_SEND_RECEIVE;
+		else //Convert data from ASCII value
+		{
+			pbuf += 4;
+			for(i=0; i<_ARMN8_SIGFOX_PAYLOAD_DOWNLINK; i++)
+				_armN8HexStrToUint8(_buf+i*2, bufRx+i);
+		}
+	}
+	else //Check the message if uplink
+	{
+		if(memmem(_buf, nread, "OK", 2) == NULL)
+			err1 = ARMN8_ERR_SIGFOX_SEND_RECEIVE;
+	}
+
 	//Back AT
-	return _armN8BackAt(arm);
+	err2 = _armN8BackAt(arm);
+	
+	if(err2 != ARMN8_ERR_NONE)
+		return err2;
+	
+	return err1;
 }
 
 int8_t armN8GetMaxRadioPower(uint16_t radioChannel, armN8Baudrate_t radioBaud)
@@ -643,35 +663,35 @@ armN8Error_t armN8SetSerial(armN8_t* arm, armPortBaudrate_t baud, armPortDatabit
 	switch(baud)
 	{
 		case 1200:
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_1200;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_1200;
 		break;
 		
 		case 2400:	                  
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_2400;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_2400;
 		break;
 		
 		case 4800:	                  
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_4800;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_4800;
 		break;
 		
 		case 9600:	                  
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_9600;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_9600;
 		break;
 		
 		case 19200:	                  
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_19200;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_19200;
 		break;
 		
 		case 38400:	                  
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_38400;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_38400;
 		break;
 		
 		case 57600:	                  
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_57600;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_57600;
 		break;
 		
 		case 115200:	              
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_115200;
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_115200;
 		break;
 		
 		case 230400:	              
@@ -827,8 +847,8 @@ armN8Error_t armN8SetWorMode(armN8_t* arm, armN8Wor_t mode, uint16_t periodTime,
 	
 	#ifndef ARMPORT_WITH_nSLEEP
 	//Change uart baudrate if necessary
-	if(_ARMN8_REG8(H, SERIAL_BAUDRATE) > _ARMN8_REGH_RADIO_BAUDRATE_38400)
-		_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_38400;
+	if(_ARMN8_REG8(H, SERIAL_BAUDRATE) > _ARMN8_REGH_SERIAL_BAUDRATE_38400)
+		_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_38400;
 	//Enable wake up on uart
 	_ARMN8_REG8(H, WAKE_UP_PWR) |=  _ARMN8_REGH_WAKE_UP_PWR_UART;
 	#endif
@@ -912,8 +932,8 @@ armN8Error_t armN8EnableWakeUpUart(armN8_t *arm, bool enable)
 	else //Enable?
 	{
 		//Change uart baudrate if necessary
-		if(_ARMN8_REG8(H, SERIAL_BAUDRATE) > _ARMN8_REGH_RADIO_BAUDRATE_38400)
-			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_RADIO_BAUDRATE_38400;
+		if(_ARMN8_REG8(H, SERIAL_BAUDRATE) > _ARMN8_REGH_SERIAL_BAUDRATE_38400)
+			_ARMN8_REG8(H, SERIAL_BAUDRATE) = _ARMN8_REGH_SERIAL_BAUDRATE_38400;
 		
 		_ARMN8_REG8(H, WAKE_UP_PWR) |=  _ARMN8_REGH_WAKE_UP_PWR_UART;
 	}
@@ -929,7 +949,7 @@ bool armN8IsEnableWakeUpUart(armN8_t *arm)
 #ifdef ARMPORT_WITH_nSLEEP
 void armN8Sleep(armN8_t* arm, bool sleep)
 {
-	armPortGpioSet(arm->_port, !sleep);
+	armPortGpioSet(arm->_port, ARMPORT_PIN_nSLEEP, !sleep);
 }
 #endif
 
