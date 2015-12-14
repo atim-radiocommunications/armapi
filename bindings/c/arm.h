@@ -73,7 +73,7 @@
 typedef enum
 {
 	ARM_ERR_NONE,					//!< No error.
-	ARM_ERR_BAD,					//!< \todo to implement.
+	ARM_ERR_BAD_TYPE,				//!< Bad \b ARM type.
 
 	ARM_ERR_PORT_OPEN,				//!< Port Error, at the port opening.
 	ARM_ERR_PORT_CONFIG,			//!< Port Error, at the port configuring.
@@ -152,18 +152,16 @@ typedef enum
 	ARM_LBTAFA_LBTAFA,	//!< Enable Listen Before Talk and adaptive Frequency Agility, listen on the tow channels and talk on the free channels.
 }armLbtAfa_t;
 
-#ifndef __DOXYGEN_
 /*!	\brief 
  * 
  */
 typedef enum
 {
-	ARM_TYPE_NONE	= 0x01,
-	ARM_TYPE_N8_LP	= 0x02,
-	ARM_TYPE_N8_LD	= 0x04,
-	ARM_TYPE_N8_LW	= 0x08,
+	ARM_TYPE_NONE	= 0x01,	//!< No \b Arm type.
+	ARM_TYPE_N8_LP	= 0x02, //!< \b ARM Nano in 868MHz low power version. 
+	ARM_TYPE_N8_LD	= 0x04, //!< \b ARM Nano in 868MHz long distance version. 
+	ARM_TYPE_N8_LW	= 0x08, //!< \b ARM Nano in 868MHz LoraWan version. 
 }armType_t;
-#endif
 
 // ---------------------------------------------------------------------
 // struct
@@ -180,7 +178,7 @@ typedef struct
 	uint8_t newVal;	//!< A new value of register.
 }armReg_t;
 
-/*!	\brief 
+/*!	\brief H registers for ARM_N8_LP and ARM_N8_LD
  * 
  */
 typedef struct
@@ -188,7 +186,7 @@ typedef struct
 	armReg_t	regsH[_ARM_N8LPLD_REGH_SIZE];
 }armN8LpLd_t;
 
-/*!	\brief 
+/*!	\brief H registers for ARM_N8_LP and ARM_N8_LD
  * 
  */
 typedef struct
@@ -226,6 +224,8 @@ typedef struct
  * 		- \ref ARM_ERR_NONE If the initialization is success.
  * 		- \ref ARM_ERR_PORT_OPEN If the port can't open.
  * 		- \ref ARM_ERR_PORT_CONFIG If the port can't is configured.
+ * 		- \ref ARM_ERR_PORT_WRITE If can't write through the port.
+ * 		- \ref ARM_ERR_PORT_READ If can't read through the port.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
@@ -253,7 +253,12 @@ armError_t armDeInit(arm_t* arm);
  * 
  * \return Error available:
  * 		- \ref ARM_ERR_NONE If the reboot is success.
+ * 		- \ref ARM_ERR_BAD_TYPE If there is bad \b ARM type.
+ * 			Probably the \b ARM structure is not initialized.
+ * 			In this case you can call \ref armInit() and check the returned error.
  * 		- \ref ARM_ERR_PORT_CONFIG If the port can't is configured.
+ * 		- \ref ARM_ERR_PORT_WRITE If can't write through the port.
+ * 		- \ref ARM_ERR_PORT_READ If can't read through the port.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
@@ -264,8 +269,27 @@ armError_t armDeInit(arm_t* arm);
 armError_t armReboot(arm_t* arm);
 
 /*! \ingroup arm_init_various
- * \brief 
- * \todo at document
+ * \brief Get information about the \b arm
+ * 
+ * \note If you don't went get a parameter you can give the \b NULL value.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param armType If the pointer is valid, The \b ARM type is set. The possible values is:
+ * 	- ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version. 
+ * 	- ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version. 
+ * 	- ARM_TYPE_N8_LW For \b ARM Nano in 868MHz LoraWan version.
+ * \param rev If the pointer is valid, the firmware version is copied.
+ * This parameter must be a string buffer capacity equal or more of 16 bytes.
+ * \param sn If the pointer is valid, the serial number is set. 
+ * This parameter is the ID Sigfox in the case where the \b ARM support the Sigfox Network.
+ * \param rfFreq If the pointer is valid, the work frequency of your \b ARM is set.
+ * \param rfPower If the pointer is valid, the max power supported by your \b ARM is set.
+ * 
+ * \return Error available:
+ * 		- \ref ARM_ERR_NONE If success.
+ * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
+ * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
+ * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
  */
 armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
@@ -280,6 +304,7 @@ armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn
  * 
  * \return Error available:
  * 		- \ref ARM_ERR_NONE If the data have sent/receive correctly.
+ * 		- \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * 		- \ref ARM_ERR_SIGFOX_SEND_RECEIVE If the data could not be send.
  * 		- \ref ARM_ERR_SIGFOX_DATA If \b nbyte bigger than 12.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
@@ -294,7 +319,7 @@ armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn
  */
 armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx);
 
-/*! \ingroup arm_unclassed
+/*! \ingroup arm_local_radio
  * \brief Get The maximal possible power.
  * 
  * Get the maximal possible power of function channel and baudrate.
@@ -311,8 +336,8 @@ armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uin
  */
 int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud);
 
-/*! \ingroup arm_main_radio
- * \brief Setup the main radio configuration.
+/*! \ingroup arm_local_radio
+ * \brief Setup the local radio configuration.
  * 
  * For more information, please consulate the main radio parameter page.
  * \todo Create the main parameter page.
@@ -343,6 +368,7 @@ int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * - \ref ARM_ERR_PARAM_INCOMPATIBLE The parameters of this function is link between them.
  * Is very important to chose the correct value. For more information, please consulate the main radio parameter page.
@@ -351,14 +377,16 @@ int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud);
  * \todo Create the main parameter page.
  * 
  * \see armGetRadio()
+ * \see armGetMaxRadioPower()
  */
 armError_t armSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t power);
 
-/*! \ingroup arm_main_radio
- * \brief Get the main radio configuration.
+/*! \ingroup arm_local_radio
+ * \brief Get the local radio configuration.
  * 
  * Please, for more information about parameter consult the documentation of the \ref  armSetRadio() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
+ * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param channel If the pointer is valid, the \p channel is set.
@@ -378,6 +406,7 @@ void armGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* pow
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_ADDRESSING_NOT_ENABLE If the addressing is not enable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -390,6 +419,8 @@ armError_t armSetRadioRemoteAdd(arm_t* arm, uint8_t add);
 
 /*! \ingroup arm_addressing
  * \brief Get the remote address.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return The remote address.
@@ -406,6 +437,7 @@ uint8_t armGetRadioRemoteAdd(arm_t* arm);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_ADDRESSING_NOT_ENABLE If the addressing is not enable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -419,6 +451,8 @@ armError_t armSetRadioLocalAdd(arm_t* arm, uint8_t add);
 /*! \ingroup arm_addressing
  * \brief Get the local address.
  * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
  * \param arm Pointer to your \b ARM structure.
  * \return The local address.
  * 
@@ -428,6 +462,8 @@ uint8_t armGetRadioLocaleAdd(arm_t* arm);
 
 /*! \ingroup arm_addressing
  * \brief Enable/Disable \b Addressing.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Addressing or \e false to disable.
@@ -441,6 +477,8 @@ void armEnableAddressing(arm_t* arm, bool enable);
 /*! \ingroup arm_addressing
  * \brief Get enable \b Addressing.
  * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Addressing is enable or \e false if disable.
  * 
@@ -452,6 +490,7 @@ bool armIsEnableAddressing(arm_t* arm);
  * \brief Enable/Disable \b CRC.
  * 
  * \warning This functions disable automatically the \b infinity \b mode.
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b CRC or \e false to disable.
@@ -465,6 +504,8 @@ void armEnableCrc(arm_t* arm, bool enable);
 
 /*! \ingroup arm_crc
  * \brief Get enable \b CRC.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b CRC is enable or \e false if disable.
@@ -483,6 +524,7 @@ bool armIsEnableCrc(arm_t* arm);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_WOR_ENABLE If the WOR mode is enable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -495,6 +537,8 @@ armError_t armEnableInfinityMode(arm_t* arm, bool enable);
 /*! \ingroup arm_infinity_mode
  * \brief Get enable \b Infinity \b mode.
  * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Infinity \b mode is enable or \e false if disable.
  * 
@@ -504,6 +548,8 @@ bool armIsEnableInfinityMode(arm_t* arm);
 
 /*! \ingroup arm_whitening
  * \brief Enable/Disable \b Whitening.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Whitening false to disable.
@@ -516,6 +562,8 @@ void armEnableWhitening(arm_t *arm, bool enable);
 
 /*! \ingroup arm_whitening
  * \brief Get enable \b Whitening.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Whitening is enable or \e false if disable.
@@ -564,6 +612,7 @@ bool armIsEnableWhitening(arm_t *arm);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -577,6 +626,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * \brief Get the serial port configuration.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
+ * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param baud If the pointer is valid, the \p baud is set. If \ref ARMPORT_BAUDRATE_NONE is set, there is probably a error.
@@ -643,6 +693,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * 
  * \note You need to call \ref armUpdateConfig() for update the parameters in you \b ARM.\n
@@ -662,6 +713,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armSetWorMode() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
+ * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param mode If the pointer is valid, the \p mode is set.
@@ -689,6 +741,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_WOR_ENABLE If you went disable the \b Wake \b Up \b Uart (\p enable = false)
  * and the case here the \b ARMPORT_WITH_nSLEEP is
  * not define and the \b WOR is enable in \ref ARM_WOR_CS or \ref ARM_WOR_PQT.
@@ -708,6 +761,8 @@ armError_t armEnableWakeUpUart(arm_t *arm, bool enable);
 /*! \ingroup arm_power_saving
  * \brief Get enable \b Wake \b Up \b Uart.
  * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Wake \b Up \b Uart is enable or \e false if disable.
  * 
@@ -720,13 +775,12 @@ bool armIsEnableWakeUpUart(arm_t *arm);
  * \brief Enable/Disable sleep with pin.
  * 
  * \param arm Pointer to your \b ARM structure.
- * \param enable \e true to enable sleep false to disable.
+ * \param sleep \e true to enable sleep false to disable.
  * 
  * \note This function is defined only if \b ARMPORT_WITH_nSLEEP is defined.
  * \note The sleep must be disable if the \b Wake \b Up \b Uart is disable
- * and you went call \ref armSend() of \ref armUpdateConfig().
+ * and you went call \ref armSend(), \ref armReceive(), \ref armUpdateConfig() or \ref armGetInfo().
  * 
- * \see armEnableWakeUpUart();
  */
 void armSleep(arm_t* arm, bool sleep);
 #endif
@@ -765,6 +819,7 @@ void armSleep(arm_t* arm, bool sleep);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_BAD_TYPE If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * - \ref ARM_ERR_PARAM_INCOMPATIBLE The parameter \p channel2 of this function is link
  * with the parameters of the function \ref armSetRadio(). Is very important to chose the correct value.
@@ -777,6 +832,7 @@ void armSleep(arm_t* arm, bool sleep);
  * \see armSetLbtAfaMode()
  * \see armSetRadio()
  * \see armSetWorMode()
+ * \see armGetMaxRadioPower()
  */
 armError_t armSetLbtAfaMode(arm_t* arm, armLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2);
 
@@ -785,6 +841,7 @@ armError_t armSetLbtAfaMode(arm_t* arm, armLbtAfa_t mode, int8_t rssiLevel, uint
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armSetLbtAfaMode() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
+ * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param mode If the pointer is valid, the \p mode is set.
@@ -802,6 +859,8 @@ void armGetLbtAfaMode(arm_t* arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t
 /*! \ingroup arm_init_various
  * \brief Set the \a LED behavior.
  * 
+ * \note In the case where this function in not supported by your \b ARM this functions in ignored.
+ * 
  * \param arm Pointer to your \b ARM structure.
  * \param led The behavior of the \a LED:
  * 		- \ref ARM_LED_OFF, The \a LED is 'off' all the time.
@@ -816,6 +875,8 @@ void armSetLed(arm_t* arm, armLed_t led);
 
 /*! \ingroup arm_init_various
  * \brief Get the \a LED behavior.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return The behavior of the \a LED:
@@ -838,6 +899,9 @@ armLed_t armGetLed(arm_t* arm);
  * 
  * \return Error available:
  * 		- \ref ARM_ERR_NONE If success.
+ * 		- \ref ARM_ERR_BAD_TYPE If there is bad \b ARM type.
+ * 			Probably the \b ARM structure is not initialized.
+ * 			In this case you can call \ref armInit() and check the returned error.
  * 		- \ref ARM_ERR_PORT_CONFIG If the port can't is configured.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
@@ -861,8 +925,6 @@ armError_t armUpdateConfig(arm_t* arm);
  * \param arm Pointer to your \b ARM structure.
  * \param buf The buffer.
  * \param nbyte The number of data to send.
- * 
-
  * 
  * \return The number of data write. -1 if error from the serial port.
  * 

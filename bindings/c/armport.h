@@ -57,10 +57,10 @@ extern void bzero(void *s, size_t n);
 extern void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen);
 #endif
 
-/*! \defgroup armport The port for armapi
+/*! \defgroup armport Port for armapi
  * 
  * All function in this group except \ref armPortGpioSet() must be 
- * implemented on you platform for use \b armapi.
+ * implemented on you platform to use \b armapi.
  * 
  * @{
  */

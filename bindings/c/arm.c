@@ -433,7 +433,7 @@ armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn
 armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP(N8_LP)
 	{
 		armError_t err1 = ARM_ERR_NONE;
 		armError_t err2 = ARM_ERR_NONE;
@@ -498,7 +498,7 @@ armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uin
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud)
@@ -582,7 +582,7 @@ armError_t armSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t 
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 void armGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* power)
@@ -666,7 +666,7 @@ armError_t armSetRadioRemoteAdd(arm_t *arm, uint8_t add)
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 uint8_t armGetRadioRemoteAdd(arm_t *arm)
@@ -695,7 +695,7 @@ armError_t armSetRadioLocalAdd(arm_t *arm, uint8_t add)
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 uint8_t armGetRadioLocalAdd(arm_t *arm)
@@ -795,7 +795,7 @@ armError_t armEnableInfinityMode(arm_t *arm, bool enable)
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 bool armIsEnableInfinityMode(arm_t *arm)
@@ -916,7 +916,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit)
@@ -1075,7 +1075,7 @@ armError_t armSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint16_
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 void armGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble)
@@ -1152,7 +1152,7 @@ armError_t armEnableWakeUpUart(arm_t *arm, bool enable)
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 bool armIsEnableWakeUpUart(arm_t *arm)
@@ -1224,7 +1224,7 @@ armError_t armSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, uint
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 void armGetLbtAfaMode(arm_t *arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2)
@@ -1306,7 +1306,7 @@ armLed_t armGetLed(arm_t* arm)
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_LED_OFF;
 }
 
 armError_t armUpdateConfig(arm_t* arm)
@@ -1367,7 +1367,7 @@ armError_t armUpdateConfig(arm_t* arm)
 	}
 	#endif
 	
-	return ARM_ERR_BAD;
+	return ARM_ERR_BAD_TYPE;
 }
 
 ssize_t armSend(arm_t *arm, const uint8_t *buf, size_t nbyte)

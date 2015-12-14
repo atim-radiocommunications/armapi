@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------
-// Created date: 24.11.2015
+// Created date: 14.12.2015
 // ---------------------------------------------------------------------
 
 /***********************************************************************
@@ -29,62 +29,82 @@
 
 ***********************************************************************/
 
-/*! \defgroup armn8 armn8: ARM_NANO 868MHz in local radio and Sigfox network
- * ARM_NANO_LP (low power), ARM_NANO_LD (long distance).
- * #include <armn8.h>
- * @{
- */
-
-/*! \defgroup armn8_init_various Initialization and various
+/*! \defgroup arm_n8_lpld ARM Nano in 868MHz Low Power (Sigfox network) and Long Distance version.
+ * 
+ * This group contains the functions using by the \b ARM Nano in 868MHz
+ * Low Power (Sigfox network) (\b ARM_N8_LP) and Long Distance (\b ARM_N8_LD).
+ * 
+ * The functions in this group is only usable if the \ref armType_t returned by \ref armGetInfo()
+ * is \ref ARM_TYPE_N8_LP or \ref ARM_TYPE_N8_LD.
  * 
  */
  
-/*! \defgroup armn8_serial Serial configuration
+ 
+/*! \defgroup arm_n8_lw ARM Nano in 868MHz Lora Wan network version.
+ * 
+ * This group contains the functions using by the \b ARM Nano in 868MHz Lora Wan network version (\b ARM_N8_LW).
+ * 
+ * The functions in this group is only usable if the \ref armType_t returned by \ref armGetInfo()
+ * is \ref ARM_TYPE_N8_LW.
  * 
  */
  
-/*! \defgroup armn8_main_radio Main radio configuration
+/*! \defgroup arm_init_various Initialization and various
+ * \ingroup arm_n8_lpld
+ * \ingroup arm_n8_lw
  * 
  */
  
-/*! \defgroup armn8_addressing Addressing
+/*! \defgroup arm_serial Serial configuration
+ * \ingroup arm_n8_lpld
  * 
  */
  
-/*! \defgroup armn8_crc Cyclic Redundancy Check
+/*! \defgroup arm_local_radio Local radio configuration
+ * \ingroup arm_n8_lpld
  * 
- * In the case or the \b CRC is enable:
+ */
+ 
+/*! \defgroup arm_addressing Addressing
+ * \ingroup arm_n8_lpld
+ * 
+ */
+ 
+/*! \defgroup arm_crc Cyclic Redundancy Check
+ * \ingroup arm_n8_lpld
+ * 
+ * In the case where the \b CRC is enable:
  * - The \b ARM module compute the CRC and send on the radio the frame with the CRC.
  * - If the \b ARM module receive the radio frame with the CRC
  * (the emitter must have the CRC enable), the ARM compute the CRC and throw
  * the frame if the CRCs don't match.
  */
  
-/*! \defgroup armn8_infinity_mode Infinity mode
+/*! \defgroup arm_infinity_mode Infinity mode
+ * \ingroup arm_n8_lpld
  * 
  */
  
-/*! \defgroup armn8_whitening Whitening
+/*! \defgroup arm_whitening Whitening
+ * \ingroup arm_n8_lpld
  * 
  */
  
-/*! \defgroup armn8_power_saving Power saving
+/*! \defgroup arm_power_saving Power saving
+ * \ingroup arm_n8_lpld
  * 
  */
  
-/*! \defgroup armn8_lbt_afa_mode LBT&AFA mode
+/*! \defgroup arm_lbt_afa_mode LBT&AFA mode
+ * \ingroup arm_n8_lpld
  * 
  */
  
-/*! \defgroup armn8_repeater_mode Repeater mode
+/*! \defgroup arm_send_receive_data Send and receive data
+ * \ingroup arm_n8_lpld
+ * \ingroup arm_n8_lw
  * 
  */
- 
-/*! \defgroup armn8_send_receive_data Send and receive data
- * 
- */
- 
-/** @}*/ //armn8
 
 
 
