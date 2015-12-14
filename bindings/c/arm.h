@@ -73,6 +73,7 @@
 typedef enum
 {
 	ARM_ERR_NONE,					//!< No error.
+	ARM_ERR_BAD,					//!< \todo to implement.
 
 	ARM_ERR_PORT_OPEN,				//!< Port Error, at the port opening.
 	ARM_ERR_PORT_CONFIG,			//!< Port Error, at the port configuring.

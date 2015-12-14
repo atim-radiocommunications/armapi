@@ -432,66 +432,73 @@ armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn
 
 armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx)
 {
-	armError_t err1 = ARM_ERR_NONE;
-	armError_t err2 = ARM_ERR_NONE;
-	size_t i = 0;
-	ssize_t nread;
-	uint8_t _buf[32] = "AT$SF=";
-	
-	//Check size
-	if(nbyteTx > _ARM_SIGFOX_PAYLOAD_MAX)
-		return ARM_ERR_SIGFOX_DATA;
-		
-	//Converter bufTx to acii
-	for(i=0; i<nbyteTx; i++)
-		_armUintToStr(bufTx[i], _buf+6+i*2, _ARM_BASE_HEX, 2);
-		
-	//Frame in Rx mode ?
-	if(bufRx)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		_buf[6+i*2] = ',';
-		_buf[7+i*2] = '1';
-		i++;
-	}
-	_buf[6+i*2] = '\r';
+		armError_t err1 = ARM_ERR_NONE;
+		armError_t err2 = ARM_ERR_NONE;
+		size_t i = 0;
+		ssize_t nread;
+		uint8_t _buf[32] = "AT$SF=";
 		
-	//Go to AT
-	err1 = _armGoAt(arm);
-	if(err1 != ARM_ERR_NONE)
-		return err1;
-	
-	//Write AT commend and read reply
-	nread = _armWriteRead(arm, _buf, 6+i*2+1, _buf, sizeof _buf, _ARM_TIME_TIMEOUT);
-	if(nread < 0)
-		return ARM_ERR_PORT_WRITE_READ;
+		//Check size
+		if(nbyteTx > _ARM_SIGFOX_PAYLOAD_MAX)
+			return ARM_ERR_SIGFOX_DATA;
+			
+		//Converter bufTx to acii
+		for(i=0; i<nbyteTx; i++)
+			_armUintToStr(bufTx[i], _buf+6+i*2, _ARM_BASE_HEX, 2);
+			
+		//Frame in Rx mode ?
+		if(bufRx)
+		{
+			_buf[6+i*2] = ',';
+			_buf[7+i*2] = '1';
+			i++;
+		}
+		_buf[6+i*2] = '\r';
+			
+		//Go to AT
+		err1 = _armGoAt(arm);
+		if(err1 != ARM_ERR_NONE)
+			return err1;
 		
-	//Read/Wait response
-	nread = _armRead(arm, _buf, sizeof _buf, bufRx?_ARM_TIME_SF_DOWNLINK_TIMEOUT:_ARM_TIME_SF_UPLINK_TIMEOUT);
-	if(nread < 0)
-		return ARM_ERR_PORT_READ;
-		
-	//Check the message if downlink
-	if(bufRx)
-	{
-		uint8_t* pbuf = memmem(_buf, nread, "+RX=", 2);
-		if(pbuf == NULL)
-			err1 = ARM_ERR_SIGFOX_SEND_RECEIVE;
-		else //Convert data from ASCII value
-			*((uint64_t*)bufRx) = _armStrToUint(pbuf+4, _ARM_BASE_HEX);
-	}
-	else //Check the message if uplink
-	{
-		if(memmem(_buf, nread, "OK", 2) == NULL)
-			err1 = ARM_ERR_SIGFOX_SEND_RECEIVE;
-	}
+		//Write AT commend and read reply
+		nread = _armWriteRead(arm, _buf, 6+i*2+1, _buf, sizeof _buf, _ARM_TIME_TIMEOUT);
+		if(nread < 0)
+			return ARM_ERR_PORT_WRITE_READ;
+			
+		//Read/Wait response
+		nread = _armRead(arm, _buf, sizeof _buf, bufRx?_ARM_TIME_SF_DOWNLINK_TIMEOUT:_ARM_TIME_SF_UPLINK_TIMEOUT);
+		if(nread < 0)
+			return ARM_ERR_PORT_READ;
+			
+		//Check the message if downlink
+		if(bufRx)
+		{
+			uint8_t* pbuf = memmem(_buf, nread, "+RX=", 2);
+			if(pbuf == NULL)
+				err1 = ARM_ERR_SIGFOX_SEND_RECEIVE;
+			else //Convert data from ASCII value
+				*((uint64_t*)bufRx) = _armStrToUint(pbuf+4, _ARM_BASE_HEX);
+		}
+		else //Check the message if uplink
+		{
+			if(memmem(_buf, nread, "OK", 2) == NULL)
+				err1 = ARM_ERR_SIGFOX_SEND_RECEIVE;
+		}
 
-	//Back AT
-	err2 = _armBackAt(arm);
+		//Back AT
+		err2 = _armBackAt(arm);
+		
+		if(err2 != ARM_ERR_NONE)
+			return err2;
+		
+		return err1;
+	}
+	#endif
 	
-	if(err2 != ARM_ERR_NONE)
-		return err2;
-	
-	return err1;
+	return ARM_ERR_BAD;
 }
 
 int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud)
@@ -501,535 +508,663 @@ int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud)
 
 armError_t armSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t power)
 {
-	int8_t maxPower;
-	int8_t armMaxPower = arm->type&ARM_TYPE_N8_LP?_ARM_N8LPLD_LP_MAX_POWER:_ARM_N8LPLD_LD_MAX_POWER;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		int8_t maxPower;
+		int8_t armMaxPower = arm->type&ARM_TYPE_N8_LP?_ARM_N8LPLD_LP_MAX_POWER:_ARM_N8LPLD_LD_MAX_POWER;
 
-	//The parameter is out of range?
-	if(	(channel < _ARM_MIN_CHANNEL) || (channel > _ARM_MAX_CHANNEL) ||
-		((power != ARM_POWER_AUTO) && ((power > armMaxPower) || (power < _ARM_MIN_RADIO_POWER))))
-		return ARM_ERR_PARAM_OUT_OF_RANGE;
-	
-	//Check if the new parameters is possible
-	maxPower = armGetMaxRadioPower(channel, baud);
-	if(	(maxPower == -1) ||
-		(power > maxPower))
-		return ARM_ERR_PARAM_INCOMPATIBLE;
-	
-	//Set baudrate
-	switch(baud)
-	{
-		case 1200:
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_1200;
-		break;
-		
-		case 2400:	                  
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_2400;
-		break;
-		
-		case 4800:	                  
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_4800;
-		break;
-		
-		case 9600:	                  
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_9600;
-		break;
-		
-		case 19200:	                  
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_19200;
-		break;
-		
-		case 38400:	                  
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_38400;
-		break;
-		
-		case 57600:	                  
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_57600;
-		break;
-		
-		case 115200:	              
-			_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_115200;
-		break;
-		
-		default:
+		//The parameter is out of range?
+		if(	(channel < _ARM_MIN_CHANNEL) || (channel > _ARM_MAX_CHANNEL) ||
+			((power != ARM_POWER_AUTO) && ((power > armMaxPower) || (power < _ARM_MIN_RADIO_POWER))))
 			return ARM_ERR_PARAM_OUT_OF_RANGE;
-		break;
+		
+		//Check if the new parameters is possible
+		maxPower = armGetMaxRadioPower(channel, baud);
+		if(	(maxPower == -1) ||
+			(power > maxPower))
+			return ARM_ERR_PARAM_INCOMPATIBLE;
+		
+		//Set baudrate
+		switch(baud)
+		{
+			case 1200:
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_1200;
+			break;
+			
+			case 2400:	                  
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_2400;
+			break;
+			
+			case 4800:	                  
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_4800;
+			break;
+			
+			case 9600:	                  
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_9600;
+			break;
+			
+			case 19200:	                  
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_19200;
+			break;
+			
+			case 38400:	                  
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_38400;
+			break;
+			
+			case 57600:	                  
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_57600;
+			break;
+			
+			case 115200:	              
+				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_115200;
+			break;
+			
+			default:
+				return ARM_ERR_PARAM_OUT_OF_RANGE;
+			break;
+		}
+		
+		//Set channel if LBT&AFA mode is disable
+		//if(LBT&AFA)
+			_ARM_REG16_SET(N8LPLD, H, CHANNEL1, channel);
+		
+		//Power is adjusted ?
+		if(power = ARM_POWER_AUTO)
+			_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_LIMIT;
+		else
+		{
+			_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_USER_GAIN;
+			_ARM_REG8(N8LPLD, H, USER_GAIN) = power;
+		}
+		
+		return ARM_ERR_NONE;
 	}
+	#endif
 	
-	//Set channel if LBT&AFA mode is disable
-	//if(LBT&AFA)
-		_ARM_REG16_SET(N8LPLD, H, CHANNEL1, channel);
-	
-	//Power is adjusted ?
-	if(power = ARM_POWER_AUTO)
-		_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_LIMIT;
-	else
-	{
-		_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_USER_GAIN;
-		_ARM_REG8(N8LPLD, H, USER_GAIN) = power;
-	}
-	
-	return ARM_ERR_NONE;
+	return ARM_ERR_BAD;
 }
 
 void armGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* power)
 {
-	//Get channel
-	if(channel)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		_ARM_REG16_GET(N8LPLD, H, CHANNEL1, *channel);
-	}
-	
-	//Get baudrate
-	if(baud)
-	{
-		switch(_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE))
+		//Get channel
+		if(channel)
 		{
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_1200:
-				*baud = (armBaudrate_t)1200;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_2400:	                  
-				*baud = (armBaudrate_t)2400;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_4800:	                  
-				*baud = (armBaudrate_t)4800;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_9600:	                  
-				*baud = (armBaudrate_t)9600;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_19200:	                  
-				*baud = (armBaudrate_t)19200;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_38400:	                  
-				*baud = (armBaudrate_t)38400;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_57600:	                  
-				*baud = (armBaudrate_t)57600;
-			break;
-			
-			case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_115200:	              
-				*baud = (armBaudrate_t)115200;
-			break;
-			
-			default:
-				*baud = ARM_BAUDRATE_NONE;
-			break;
+			_ARM_REG16_GET(N8LPLD, H, CHANNEL1, *channel);
+		}
+		
+		//Get baudrate
+		if(baud)
+		{
+			switch(_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE))
+			{
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_1200:
+					*baud = (armBaudrate_t)1200;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_2400:	                  
+					*baud = (armBaudrate_t)2400;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_4800:	                  
+					*baud = (armBaudrate_t)4800;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_9600:	                  
+					*baud = (armBaudrate_t)9600;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_19200:	                  
+					*baud = (armBaudrate_t)19200;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_38400:	                  
+					*baud = (armBaudrate_t)38400;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_57600:	                  
+					*baud = (armBaudrate_t)57600;
+				break;
+				
+				case _ARM_N8LPLD_REGH_RADIO_BAUDRATE_115200:	              
+					*baud = (armBaudrate_t)115200;
+				break;
+				
+				default:
+					*baud = ARM_BAUDRATE_NONE;
+				break;
+			}
+		}
+		
+		//Get power
+		if(power)
+		{
+			//Power is auto adjusted ?
+			if(_ARM_REG8(N8LPLD, H, POWER) == _ARM_N8LPLD_REGH_POWER_LIMIT)
+				*power = ARM_POWER_AUTO;
+			else
+				*power = _ARM_REG8(N8LPLD, H, USER_GAIN);
 		}
 	}
-	
-	//Get power
-	if(power)
-	{
-		//Power is auto adjusted ?
-		if(_ARM_REG8(N8LPLD, H, POWER) == _ARM_N8LPLD_REGH_POWER_LIMIT)
-			*power = ARM_POWER_AUTO;
-		else
-			*power = _ARM_REG8(N8LPLD, H, USER_GAIN);
-	}
+	#endif
 }
 
 armError_t armSetRadioRemoteAdd(arm_t *arm, uint8_t add)
 {
-	//Error if the addressing is not enable.
-	if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
-		return ARM_ERR_ADDRESSING_NOT_ENABLE;
-		
-	_ARM_REG8(N8LPLD, H, REMOTE_ADDRESS) = add;
-	return ARM_ERR_NONE;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		//Error if the addressing is not enable.
+		if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
+			return ARM_ERR_ADDRESSING_NOT_ENABLE;
+			
+		_ARM_REG8(N8LPLD, H, REMOTE_ADDRESS) = add;
+		return ARM_ERR_NONE;
+	}
+	#endif
+	
+	return ARM_ERR_BAD;
 }
 
 uint8_t armGetRadioRemoteAdd(arm_t *arm)
 {
-	return _ARM_REG8(N8LPLD, H, REMOTE_ADDRESS);
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return _ARM_REG8(N8LPLD, H, REMOTE_ADDRESS);
+	}
+	#endif
+	
+	return 255;
 }
 
 armError_t armSetRadioLocalAdd(arm_t *arm, uint8_t add)
 {
-	//Error if the addressing is not enable.
-	if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
-		return ARM_ERR_ADDRESSING_NOT_ENABLE;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		//Error if the addressing is not enable.
+		if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
+			return ARM_ERR_ADDRESSING_NOT_ENABLE;
+		
+		_ARM_REG8(N8LPLD, H, LOCALE_ADDRESS) = add;
+		return ARM_ERR_NONE;
+	}
+	#endif
 	
-	_ARM_REG8(N8LPLD, H, LOCALE_ADDRESS) = add;
-	return ARM_ERR_NONE;
+	return ARM_ERR_BAD;
 }
 
 uint8_t armGetRadioLocalAdd(arm_t *arm)
 {
-	return _ARM_REG8(N8LPLD, H, LOCALE_ADDRESS);
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return _ARM_REG8(N8LPLD, H, LOCALE_ADDRESS);
+	}
+	#endif
+	
+	return 0;
 }
 
 void armEnableAddressing(arm_t *arm, bool enable)
 {
-	if(enable) //Enable long header
-		_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE;
-	else //Disable long header
-		_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		if(enable) //Enable long header
+			_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE;
+		else //Disable long header
+			_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE;
+	}
+	#endif
 }
 
 bool armIsEnableAddressing(arm_t *arm)
 {
-	return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)?true:false;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)?true:false;
+	}
+	#endif
+	
+	return false;
 }
 
 void armEnableCrc(arm_t *arm, bool enable)
 {
-	if(enable)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		//Disable infinity mode.
-		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE;
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_PACKET_MODE;
+		if(enable)
+		{
+			//Disable infinity mode.
+			_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE;
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_PACKET_MODE;
 
-		//Enable crc
-		_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_CRC;
+			//Enable crc
+			_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_CRC;
+		}
+		else //Disable crc
+			_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_CRC;
 	}
-	else //Disable crc
-		_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_CRC;
+	#endif
 }
 
 bool armIsEnableCrc(arm_t *arm)
 {
-	return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_CRC)?true:false;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_CRC)?true:false;
+	}
+	#endif
+	
+	return false;
 }
 
 armError_t armEnableInfinityMode(arm_t *arm, bool enable)
 {
-	if(enable)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		//WOR is enable? 
-		if(_ARM_REG8(N8LPLD, H, WAKE_UP_RF)&_ARM_N8LPLD_REGH_WAKE_UP_RF_RF)
-			return ARM_ERR_WOR_ENABLE;
-			
-		//Disable crc.
-		_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_CRC;
+		if(enable)
+		{
+			//WOR is enable? 
+			if(_ARM_REG8(N8LPLD, H, WAKE_UP_RF)&_ARM_N8LPLD_REGH_WAKE_UP_RF_RF)
+				return ARM_ERR_WOR_ENABLE;
+				
+			//Disable crc.
+			_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_CRC;
 
-		//Disable packet mode and enable infinity mode
-		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_PACKET_MODE;
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE;
+			//Disable packet mode and enable infinity mode
+			_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_PACKET_MODE;
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE;
+		}
+		else //Disable infinity mode and enable packet mode
+		{
+			_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE;
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_PACKET_MODE;
+		}
+		
+		return ARM_ERR_NONE;
 	}
-	else //Disable infinity mode and enable packet mode
-	{
-		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE;
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_PACKET_MODE;
-	}
+	#endif
 	
-	return ARM_ERR_NONE;
+	return ARM_ERR_BAD;
 }
 
 bool armIsEnableInfinityMode(arm_t *arm)
 {
-	return (_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE)?true:false;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return (_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE)?true:false;
+	}
+	#endif
+	
+	return false;
 }
 
 void armEnableWhitening(arm_t *arm, bool enable)
 {
-	if(enable)//Enable whitening
-		_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_WHITENING;
-	else //Disable whitening
-		_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_WHITENING;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		if(enable)//Enable whitening
+			_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_WHITENING;
+		else //Disable whitening
+			_ARM_REG8(N8LPLD, H, SETTING2) &= ~_ARM_N8LPLD_REGH_SETTING2_WHITENING;
+	}
+	#endif
 }
 
 bool armIsEnableWhitening(arm_t *arm)
 {
-	return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_WHITENING)?true:false;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_WHITENING)?true:false;
+	}
+	#endif
+	
+	return false;
 }
 
 armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t databits, armPortParity_t parity, armPortStopbit_t stopbit)
 {	
-	//Check if baud is compatible with wake up on uart if enable.
-	if(_ARM_REG8(N8LPLD, H, WAKE_UP_PWR)&_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART &&
-		baud > ARMPORT_BAUDRATE_38400)
-		return ARM_ERR_PARAM_OUT_OF_RANGE;
-	
-	//Set baudrate
-	switch(baud)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		case 1200:
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_1200;
-		break;
-		
-		case 2400:	                  
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_2400;
-		break;
-		
-		case 4800:	                  
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_4800;
-		break;
-		
-		case 9600:	                  
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_9600;
-		break;
-		
-		case 19200:	                  
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_19200;
-		break;
-		
-		case 38400:	                  
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
-		break;
-		
-		case 57600:	                  
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_57600;
-		break;
-		
-		case 115200:	              
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_115200;
-		break;
-		
-		case 230400:	              
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_230400;
-		break;
-		
-		default:
+		//Check if baud is compatible with wake up on uart if enable.
+		if(_ARM_REG8(N8LPLD, H, WAKE_UP_PWR)&_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART &&
+			baud > ARMPORT_BAUDRATE_38400)
 			return ARM_ERR_PARAM_OUT_OF_RANGE;
-		break;
-	}
-	
-	//Set databits
-	_ARM_REG8(N8LPLD, H, SERIAL_DATABITS) = databits;
-	
-	//Set databits
-	switch(parity)
-	{
-		case ARMPORT_PARITY_ODD:
-			_ARM_REG8(N8LPLD, H, SERIAL_PARITY) = _ARM_N8LPLD_REGH_SERIAL_PARITY_ODD;
-		break;
 		
-		case ARMPORT_PARITY_EVEN:
-			_ARM_REG8(N8LPLD, H, SERIAL_PARITY) = _ARM_N8LPLD_REGH_SERIAL_PARITY_EVEN;
-		break;
+		//Set baudrate
+		switch(baud)
+		{
+			case 1200:
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_1200;
+			break;
+			
+			case 2400:	                  
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_2400;
+			break;
+			
+			case 4800:	                  
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_4800;
+			break;
+			
+			case 9600:	                  
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_9600;
+			break;
+			
+			case 19200:	                  
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_19200;
+			break;
+			
+			case 38400:	                  
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
+			break;
+			
+			case 57600:	                  
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_57600;
+			break;
+			
+			case 115200:	              
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_115200;
+			break;
+			
+			case 230400:	              
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_230400;
+			break;
+			
+			default:
+				return ARM_ERR_PARAM_OUT_OF_RANGE;
+			break;
+		}
 		
-		case ARMPORT_PARITY_NO:
-		default:
-			_ARM_REG8(N8LPLD, H, SERIAL_PARITY) = _ARM_N8LPLD_REGH_SERIAL_PARITY_NO;
-		break;
-	}
-	
-	//Set databits
-	_ARM_REG8(N8LPLD, H, SERIAL_STOPBIT) = stopbit;
+		//Set databits
+		_ARM_REG8(N8LPLD, H, SERIAL_DATABITS) = databits;
+		
+		//Set databits
+		switch(parity)
+		{
+			case ARMPORT_PARITY_ODD:
+				_ARM_REG8(N8LPLD, H, SERIAL_PARITY) = _ARM_N8LPLD_REGH_SERIAL_PARITY_ODD;
+			break;
+			
+			case ARMPORT_PARITY_EVEN:
+				_ARM_REG8(N8LPLD, H, SERIAL_PARITY) = _ARM_N8LPLD_REGH_SERIAL_PARITY_EVEN;
+			break;
+			
+			case ARMPORT_PARITY_NO:
+			default:
+				_ARM_REG8(N8LPLD, H, SERIAL_PARITY) = _ARM_N8LPLD_REGH_SERIAL_PARITY_NO;
+			break;
+		}
+		
+		//Set databits
+		_ARM_REG8(N8LPLD, H, SERIAL_STOPBIT) = stopbit;
 
-	return ARM_ERR_NONE;
+		return ARM_ERR_NONE;
+	}
+	#endif
+	
+	return ARM_ERR_BAD;
 }
 
 void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit)
 {
-	//Get baudrate
-	if(baud)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		switch(_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE))
+		//Get baudrate
+		if(baud)
 		{
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_1200:
-				*baud = (armPortBaudrate_t)1200;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_2400:	                  
-				*baud = (armPortBaudrate_t)2400;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_4800:	                  
-				*baud = (armPortBaudrate_t)4800;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_9600:	                  
-				*baud = (armPortBaudrate_t)9600;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_19200:	                  
-				*baud = (armPortBaudrate_t)19200;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400:	                  
-				*baud = (armPortBaudrate_t)38400;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_57600:	                  
-				*baud = (armPortBaudrate_t)57600;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_115200:	              
-				*baud = (armPortBaudrate_t)115200;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_230400:	              
-				*baud = (armPortBaudrate_t)230400;
-			break;
-			
-			default:
-				*baud = ARMPORT_BAUDRATE_NONE;
-			break;
+			switch(_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE))
+			{
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_1200:
+					*baud = (armPortBaudrate_t)1200;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_2400:	                  
+					*baud = (armPortBaudrate_t)2400;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_4800:	                  
+					*baud = (armPortBaudrate_t)4800;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_9600:	                  
+					*baud = (armPortBaudrate_t)9600;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_19200:	                  
+					*baud = (armPortBaudrate_t)19200;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400:	                  
+					*baud = (armPortBaudrate_t)38400;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_57600:	                  
+					*baud = (armPortBaudrate_t)57600;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_115200:	              
+					*baud = (armPortBaudrate_t)115200;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_230400:	              
+					*baud = (armPortBaudrate_t)230400;
+				break;
+				
+				default:
+					*baud = ARMPORT_BAUDRATE_NONE;
+				break;
+			}
 		}
-	}
-	
-	//Get databits
-	if(databits)
-		*databits = (armPortDatabits_t)_ARM_REG8(N8LPLD, H, SERIAL_DATABITS);
-	
-	
-	//Get parity
-	if(parity)
-	{
-		switch(_ARM_REG8(N8LPLD, H, SERIAL_PARITY))
+		
+		//Get databits
+		if(databits)
+			*databits = (armPortDatabits_t)_ARM_REG8(N8LPLD, H, SERIAL_DATABITS);
+		
+		
+		//Get parity
+		if(parity)
 		{
-			case _ARM_N8LPLD_REGH_SERIAL_PARITY_ODD:	              
-				*parity = ARMPORT_PARITY_ODD;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_PARITY_EVEN:	              
-				*parity = ARMPORT_PARITY_EVEN;
-			break;
-			
-			case _ARM_N8LPLD_REGH_SERIAL_PARITY_NO:
-			default:
-				*parity = ARMPORT_PARITY_NO;
-			break;
+			switch(_ARM_REG8(N8LPLD, H, SERIAL_PARITY))
+			{
+				case _ARM_N8LPLD_REGH_SERIAL_PARITY_ODD:	              
+					*parity = ARMPORT_PARITY_ODD;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_PARITY_EVEN:	              
+					*parity = ARMPORT_PARITY_EVEN;
+				break;
+				
+				case _ARM_N8LPLD_REGH_SERIAL_PARITY_NO:
+				default:
+					*parity = ARMPORT_PARITY_NO;
+				break;
+			}
 		}
+		
+		//Get stopbit
+		if(stopbit)
+			*stopbit = (armPortStopbit_t)_ARM_REG8(N8LPLD, H, SERIAL_STOPBIT);
 	}
-	
-	//Get stopbit
-	if(stopbit)
-		*stopbit = (armPortStopbit_t)_ARM_REG8(N8LPLD, H, SERIAL_STOPBIT);
+	#endif
 }
 
 armError_t armSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble)
 {	
-	//Disable WOR mode
-	_ARM_REG8(N8LPLD, H, WAKE_UP_RF) &= ~_ARM_N8LPLD_REGH_WAKE_UP_RF_RF;
-	#ifndef ARMPORT_WITH_nSLEEP
-		_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) &= ~_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
-	#endif
-	_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE;
-	
-	//Return if disable mode.
-	if(mode == ARM_WOR_DISABLE)
-		return ARM_ERR_NONE;
-
-	//periodTime out of rang?
-	if(periodTime>_ARM_MAX_LONG_PREAMBLE_TIME)
-		return ARM_ERR_PARAM_OUT_OF_RANGE;
-	
-	//postTime out of rang?
-	if(postTime>_ARM_MAX_POST_TIME)
-		return ARM_ERR_PARAM_OUT_OF_RANGE;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		//Disable WOR mode
+		_ARM_REG8(N8LPLD, H, WAKE_UP_RF) &= ~_ARM_N8LPLD_REGH_WAKE_UP_RF_RF;
+		#ifndef ARMPORT_WITH_nSLEEP
+			_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) &= ~_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
+		#endif
+		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE;
 		
-	//Set period time (same registers than long preamble)
-	_ARM_REG16_SET(N8LPLD, H, LONG_PREAMBLE, periodTime);
-	
-	//Set post time
-	_ARM_REG8(N8LPLD, H, POST_TIME) = postTime/10;
-	
-	//Enable long preamble?
-	if(mode == ARM_WOR_LP)
-	{
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE;
+		//Return if disable mode.
+		if(mode == ARM_WOR_DISABLE)
+			return ARM_ERR_NONE;
+
+		//periodTime out of rang?
+		if(periodTime>_ARM_MAX_LONG_PREAMBLE_TIME)
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+		
+		//postTime out of rang?
+		if(postTime>_ARM_MAX_POST_TIME)
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+			
+		//Set period time (same registers than long preamble)
+		_ARM_REG16_SET(N8LPLD, H, LONG_PREAMBLE, periodTime);
+		
+		//Set post time
+		_ARM_REG8(N8LPLD, H, POST_TIME) = postTime/10;
+		
+		//Enable long preamble?
+		if(mode == ARM_WOR_LP)
+		{
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE;
+			return ARM_ERR_NONE;
+		}
+
+		//Enable wake up on radio
+		_ARM_REG8(N8LPLD, H, WAKE_UP_RF) |= _ARM_N8LPLD_REGH_WAKE_UP_RF_RF;
+		
+		#ifndef ARMPORT_WITH_nSLEEP
+		//Change uart baudrate if necessary
+		if(_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) > _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400)
+			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
+		//Enable wake up on uart
+		_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
+		#endif
+		
+		//Set WOR in CS 'Carrier Sense'?
+		if(mode == ARM_WOR_CS)
+		{
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_WOR_CS;
+			
+			//Set rssi level if WOR in CS
+			_ARM_REG8(N8LPLD, H, RSSI_LEVEL) = rssiLevel;
+		}
+		//Set WOR in PQT 'Preamble Quality Threshold'?
+		else
+		{
+			_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_WOR_CS;
+		}
+		
+		//Enable/disable filter in long preamble
+		if(filterLongPreamble)
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_FILTER_LONG_PREAMBLE;
+		else
+			_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_FILTER_LONG_PREAMBLE;
+		
 		return ARM_ERR_NONE;
 	}
-
-	//Enable wake up on radio
-	_ARM_REG8(N8LPLD, H, WAKE_UP_RF) |= _ARM_N8LPLD_REGH_WAKE_UP_RF_RF;
-	
-	#ifndef ARMPORT_WITH_nSLEEP
-	//Change uart baudrate if necessary
-	if(_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) > _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400)
-		_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
-	//Enable wake up on uart
-	_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
 	#endif
 	
-	//Set WOR in CS 'Carrier Sense'?
-	if(mode == ARM_WOR_CS)
-	{
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_WOR_CS;
-		
-		//Set rssi level if WOR in CS
-		_ARM_REG8(N8LPLD, H, RSSI_LEVEL) = rssiLevel;
-	}
-	//Set WOR in PQT 'Preamble Quality Threshold'?
-	else
-	{
-		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_WOR_CS;
-	}
-	
-	//Enable/disable filter in long preamble
-	if(filterLongPreamble)
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_FILTER_LONG_PREAMBLE;
-	else
-		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_FILTER_LONG_PREAMBLE;
-	
-	return ARM_ERR_NONE;
+	return ARM_ERR_BAD;
 }
 
 void armGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble)
 {
-	//Get WOR mode
-	if(mode)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		//WOR is enable? 
-		if(_ARM_REG8(N8LPLD, H, WAKE_UP_RF)&_ARM_N8LPLD_REGH_WAKE_UP_RF_RF)
+		//Get WOR mode
+		if(mode)
 		{
-			//WOR in CS 'Carrier Sense'?
-			if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_WOR_CS)
-				*mode = ARM_WOR_CS;
-			else//WOR in PQT 'Preamble Quality Threshold'?
-				*mode = ARM_WOR_PQT;
+			//WOR is enable? 
+			if(_ARM_REG8(N8LPLD, H, WAKE_UP_RF)&_ARM_N8LPLD_REGH_WAKE_UP_RF_RF)
+			{
+				//WOR in CS 'Carrier Sense'?
+				if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_WOR_CS)
+					*mode = ARM_WOR_CS;
+				else//WOR in PQT 'Preamble Quality Threshold'?
+					*mode = ARM_WOR_PQT;
+			}
+			//long preamble is enable? 
+			else if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE)
+				*mode = ARM_WOR_LP;
+			else //WOR is disable?
+				*mode = ARM_WOR_DISABLE;
 		}
-		//long preamble is enable? 
-		else if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE)
-			*mode = ARM_WOR_LP;
-		else //WOR is disable?
-			*mode = ARM_WOR_DISABLE;
+		
+		//Get post time
+		if(postTime)
+			*postTime = _ARM_REG8(N8LPLD, H, POST_TIME)*10;
+		
+		//Get period time
+		if(periodTime)
+		{
+			_ARM_REG16_GET(N8LPLD, H, LONG_PREAMBLE, *periodTime);
+		}
+		
+		//Get rssi level
+		if(rssiLevel)
+			*rssiLevel = _ARM_REG8(N8LPLD, H, RSSI_LEVEL);
+		
+		//Get filter
+		if(filterLongPreamble)
+			*filterLongPreamble = (_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_FILTER_LONG_PREAMBLE)?true:false;
 	}
-	
-	//Get post time
-	if(postTime)
-		*postTime = _ARM_REG8(N8LPLD, H, POST_TIME)*10;
-	
-	//Get period time
-	if(periodTime)
-	{
-		_ARM_REG16_GET(N8LPLD, H, LONG_PREAMBLE, *periodTime);
-	}
-	
-	//Get rssi level
-	if(rssiLevel)
-		*rssiLevel = _ARM_REG8(N8LPLD, H, RSSI_LEVEL);
-	
-	//Get filter
-	if(filterLongPreamble)
-		*filterLongPreamble = (_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_FILTER_LONG_PREAMBLE)?true:false;
+	#endif
 }
 
 armError_t armEnableWakeUpUart(arm_t *arm, bool enable)
 {
-	//Disable?
-	if(enable == false)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		#ifndef ARMPORT_WITH_nSLEEP
-		//WOR is enable? 
-		if(_ARM_REG8(N8LPLD, H, WAKE_UP_RF)&_ARM_N8LPLD_REGH_WAKE_UP_RF_RF)
-			return ARM_ERR_WOR_ENABLE;
-		#endif
+		//Disable?
+		if(enable == false)
+		{
+			#ifndef ARMPORT_WITH_nSLEEP
+			//WOR is enable? 
+			if(_ARM_REG8(N8LPLD, H, WAKE_UP_RF)&_ARM_N8LPLD_REGH_WAKE_UP_RF_RF)
+				return ARM_ERR_WOR_ENABLE;
+			#endif
+			
+			_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) &=  ~_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
+		}
+		else //Enable?
+		{
+			//Change uart baudrate if necessary
+			if(_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) > _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400)
+				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
+			
+			_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
+		}
 		
-		_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) &=  ~_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
+		return ARM_ERR_NONE;
 	}
-	else //Enable?
-	{
-		//Change uart baudrate if necessary
-		if(_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) > _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400)
-			_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
-		
-		_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_UART;
-	}
+	#endif
 	
-	return ARM_ERR_NONE;
+	return ARM_ERR_BAD;
 }
 
 bool armIsEnableWakeUpUart(arm_t *arm)
 {
-	return (_ARM_REG8(N8LPLD, H, WAKE_UP_PWR)&_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART)?true:false;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return (_ARM_REG8(N8LPLD, H, WAKE_UP_PWR)&_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART)?true:false;
+	}
+	#endif
+	
+	return false;
 }
 
 #ifdef ARMPORT_WITH_nSLEEP
@@ -1041,167 +1176,198 @@ void armSleep(arm_t* arm, bool sleep)
 
 armError_t armSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2)
 {
-	armBaudrate_t baud;
-	int8_t power;
-	int8_t maxPower;
-	
-	//Disable LBT&AFA mode?
-	if(mode == ARM_LBTAFA_DISABLE)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		_ARM_REG8(N8LPLD, H, SETTING1) &= (_ARM_N8LPLD_REGH_SETTING1_LBT|_ARM_N8LPLD_REGH_SETTING1_AFA);
+		armBaudrate_t baud;
+		int8_t power;
+		int8_t maxPower;
+		
+		//Disable LBT&AFA mode?
+		if(mode == ARM_LBTAFA_DISABLE)
+		{
+			_ARM_REG8(N8LPLD, H, SETTING1) &= (_ARM_N8LPLD_REGH_SETTING1_LBT|_ARM_N8LPLD_REGH_SETTING1_AFA);
+			return ARM_ERR_NONE;
+		}
+		
+		//The parameter is out of range?
+		if(	(channel2 < _ARM_MIN_CHANNEL) || (channel2 > _ARM_MAX_CHANNEL))
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+		
+		//Check if the new parameters is possible
+		armGetRadio(arm, NULL, &baud, &power);
+		maxPower = armGetMaxRadioPower(channel2, baud);
+		if(	(maxPower == -1) ||
+			(power > maxPower))
+			return ARM_ERR_PARAM_INCOMPATIBLE;
+		
+		//Enable LBT mode
+		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_LBT;
+		
+		//Set rssi level
+		_ARM_REG8(N8LPLD, H, RSSI_LEVEL) = rssiLevel;
+		
+		//Set nSamples
+		_ARM_REG16_SET(N8LPLD, H, NSAMPLE, nSamples);
+		
+		//Enable AFA mode?
+		if(mode = ARM_LBTAFA_LBTAFA)
+		{
+			//Set AFA mode
+			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_AFA;
+			
+			//Set channel2
+			_ARM_REG16_SET(N8LPLD, H, CHANNEL2, channel2);
+		}
+		
 		return ARM_ERR_NONE;
 	}
+	#endif
 	
-	//The parameter is out of range?
-	if(	(channel2 < _ARM_MIN_CHANNEL) || (channel2 > _ARM_MAX_CHANNEL))
-		return ARM_ERR_PARAM_OUT_OF_RANGE;
-	
-	//Check if the new parameters is possible
-	armGetRadio(arm, NULL, &baud, &power);
-	maxPower = armGetMaxRadioPower(channel2, baud);
-	if(	(maxPower == -1) ||
-		(power > maxPower))
-		return ARM_ERR_PARAM_INCOMPATIBLE;
-	
-	//Enable LBT mode
-	_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_LBT;
-	
-	//Set rssi level
-	_ARM_REG8(N8LPLD, H, RSSI_LEVEL) = rssiLevel;
-	
-	//Set nSamples
-	_ARM_REG16_SET(N8LPLD, H, NSAMPLE, nSamples);
-	
-	//Enable AFA mode?
-	if(mode = ARM_LBTAFA_LBTAFA)
-	{
-		//Set AFA mode
-		_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_AFA;
-		
-		//Set channel2
-		_ARM_REG16_SET(N8LPLD, H, CHANNEL2, channel2);
-	}
-	
-	return ARM_ERR_NONE;
+	return ARM_ERR_BAD;
 }
 
 void armGetLbtAfaMode(arm_t *arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2)
 {
-	//Get LBT&AFA mode
-	if(mode)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		//LBT is enable?
-		if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_LBT)
+		//Get LBT&AFA mode
+		if(mode)
 		{
-			//AFA is enable?
-			if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_AFA)
-				*mode = ARM_LBTAFA_LBTAFA;
+			//LBT is enable?
+			if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_LBT)
+			{
+				//AFA is enable?
+				if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_AFA)
+					*mode = ARM_LBTAFA_LBTAFA;
+				else
+					*mode = ARM_LBTAFA_LBT;
+			}
 			else
-				*mode = ARM_LBTAFA_LBT;
+				*mode = ARM_LBTAFA_DISABLE;
 		}
-		else
-			*mode = ARM_LBTAFA_DISABLE;
+		
+		//Get rssi level
+		if(rssiLevel)
+			*rssiLevel = _ARM_REG8(N8LPLD, H, RSSI_LEVEL);
+		
+		//Get nSamples
+		if(nSamples)
+		{
+			_ARM_REG16_GET(N8LPLD, H, NSAMPLE, *nSamples);
+		}
+		
+		//Get channel 2
+		if(channel2)
+		{
+			_ARM_REG16_GET(N8LPLD, H, CHANNEL2, *channel2);
+		}
 	}
-	
-	//Get rssi level
-	if(rssiLevel)
-		*rssiLevel = _ARM_REG8(N8LPLD, H, RSSI_LEVEL);
-	
-	//Get nSamples
-	if(nSamples)
-	{
-		_ARM_REG16_GET(N8LPLD, H, NSAMPLE, *nSamples);
-	}
-	
-	//Get channel 2
-	if(channel2)
-	{
-		_ARM_REG16_GET(N8LPLD, H, CHANNEL2, *channel2);
-	}
+	#endif
 }
 
 void armSetLed(arm_t* arm, armLed_t led)
 {
-	_ARM_REG8(N8LPLD, H, ON_BOARD) &= ~(_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON|_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF);
-	
-	switch(led)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		case ARM_LED_OFF:
-		break;
+		_ARM_REG8(N8LPLD, H, ON_BOARD) &= ~(_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON|_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF);
 		
-		case ARM_LED_OFF_RF:
-			_ARM_REG8(N8LPLD, H, ON_BOARD) |= _ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF;
-		break;
-		
-		case ARM_LED_ON_RF:
-			_ARM_REG8(N8LPLD, H, ON_BOARD) |= _ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON;
-		break;
+		switch(led)
+		{
+			case ARM_LED_OFF:
+			break;
+			
+			case ARM_LED_OFF_RF:
+				_ARM_REG8(N8LPLD, H, ON_BOARD) |= _ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF;
+			break;
+			
+			case ARM_LED_ON_RF:
+				_ARM_REG8(N8LPLD, H, ON_BOARD) |= _ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON;
+			break;
+		}
 	}
+	#endif
 }
 
 armLed_t armGetLed(arm_t* arm)
 {
-	if(_ARM_REG8(N8LPLD, H, ON_BOARD)&_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON)
-		return ARM_LED_ON_RF;
-		
-	if(_ARM_REG8(N8LPLD, H, ON_BOARD)&_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF)
-		return ARM_LED_OFF_RF;
-		
-	return ARM_LED_OFF;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		if(_ARM_REG8(N8LPLD, H, ON_BOARD)&_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON)
+			return ARM_LED_ON_RF;
+			
+		if(_ARM_REG8(N8LPLD, H, ON_BOARD)&_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF)
+			return ARM_LED_OFF_RF;
+			
+		return ARM_LED_OFF;
+	}
+	#endif
+	
+	return ARM_ERR_BAD;
 }
 
 armError_t armUpdateConfig(arm_t* arm)
 {
-	armError_t err = ARM_ERR_NONE;
-	bool reConfigPort = false;
-	int i = 0;
-	
-	//Find index of first registers changed.
-	for(i=0; i<_ARM_N8LPLD_REGH_SIZE; i++)
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		if(arm->_N8LPLD.regsH[i].newVal != arm->_N8LPLD.regsH[i].val)
-			break;
-	}
-	
-	//Registers changed found?
-	if(i<_ARM_N8LPLD_REGH_SIZE)
-	{
-		//Write S register changed to arm
-		if(err = _armGoAt(arm))
-			return err;
-		for(; i<_ARM_N8LPLD_REGH_SIZE; i++)
-		{
-			//Set the new value if the value was changed. 
-			if(arm->_N8LPLD.regsH[i].newVal != arm->_N8LPLD.regsH[i].val)
-			{
-				if(err = _armSetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, arm->_N8LPLD.regsH[i].newVal))
-					return err;
-					
-				arm->_N8LPLD.regsH[i].val = arm->_N8LPLD.regsH[i].newVal;
-				
-				if(	(i >= _ARM_N8LPLD_IREGH_SERIAL_BAUDRATE) &&
-					(i <= _ARM_N8LPLD_IREGH_SERIAL_STOPBIT))
-					reConfigPort = true;
-			}
-		}
-		if(err = _armBackAt(arm))
-			return err;
-	}
-	
-	//Need to reconfigure the port?
-	if(reConfigPort)
-	{
-		armPortBaudrate_t baudrate;
-		armPortDatabits_t databits;
-		armPortParity_t parity;
-		armPortStopbit_t stopbit;
+		armError_t err = ARM_ERR_NONE;
+		bool reConfigPort = false;
+		int i = 0;
 		
-		armGetSerial(arm, &baudrate, &databits, &parity, &stopbit);
-		if(armPortConfig(arm->_port, baudrate, databits, parity, stopbit))
-			err = ARM_ERR_PORT_CONFIG;
+		//Find index of first registers changed.
+		for(i=0; i<_ARM_N8LPLD_REGH_SIZE; i++)
+		{
+			if(arm->_N8LPLD.regsH[i].newVal != arm->_N8LPLD.regsH[i].val)
+				break;
+		}
+		
+		//Registers changed found?
+		if(i<_ARM_N8LPLD_REGH_SIZE)
+		{
+			//Write S register changed to arm
+			if(err = _armGoAt(arm))
+				return err;
+			for(; i<_ARM_N8LPLD_REGH_SIZE; i++)
+			{
+				//Set the new value if the value was changed. 
+				if(arm->_N8LPLD.regsH[i].newVal != arm->_N8LPLD.regsH[i].val)
+				{
+					if(err = _armSetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, arm->_N8LPLD.regsH[i].newVal))
+						return err;
+						
+					arm->_N8LPLD.regsH[i].val = arm->_N8LPLD.regsH[i].newVal;
+					
+					if(	(i >= _ARM_N8LPLD_IREGH_SERIAL_BAUDRATE) &&
+						(i <= _ARM_N8LPLD_IREGH_SERIAL_STOPBIT))
+						reConfigPort = true;
+				}
+			}
+			if(err = _armBackAt(arm))
+				return err;
+		}
+		
+		//Need to reconfigure the port?
+		if(reConfigPort)
+		{
+			armPortBaudrate_t baudrate;
+			armPortDatabits_t databits;
+			armPortParity_t parity;
+			armPortStopbit_t stopbit;
+			
+			armGetSerial(arm, &baudrate, &databits, &parity, &stopbit);
+			if(armPortConfig(arm->_port, baudrate, databits, parity, stopbit))
+				err = ARM_ERR_PORT_CONFIG;
+		}
+		
+		return err;
 	}
+	#endif
 	
-	return err;
+	return ARM_ERR_BAD;
 }
 
 ssize_t armSend(arm_t *arm, const uint8_t *buf, size_t nbyte)
