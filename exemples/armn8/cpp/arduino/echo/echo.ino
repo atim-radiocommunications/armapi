@@ -73,7 +73,7 @@ void setup()
     digitalWrite(LED, HIGH);
 
   //Say 'hello world' to Sigfox
-  myArm.DataToSigfox(msg, strlen((const char*)msg));
+  myArm.DataToSigfox(msg, strlen((const char*)msg), 0);
 
   //Configure radio for listen and say to all ARM
   //at the radio speed 9600 bps on the channel 4

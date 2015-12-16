@@ -380,7 +380,7 @@ armN8Error_t armN8SetRadioLocalAdd(armN8_t* arm, uint8_t add);
  * 
  * \see armN8SetRadioLocalAdd()
  */
-uint8_t armN8GetRadioLocaleAdd(armN8_t* arm);
+uint8_t armN8GetRadioLocalAdd(armN8_t* arm);
 
 /*! \ingroup armn8_addressing
  * \brief Enable/Disable \b Addressing.
@@ -542,7 +542,7 @@ armN8Error_t armN8SetSerial(armN8_t* arm, armPortBaudrate_t baud, armPortDatabit
  * 
  * \see armN8SetSerial()
  */
- void armN8GetSerial(armN8_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit);
+void armN8GetSerial(armN8_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit);
 
 /*! \ingroup armn8_power_saving
  * \brief Enable/Disable and configure the \b wake \b on \b radio mode.
@@ -611,7 +611,7 @@ armN8Error_t armN8SetSerial(armN8_t* arm, armPortBaudrate_t baud, armPortDatabit
  * \see armN8SetLbtAfaMode()
  * \see armN8Sleep()
  */
- armN8Error_t armN8SetWorMode(armN8_t* arm, armN8Wor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
+armN8Error_t armN8SetWorMode(armN8_t* arm, armN8Wor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
 
 /*! \ingroup armn8_power_saving
  * \brief Get the wake up on mode configuration.
@@ -632,7 +632,7 @@ armN8Error_t armN8SetSerial(armN8_t* arm, armPortBaudrate_t baud, armPortDatabit
  * 
  * \see armN8SetWorMode()
  */
- void armN8GetWorMode(armN8_t* arm, armN8Wor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
+void armN8GetWorMode(armN8_t* arm, armN8Wor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
 
 /*! \ingroup armn8_power_saving
  * \brief Enable/Disable the \b Wake \b Up \b Uart.
