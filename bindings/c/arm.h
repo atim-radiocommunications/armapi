@@ -217,6 +217,8 @@ typedef struct
 /*! \ingroup arm_init_various
  * \brief Initialize the structure, port and \b ARM.
  * 
+ * This function must be call before call other function depend of the \ref arm_t structure.
+ * 
  * \param arm Pointer to your \b ARM structure.
  * \param port Pointer to something which mean you serial port.
  * 
@@ -293,7 +295,7 @@ armError_t armReboot(arm_t* arm);
  */
 armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
-/*! \ingroup arm_send_receive_data
+/*! \ingroup arm_send_receive_data_sigfox
  * \brief Send message to Sigfox network.
  * 
  * \param arm Pointer to your \b ARM structure.
@@ -442,7 +444,7 @@ uint8_t armGetRadioRemoteAdd(arm_t* arm);
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
  * 
- * \see armGetRadioLocaleAdd()
+ * \see armGetRadioLocalAdd()
  * \see armSetRadioRemoteAdd()
  * \see armEnableAddressing()
  */
@@ -458,7 +460,7 @@ armError_t armSetRadioLocalAdd(arm_t* arm, uint8_t add);
  * 
  * \see armSetRadioLocalAdd()
  */
-uint8_t armGetRadioLocaleAdd(arm_t* arm);
+uint8_t armGetRadioLocalAdd(arm_t* arm);
 
 /*! \ingroup arm_addressing
  * \brief Enable/Disable \b Addressing.

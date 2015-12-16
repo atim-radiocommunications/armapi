@@ -154,7 +154,7 @@ armError_t armInit(arm_t* arm, void* port)
 		_ARM_REG8_INIT (N8LPLD, H, REMOTE_ADDRESS);
 		_ARM_REG8_INIT (N8LPLD, H, SETTING1);
 		_ARM_REG8_INIT (N8LPLD, H, SETTING2);
-		_ARM_REG8_INIT (N8LPLD, H, LOCALE_ADDRESS);
+		_ARM_REG8_INIT (N8LPLD, H, LOCAL_ADDRESS);
 	}
 	#endif
 	
@@ -433,7 +433,7 @@ armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn
 armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
-	_ARM_IMP(N8_LP)
+	_ARM_IMP1(N8_LP)
 	{
 		armError_t err1 = ARM_ERR_NONE;
 		armError_t err2 = ARM_ERR_NONE;
@@ -690,7 +690,7 @@ armError_t armSetRadioLocalAdd(arm_t *arm, uint8_t add)
 		if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
 			return ARM_ERR_ADDRESSING_NOT_ENABLE;
 		
-		_ARM_REG8(N8LPLD, H, LOCALE_ADDRESS) = add;
+		_ARM_REG8(N8LPLD, H, LOCAL_ADDRESS) = add;
 		return ARM_ERR_NONE;
 	}
 	#endif
@@ -703,7 +703,7 @@ uint8_t armGetRadioLocalAdd(arm_t *arm)
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		return _ARM_REG8(N8LPLD, H, LOCALE_ADDRESS);
+		return _ARM_REG8(N8LPLD, H, LOCAL_ADDRESS);
 	}
 	#endif
 	

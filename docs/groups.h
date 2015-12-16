@@ -105,6 +105,11 @@
  * \ingroup arm_n8_lw
  * 
  */
+ 
+/*! \defgroup arm_send_receive_data_sigfox Send/receive data to/from Sigfox network.
+ * \ingroup arm_n8_lpld
+ * 
+ */
 
 
 

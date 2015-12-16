@@ -37,9 +37,9 @@
 // ---------------------------------------------------------------------
 
 // Other values
-#define _ARM_N8LPLD_TIME_BOOTING 		3500	//3.5s
-#define _ARM_N8LPLD_LP_MAX_POWER		14
-#define _ARM_N8LPLD_LD_MAX_POWER		27
+#define _ARM_N8LPLD_TIME_BOOTING 				3500	//3.5s
+#define _ARM_N8LPLD_LP_MAX_POWER				14
+#define _ARM_N8LPLD_LD_MAX_POWER				27
 
 // Index S Registers
 #define _ARM_N8LPLD_IREGH_APPLICATION 			0
@@ -66,7 +66,7 @@
 #define _ARM_N8LPLD_IREGH_REMOTE_ADDRESS 		21
 #define _ARM_N8LPLD_IREGH_SETTING1				22
 #define _ARM_N8LPLD_IREGH_SETTING2				23
-#define _ARM_N8LPLD_IREGH_LOCALE_ADDRESS 		24
+#define _ARM_N8LPLD_IREGH_LOCAL_ADDRESS 		24
 
 // S Registers
 #define _ARM_N8LPLD_REGH_APPLICATION 			0
@@ -93,7 +93,7 @@
 #define _ARM_N8LPLD_REGH_REMOTE_ADDRESS 		90
 #define _ARM_N8LPLD_REGH_SETTING1				92
 #define _ARM_N8LPLD_REGH_SETTING2				93
-#define _ARM_N8LPLD_REGH_LOCALE_ADDRESS 		97
+#define _ARM_N8LPLD_REGH_LOCAL_ADDRESS	 		97
 
 // Radio Application values
 #define _ARM_N8LPLD_REGH_APPLICATION_UART_RF			0x10
