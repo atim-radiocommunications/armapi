@@ -108,7 +108,6 @@ armError_t _armSetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t val);
 armError_t armInit(arm_t* arm, void* port)
 {	
 	armError_t err = ARM_ERR_NONE;
-	int i = 0;
 	
 	//Initialize the arm structure
 	bzero(arm, sizeof(arm_t));
@@ -124,45 +123,6 @@ armError_t armInit(arm_t* arm, void* port)
 									ARMPORT_PARITY_NO,
 									ARMPORT_STOPBIT_1))
 		return ARM_ERR_PORT_CONFIG;
-	
-	//Get info to get ARM type
-	err = armGetInfo(arm, &arm->type, NULL, NULL, NULL, NULL);
-	if(err != ARM_ERR_NONE)
-		return err;
-	
-	//Init registers	
-	#ifndef ARM_WITHOUT_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
-	{
-		_ARM_REG8_INIT (N8LPLD, H, APPLICATION);
-		_ARM_REG16_INIT(N8LPLD, H, CHANNEL1);
-		_ARM_REG8_INIT (N8LPLD, H, POWER);
-		_ARM_REG8_INIT (N8LPLD, H, RADIO_BAUDRATE);
-		_ARM_REG8_INIT (N8LPLD, H, SERIAL_BAUDRATE);
-		_ARM_REG8_INIT (N8LPLD, H, SERIAL_DATABITS);
-		_ARM_REG8_INIT (N8LPLD, H, SERIAL_PARITY);
-		_ARM_REG8_INIT (N8LPLD, H, SERIAL_STOPBIT);
-		_ARM_REG8_INIT (N8LPLD, H, ON_BOARD);
-		_ARM_REG16_INIT(N8LPLD, H, CHANNEL2);
-		_ARM_REG8_INIT (N8LPLD, H, RSSI_LEVEL);
-		_ARM_REG16_INIT(N8LPLD, H, NSAMPLE);
-		_ARM_REG8_INIT (N8LPLD, H, USER_GAIN);
-		_ARM_REG8_INIT (N8LPLD, H, WAKE_UP_PWR);
-		_ARM_REG8_INIT (N8LPLD, H, WAKE_UP_RF);
-		_ARM_REG16_INIT(N8LPLD, H, LONG_PREAMBLE);
-		_ARM_REG8_INIT (N8LPLD, H, POST_TIME);
-		_ARM_REG8_INIT (N8LPLD, H, REMOTE_ADDRESS);
-		_ARM_REG8_INIT (N8LPLD, H, SETTING1);
-		_ARM_REG8_INIT (N8LPLD, H, SETTING2);
-		_ARM_REG8_INIT (N8LPLD, H, LOCAL_ADDRESS);
-	}
-	#endif
-	
-	#ifndef ARM_WITHOUT_N8_LW
-	_ARM_IMP1(N8_LW)
-	{
-	}
-	#endif
 	
 	//Reboot the arm
 	return armReboot(arm);
@@ -202,27 +162,17 @@ armError_t armReboot(arm_t* arm)
 		armPortDelay(_ARM_TIME_RESET);
 		armPortGpioSet(arm->_port, ARMPORT_PIN_nRESET, true);
 	#else
-		//Go to AT commend to reboot.
-		if(err = _armGoAt(arm))
-			return err;
-			
-		//Reboot by "ATR"
-		if(armPortWrite(arm->_port, "ATR\n", 4) != 6)
-			return ARM_ERR_PORT_WRITE;
-			
-		#ifndef ARM_WITHOUT_N8_LPLD
-		_ARM_IMP2(N8_LP, N8_LD)
+		//No need rebooting because initialization (type == ARM_TYPE_NONE)
+		if(arm->type != ARM_TYPE_NONE)
 		{
-			//Read
-			nread = _armRead(arm, buf, sizeof buf, _ARM_TIME_TIMEOUT);
-			if(nread < 0)
-				return ARM_ERR_PORT_READ;
+			//Go to AT commend to reboot.
+			if((err = _armGoAt(arm)))
+				return err;
 			
-			//Check the message
-			if(memmem(buf, nread, "RESTARTING", 10) == NULL)
-				return ARM_ERR_ARM_CMD;
+			//Reboot by "ATR" if ARM is already initialized/used/...
+			if(armPortWrite(arm->_port, "ATR\n", 4) != 4)
+				return ARM_ERR_PORT_WRITE;
 		}
-		#endif
 	#endif
 	
 	//Wait booting
@@ -236,7 +186,8 @@ armError_t armReboot(arm_t* arm)
 				armPortGpioSet(arm->_port, ARMPORT_PIN_nBOOT, false);
 			#else
 				//Wait booting
-				armPortDelay(_ARM_N8LPLD_TIME_BOOTING);
+				if(arm->type != ARM_TYPE_NONE)
+					armPortDelay(_ARM_N8LPLD_TIME_BOOTING);
 			#endif
 		}
 	#endif
@@ -247,9 +198,49 @@ armError_t armReboot(arm_t* arm)
 									ARMPORT_PARITY_NO,
 									ARMPORT_STOPBIT_1))
 		return ARM_ERR_PORT_CONFIG;
+		
+	//Get info to get ARM type
+	err = armInfo(arm, &arm->type, NULL, NULL, NULL, NULL);
+	if(err != ARM_ERR_NONE)
+		return err;
+		
+	//Init registers	
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		_ARM_REG8_INIT (N8LPLD, H, APPLICATION);
+		_ARM_REG16_INIT(N8LPLD, H, CHANNEL1);
+		_ARM_REG8_INIT (N8LPLD, H, POWER);
+		_ARM_REG8_INIT (N8LPLD, H, RADIO_BAUDRATE);
+		_ARM_REG8_INIT (N8LPLD, H, SERIAL_BAUDRATE);
+		_ARM_REG8_INIT (N8LPLD, H, SERIAL_DATABITS);
+		_ARM_REG8_INIT (N8LPLD, H, SERIAL_PARITY);
+		_ARM_REG8_INIT (N8LPLD, H, SERIAL_STOPBIT);
+		_ARM_REG8_INIT (N8LPLD, H, ON_BOARD);
+		_ARM_REG16_INIT(N8LPLD, H, CHANNEL2);
+		_ARM_REG8_INIT (N8LPLD, H, RSSI_LEVEL);
+		_ARM_REG16_INIT(N8LPLD, H, NSAMPLE);
+		_ARM_REG8_INIT (N8LPLD, H, USER_GAIN);
+		_ARM_REG8_INIT (N8LPLD, H, WAKE_UP_PWR);
+		_ARM_REG8_INIT (N8LPLD, H, WAKE_UP_RF);
+		_ARM_REG16_INIT(N8LPLD, H, LONG_PREAMBLE);
+		_ARM_REG8_INIT (N8LPLD, H, POST_TIME);
+		_ARM_REG8_INIT (N8LPLD, H, REMOTE_ADDRESS);
+		_ARM_REG8_INIT (N8LPLD, H, SETTING1);
+		_ARM_REG8_INIT (N8LPLD, H, SETTING2);
+		_ARM_REG8_INIT (N8LPLD, H, LOCAL_ADDRESS);
+	}
+	#endif
+	
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		//_ARM_REG8_INIT (N8LPLD, M, APPLICATION);
+	}
+	#endif
 	
 	//Go to AT commend for get register
-	if(err = _armGoAt(arm))
+	if((err = _armGoAt(arm)))
 		return err;
 	
 	#ifndef ARM_WITHOUT_N8_LPLD
@@ -258,7 +249,7 @@ armError_t armReboot(arm_t* arm)
 		//Read all S register from arm
 		for(i=0; i<_ARM_N8LPLD_REGH_SIZE; i++)
 		{
-			if(err = _armGetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, &arm->_N8LPLD.regsH[i].val))
+			if((err = _armGetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, &arm->_N8LPLD.regsH[i].val)))
 				return err;
 			arm->_N8LPLD.regsH[i].newVal = arm->_N8LPLD.regsH[i].val;
 		}
@@ -278,11 +269,15 @@ armError_t armReboot(arm_t* arm)
 	}
 	#endif
 	
+	//back AT
+	if((err = _armBackAt(arm)))
+		return err;
+	
 	//Send the new value of registers to arm
 	return armUpdateConfig(arm);
 }
 
-armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower)
+armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower)
 {	
 	armError_t err = ARM_ERR_NONE;
 	armType_t _armType = ARM_TYPE_NONE;
@@ -570,7 +565,7 @@ armError_t armSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t 
 			_ARM_REG16_SET(N8LPLD, H, CHANNEL1, channel);
 		
 		//Power is adjusted ?
-		if(power = ARM_POWER_AUTO)
+		if((power = ARM_POWER_AUTO))
 			_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_LIMIT;
 		else
 		{
@@ -1211,7 +1206,7 @@ armError_t armSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, uint
 		_ARM_REG16_SET(N8LPLD, H, NSAMPLE, nSamples);
 		
 		//Enable AFA mode?
-		if(mode = ARM_LBTAFA_LBTAFA)
+		if(mode == ARM_LBTAFA_LBTAFA)
 		{
 			//Set AFA mode
 			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_AFA;
@@ -1329,14 +1324,14 @@ armError_t armUpdateConfig(arm_t* arm)
 		if(i<_ARM_N8LPLD_REGH_SIZE)
 		{
 			//Write S register changed to arm
-			if(err = _armGoAt(arm))
+			if((err = _armGoAt(arm)))
 				return err;
 			for(; i<_ARM_N8LPLD_REGH_SIZE; i++)
 			{
 				//Set the new value if the value was changed. 
 				if(arm->_N8LPLD.regsH[i].newVal != arm->_N8LPLD.regsH[i].val)
 				{
-					if(err = _armSetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, arm->_N8LPLD.regsH[i].newVal))
+					if((err = _armSetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, arm->_N8LPLD.regsH[i].newVal)))
 						return err;
 						
 					arm->_N8LPLD.regsH[i].val = arm->_N8LPLD.regsH[i].newVal;
@@ -1346,7 +1341,7 @@ armError_t armUpdateConfig(arm_t* arm)
 						reConfigPort = true;
 				}
 			}
-			if(err = _armBackAt(arm))
+			if((err = _armBackAt(arm)))
 				return err;
 		}
 		
@@ -1607,7 +1602,21 @@ armError_t _armGoAt(arm_t* arm)
 		ntry++;
 		
 		//Write '+++' for go to AT commend and read reply
-		nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_TIME_TIMEOUT);
+		#if !defined ARM_WITHOUT_N8_LPLD && !defined ARMPORT_WITH_nBOOT
+		if(arm->type&(ARM_TYPE_NONE))
+		{
+			nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_N8LPLD_TIME_BOOTING/_ARM_NUMBER_OF_TRIALS_GO_AT);
+			//Soit on est dans le boot du N8_LPLD ou deja en commend AT
+			if(nread == 0)
+			{
+				_armWriteRead(arm, "ATQ\r", 4, buf, sizeof buf, _ARM_TIME_TIMEOUT);
+				continue;
+			}
+		}
+		else
+		#endif
+			nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_TIME_TIMEOUT);
+		
 		if(nread < 0)
 			return ARM_ERR_PORT_WRITE_READ;
 			

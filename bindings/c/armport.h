@@ -46,6 +46,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "armconfig.h"
+
 #ifdef __cplusplus
 extern "C"
 {

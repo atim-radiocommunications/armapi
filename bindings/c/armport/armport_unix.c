@@ -37,7 +37,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
-
+#include <unistd.h>
+ 
 int armPortOpen(void** ptrPort)
 {
 	int* ptrFd = NULL;
@@ -218,7 +219,7 @@ int armPortClose(void* port)
 	return 0;
 }
 
-ssize_t armPortWrite(void* port, const uint8_t *buf, size_t nbyte)
+ssize_t armPortWrite(void* port, const uint8_t* buf, size_t nbyte)
 {
 	//No valid pointer?
 	if(port == NULL)
@@ -237,7 +238,7 @@ ssize_t armPortWrite(void* port, const uint8_t *buf, size_t nbyte)
 	return n;
 }
 
-ssize_t armPortRead(void* port, uint8_t *buf, size_t nbyte, unsigned int timeout)
+ssize_t armPortRead(void* port, uint8_t* buf, size_t nbyte, unsigned int timeout)
 {
 	//No valid pointer?
 	if(port == NULL)
@@ -285,3 +286,10 @@ void armPortDelay(int ms)
 	if(usleep(ms*1000) == -1)
 		fprintf(stderr, "ERROR - %s: %s\n", __func__, strerror(errno));
 }
+
+// \todo delete
+//#if defined ARMPORT_WITH_nSLEEP || defined ARMPORT_WITH_nBOOT || defined ARMPORT_WITH_nRESET
+//void armPortGpioSet(void* port, armPortPin_t pin, bool val)
+//{
+//}
+//#endif

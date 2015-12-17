@@ -36,6 +36,8 @@
 // Include
 // ---------------------------------------------------------------------
 #include <stdbool.h>
+
+#include "armconfig.h"
 #include "armport.h"
 
 // ---------------------------------------------------------------------
@@ -58,7 +60,7 @@
 	//Number of H registers for N8LPLD
 	#define _ARM_N8LPLD_REGH_SIZE 	25
 	//Number of M registers for N8LW
-	#define _ARM_N8LW_REGM_SIZE 	1
+	#define _ARM_N8LW_REGM_SIZE 	3
 	//Number of O registers for N8LW
 	#define _ARM_N8LW_REGO_SIZE 	1
 #endif //__DOXYGEN__
@@ -231,7 +233,6 @@ typedef struct
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
- * 		- \ref ARM_ERR_ARM_CMD If can't execute commend from \b ARM
  * 		- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
  * 		- \ref ARM_ERR_ARM_SET_REG If can't set register from \b ARM.
  */
@@ -264,14 +265,13 @@ armError_t armDeInit(arm_t* arm);
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
- * 		- \ref ARM_ERR_ARM_CMD If can't execute commend from \b ARM
  * 		- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
  * 		- \ref ARM_ERR_ARM_SET_REG If can't set register from \b ARM.
  */
 armError_t armReboot(arm_t* arm);
 
 /*! \ingroup arm_init_various
- * \brief Get information about the \b arm
+ * \brief Get information about the \b ARM.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
  * 
@@ -293,7 +293,7 @@ armError_t armReboot(arm_t* arm);
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
  */
-armError_t armGetInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
+armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
 /*! \ingroup arm_send_receive_data_sigfox
  * \brief Send message to Sigfox network.
