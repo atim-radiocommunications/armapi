@@ -935,7 +935,7 @@ armError_t armUpdateConfig(arm_t* arm);
  * \todo Finish implementation and add doc to explained the wait time
  * between send data.
  */
-ssize_t armSend(arm_t* arm, const uint8_t* buf, size_t nbyte);
+ssize_t armSend(arm_t* arm, const void* buf, size_t nbyte);
 
 /*! \ingroup arm_send_receive_data
  * \brief Receive data from \b ARM.
@@ -956,6 +956,6 @@ ssize_t armSend(arm_t* arm, const uint8_t* buf, size_t nbyte);
  * 
  * \see armSend()
  */
-ssize_t armReceive(arm_t* arm, uint8_t* buf, size_t nbyte, int timeout);
+ssize_t armReceive(arm_t* arm, void* buf, size_t nbyte, int timeout);
 
 #endif //ARM_H

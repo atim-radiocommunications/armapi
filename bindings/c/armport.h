@@ -149,9 +149,9 @@ int armPortConfig(void* port,	armPortBaudrate_t baudrate,
 								armPortStopbit_t stopbit);
 int armPortClose(void* port);
 
-ssize_t armPortWrite(void* port, const uint8_t* buf, size_t nbyte);
+ssize_t armPortWrite(void* port, const void* buf, size_t nbyte);
 
-ssize_t armPortRead(void* port, uint8_t* buf, size_t nbyte, unsigned int timeout);
+ssize_t armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout);
 
 void armPortDelay(int ms);
 

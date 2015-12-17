@@ -92,8 +92,8 @@
 uint8_t* _armUintToStr(uint64_t val, uint8_t* str, uint8_t base, int n);
 uint64_t _armStrToUint(uint8_t* str, uint8_t base);
 
-ssize_t _armRead(arm_t* arm, uint8_t* buf, size_t nbyte, unsigned int timeout);
-ssize_t _armWriteRead(arm_t* arm, const uint8_t* tbuf, size_t tnbyte, uint8_t* rbuf, size_t rnbyte, unsigned int rtimeout);
+ssize_t _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout);
+ssize_t _armWriteRead(arm_t* arm, const void* tbuf, size_t tnbyte, void* rbuf, size_t rnbyte, unsigned int rtimeout);
 
 armError_t _armGoAt(arm_t* arm);
 armError_t _armBackAt(arm_t* arm);
@@ -107,8 +107,6 @@ armError_t _armSetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t val);
 // ---------------------------------------------------------------------
 armError_t armInit(arm_t* arm, void* port)
 {	
-	armError_t err = ARM_ERR_NONE;
-	
 	//Initialize the arm structure
 	bzero(arm, sizeof(arm_t));
 	arm->_port = port;
@@ -141,10 +139,6 @@ armError_t armReboot(arm_t* arm)
 {
 	int i = 0;
 	armError_t err = ARM_ERR_NONE;
-	#ifndef ARMPORT_WITH_nRESET
-	uint8_t buf[24];
-	ssize_t nread;
-	#endif
 	
 	#ifdef ARMPORT_WITH_nSLEEP
 	//nSLEEP to '1'
@@ -289,7 +283,6 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 	if((arm->type==ARM_TYPE_NONE) || rev || sn)
 	{
 		uint8_t buf[64];
-		uint8_t* ptrstr;
 		ssize_t nread;
 	
 		//Go to AT commend
@@ -498,6 +491,12 @@ armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uin
 
 int8_t armGetMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud)
 {
+	if(radioBaud == ARM_BAUDRATE_NONE)
+		return -1;
+		
+	if(	(radioChannel < _ARM_MIN_CHANNEL) || (radioChannel > _ARM_MAX_CHANNEL))
+		return -1;
+	
 	return 27;
 }
 
@@ -1365,7 +1364,7 @@ armError_t armUpdateConfig(arm_t* arm)
 	return ARM_ERR_BAD_TYPE;
 }
 
-ssize_t armSend(arm_t *arm, const uint8_t *buf, size_t nbyte)
+ssize_t armSend(arm_t *arm, const void* buf, size_t nbyte)
 {
 	ssize_t nwrite = 0;
 	ssize_t n = 0;
@@ -1438,7 +1437,7 @@ ssize_t armSend(arm_t *arm, const uint8_t *buf, size_t nbyte)
 	return nwrite;
 }
 
-ssize_t armReceive(arm_t *arm, uint8_t *buf, size_t nbyte, int timeout)
+ssize_t armReceive(arm_t *arm, void* buf, size_t nbyte, int timeout)
 {
 	size_t nread = 0;
 	int n = 0;
@@ -1540,7 +1539,7 @@ uint64_t _armStrToUint(uint8_t* str, uint8_t base)
 	return val;
 }
 
-ssize_t _armRead(arm_t* arm, uint8_t* buf, size_t nbyte, unsigned int timeout)
+ssize_t _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout)
 {
 	size_t nread = 0;
 	size_t i = 0;
@@ -1562,7 +1561,7 @@ ssize_t _armRead(arm_t* arm, uint8_t* buf, size_t nbyte, unsigned int timeout)
 			//Check if stop read condition
 			for(i=nread; i<nread+n; i++)
 			{
-				if(buf[i] == '\n')
+				if(((char*)buf)[i] == '\n')
 				{
 					lfcount++;
 					if(lfcount >= 2)
@@ -1581,7 +1580,7 @@ ssize_t _armRead(arm_t* arm, uint8_t* buf, size_t nbyte, unsigned int timeout)
 	return nread;
 }
 
-ssize_t _armWriteRead(arm_t* arm, const uint8_t* tbuf, size_t tnbyte, uint8_t* rbuf, size_t rnbyte, unsigned int rtimeout)
+ssize_t _armWriteRead(arm_t* arm, const void* tbuf, size_t tnbyte, void* rbuf, size_t rnbyte, unsigned int rtimeout)
 {
 	//Write
 	if(armPortWrite(arm->_port, tbuf, tnbyte) != (ssize_t)tnbyte)
