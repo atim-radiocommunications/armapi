@@ -38,7 +38,7 @@
 //#define ARMPORT_WITH_nRESET
 
 //Define to optimize output size.
-//TODO verifier si il y a au moin une define si dessue dans le arm.h
+//TODO verifier si il y a tout les define si dessue dans le arm.h ...
 //#define ARM_WITHOUT_N8_LPLD
 //#define ARM_WITHOUT_N8_LW
 

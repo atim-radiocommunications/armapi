@@ -286,10 +286,3 @@ void armPortDelay(int ms)
 	if(usleep(ms*1000) == -1)
 		fprintf(stderr, "ERROR - %s: %s\n", __func__, strerror(errno));
 }
-
-// \todo delete
-//#if defined ARMPORT_WITH_nSLEEP || defined ARMPORT_WITH_nBOOT || defined ARMPORT_WITH_nRESET
-//void armPortGpioSet(void* port, armPortPin_t pin, bool val)
-//{
-//}
-//#endif

@@ -64,23 +64,23 @@
 
 // Helper for manipulate registers
 #define _ARM_REG8_INIT(armType, regType, regName) \
-	arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName].reg=_ARM_##armType##_REG##regType##_##regName
+	arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName].reg=_ARM_##armType##_REG##regType##_##regName
 	
 #define _ARM_REG16_INIT(armType, regType, regName) \
-	arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_LSB].reg=_ARM_##armType##_REG##regType##_##regName##_LSB; \
-	arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_MSB].reg=_ARM_##armType##_REG##regType##_##regName##_MSB
+	arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_LSB].reg=_ARM_##armType##_REG##regType##_##regName##_LSB; \
+	arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_MSB].reg=_ARM_##armType##_REG##regType##_##regName##_MSB
 
 #define _ARM_REG8(armType, regType, regName) \
-	arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName].newVal
+	arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName].newVal
 
 #define _ARM_REG16_GET(armType, regType, regName, var)												\
-	(var) = arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_MSB].newVal;	\
+	(var) = arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_MSB].newVal;	\
 	(var)<<=8;																						\
-	(var) |= arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_LSB].newVal
+	(var) |= arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_LSB].newVal
 	
 #define _ARM_REG16_SET(armType, regType, regName, val)												\
-	arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_LSB].newVal = (val);	\
-	arm->_N8LPLD.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_MSB].newVal = (val)>>8
+	arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_LSB].newVal = (val);	\
+	arm->_##armType.regs##regType[_ARM_##armType##_IREG##regType##_##regName##_MSB].newVal = (val)>>8
 
 #endif //__DOXYGEN__
 
@@ -137,7 +137,6 @@ armError_t armDeInit(arm_t* arm)
 
 armError_t armReboot(arm_t* arm)
 {
-	int i = 0;
 	armError_t err = ARM_ERR_NONE;
 	
 	#ifdef ARMPORT_WITH_nSLEEP
@@ -229,7 +228,9 @@ armError_t armReboot(arm_t* arm)
 	#ifndef ARM_WITHOUT_N8_LW
 	_ARM_IMP1(N8_LW)
 	{
-		//_ARM_REG8_INIT (N8LPLD, M, APPLICATION);
+		_ARM_REG8_INIT (N8LW, M, CONFIGURATION);
+		_ARM_REG8_INIT (N8LW, M, LOW_POWER);
+		_ARM_REG8_INIT (N8LW, M, LED);
 	}
 	#endif
 	
@@ -240,6 +241,8 @@ armError_t armReboot(arm_t* arm)
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
 	{
+		int i = 0;
+		
 		//Read all S register from arm
 		for(i=0; i<_ARM_N8LPLD_REGH_SIZE; i++)
 		{
@@ -251,8 +254,11 @@ armError_t armReboot(arm_t* arm)
 		//Set UART to RF Mode in Application register.
 		_ARM_REG8(N8LPLD, H, APPLICATION) = _ARM_N8LPLD_REGH_APPLICATION_UART_RF;
 		#ifdef ARMPORT_WITH_nSLEEP
-		//Set Wake up on the sleep pin
-		_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_INT0;
+			//Enable Wake up on the sleep pin
+			_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_INT0;
+		#else
+			//Disbale Wake up on the sleep pin
+			_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) &=  ~_ARM_N8LPLD_REGH_WAKE_UP_PWR_INT0;
 		#endif
 	}
 	#endif
@@ -260,6 +266,31 @@ armError_t armReboot(arm_t* arm)
 	#ifndef ARM_WITHOUT_N8_LW
 	_ARM_IMP1(N8_LW)
 	{
+		int i = 0;
+		
+		//Read all M register from arm
+		for(i=0; i<_ARM_N8LW_REGM_SIZE; i++)
+		{
+			if((err = _armGetReg(arm, 'M', arm->_N8LW.regsM[i].reg, &arm->_N8LW.regsM[i].val)))
+				return err;
+			arm->_N8LW.regsM[i].newVal = arm->_N8LW.regsM[i].val;
+		}
+		
+		//Read all O register from arm
+		for(i=0; i<_ARM_N8LW_REGO_SIZE; i++)
+		{
+			if((err = _armGetReg(arm, 'O', arm->_N8LW.regsO[i].reg, &arm->_N8LW.regsO[i].val)))
+				return err;
+			arm->_N8LW.regsO[i].newVal = arm->_N8LW.regsO[i].val;
+		}
+		
+		#ifdef ARMPORT_WITH_nSLEEP
+			//Enable Wake up on the sleep pin
+			_ARM_REG8(N8LW, M, LOW_POWER) |=  _ARM_N8LW_REGM_LOW_POWER_ENABLE;
+		#else
+			//Disbale Wake up on the sleep pin
+			_ARM_REG8(N8LW, M, LOW_POWER) &=  ~_ARM_N8LW_REGM_LOW_POWER_ENABLE;
+		#endif
 	}
 	#endif
 	
@@ -1283,6 +1314,34 @@ void armSetLed(arm_t* arm, armLed_t led)
 		}
 	}
 	#endif
+	
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		_ARM_REG8(N8LW, M, LED) |= 	_ARM_N8LW_REGM_LED_BOOT 	|
+									_ARM_N8LW_REGM_LED_WAKEUP 	|
+									_ARM_N8LW_REGM_LED_RADIO_TX |
+									_ARM_N8LW_REGM_LED_RADIO_RX |
+									_ARM_N8LW_REGM_LED_DEFAULT_STATE;
+											
+		switch(led)
+		{
+			case ARM_LED_OFF:
+				_ARM_REG8(N8LW, M, LED) &=~(_ARM_N8LW_REGM_LED_BOOT 	|
+											_ARM_N8LW_REGM_LED_WAKEUP 	|
+											_ARM_N8LW_REGM_LED_RADIO_TX |
+											_ARM_N8LW_REGM_LED_RADIO_RX);
+			break;
+			
+			case ARM_LED_OFF_RF:
+				_ARM_REG8(N8LW, M, LED) &= ~_ARM_N8LW_REGM_LED_DEFAULT_STATE;
+			break;
+			
+			case ARM_LED_ON_RF:
+			break;
+		}
+	}
+	#endif
 }
 
 armLed_t armGetLed(arm_t* arm)
@@ -1295,8 +1354,20 @@ armLed_t armGetLed(arm_t* arm)
 			
 		if(_ARM_REG8(N8LPLD, H, ON_BOARD)&_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF)
 			return ARM_LED_OFF_RF;
-			
-		return ARM_LED_OFF;
+	}
+	#endif
+	
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(!(_ARM_REG8(N8LW, M, LED)&_ARM_N8LW_REGM_LED_DEFAULT_STATE))
+			return ARM_LED_OFF_RF;
+		
+		if(_ARM_REG8(N8LW, M, LED)&(_ARM_N8LW_REGM_LED_BOOT 	|
+									_ARM_N8LW_REGM_LED_WAKEUP 	|
+									_ARM_N8LW_REGM_LED_RADIO_TX |
+									_ARM_N8LW_REGM_LED_RADIO_RX))
+			return ARM_LED_ON_RF;
 	}
 	#endif
 	
@@ -1322,9 +1393,10 @@ armError_t armUpdateConfig(arm_t* arm)
 		//Registers changed found?
 		if(i<_ARM_N8LPLD_REGH_SIZE)
 		{
-			//Write S register changed to arm
 			if((err = _armGoAt(arm)))
 				return err;
+				
+			//Write S register changed to arm
 			for(; i<_ARM_N8LPLD_REGH_SIZE; i++)
 			{
 				//Set the new value if the value was changed. 
@@ -1361,17 +1433,86 @@ armError_t armUpdateConfig(arm_t* arm)
 	}
 	#endif
 	
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		armError_t err = ARM_ERR_NONE;
+		int im = 0;
+		int io = 0;
+		
+		//Find index of first registers M changed.
+		for(im=0; im<_ARM_N8LW_REGM_SIZE; im++)
+		{
+			if(arm->_N8LW.regsM[im].newVal != arm->_N8LW.regsM[im].val)
+				break;
+		}
+		
+		//Find index of first registers O changed.
+		for(io=0; io<_ARM_N8LW_REGO_SIZE; io++)
+		{
+			if(arm->_N8LW.regsO[io].newVal != arm->_N8LW.regsO[io].val)
+				break;
+		}
+		
+		//Registers changer ?
+		if((im<_ARM_N8LW_REGM_SIZE) || (io<_ARM_N8LW_REGO_SIZE))
+		{
+			if((err = _armGoAt(arm)))
+					return err;
+
+			//Registers M changed found?
+			if(im<_ARM_N8LW_REGM_SIZE)
+			{
+				//Write S register changed to arm
+				for(; im<_ARM_N8LW_REGM_SIZE; im++)
+				{
+					//Set the new value if the value was changed. 
+					if(arm->_N8LW.regsM[im].newVal != arm->_N8LW.regsM[im].val)
+					{
+						if((err = _armSetReg(arm, 'M', arm->_N8LW.regsM[im].reg, arm->_N8LW.regsM[im].newVal)))
+							return err;
+							
+						arm->_N8LW.regsM[im].val = arm->_N8LW.regsM[im].newVal;
+					}
+				}
+			}
+			
+			//Registers O changed found?
+			if(io<_ARM_N8LW_REGO_SIZE)
+			{
+				//Write S register changed to arm
+				for(; io<_ARM_N8LW_REGO_SIZE; io++)
+				{
+					//Set the new value if the value was changed. 
+					if(arm->_N8LW.regsO[io].newVal != arm->_N8LW.regsO[io].val)
+					{
+						if((err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal)))
+							return err;
+							
+						arm->_N8LW.regsO[io].val = arm->_N8LW.regsO[io].newVal;
+					}
+				}
+			}
+			
+			if((err = _armBackAt(arm)))
+				return err;
+		}
+		
+		return err;
+	}
+	#endif
+	
 	return ARM_ERR_BAD_TYPE;
 }
 
 ssize_t armSend(arm_t *arm, const void* buf, size_t nbyte)
 {
 	ssize_t nwrite = 0;
-	ssize_t n = 0;
 		
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
 	{
+		ssize_t n = 0;
 		int baud = 0;
 		
 		armGetRadio(arm, NULL, (armBaudrate_t*)&baud, NULL);
@@ -1476,7 +1617,7 @@ uint8_t* _armUintToStr(uint64_t val, uint8_t* str, uint8_t base, int n)
 		if(tmpDigit < 10)
 			str[nDigit] = '0'+tmpDigit;
 		else
-			str[nDigit] = 'a'+tmpDigit-10;
+			str[nDigit] = 'A'+tmpDigit-10;
 		
 		val /= base;
 		nDigit++;
@@ -1542,9 +1683,11 @@ uint64_t _armStrToUint(uint8_t* str, uint8_t base)
 ssize_t _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout)
 {
 	size_t nread = 0;
-	size_t i = 0;
 	int n = 0;
+	#ifndef ARM_WITHOUT_N8_LPLD
+	size_t i = 0;
 	int lfcount = 0;
+	#endif
 	
 	while(1)
 	{
@@ -1670,7 +1813,7 @@ armError_t _armBackAt(arm_t* arm)
 
 armError_t _armGetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t* val)
 {
-	uint8_t rbuf[16];
+	uint8_t rbuf[24];
 	ssize_t nread;
 	uint8_t* ptrrbuf = NULL;
 	uint8_t tbuf[8] = "AT";
@@ -1681,7 +1824,7 @@ armError_t _armGetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t* val)
 	tbuf[6] = '\r';
 	
 	//Write AT commend and read reply
-	nread = _armWriteRead(arm, tbuf, 7, rbuf, sizeof rbuf, _ARM_TIME_TIMEOUT);
+	nread = _armWriteRead(arm, tbuf, 7, rbuf, sizeof(rbuf)-1, _ARM_TIME_TIMEOUT);
 	if(nread < 0)
 		return ARM_ERR_PORT_WRITE_READ;
 		
@@ -1703,7 +1846,7 @@ armError_t _armGetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t* val)
 
 armError_t _armSetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t val)
 {
-	uint8_t rbuf[16];
+	uint8_t rbuf[24];
 	ssize_t nread;
 	uint8_t tbuf[10] = "AT";
 	

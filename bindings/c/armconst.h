@@ -163,12 +163,12 @@
 // Index M Registers
 #define _ARM_N8LW_IREGM_CONFIGURATION 			0
 #define _ARM_N8LW_IREGM_LOW_POWER 				1
-#define _ARM_N8LW_IREGM_CHANNEL1_LED 			2
+#define _ARM_N8LW_IREGM_LED			 			2
 
 // M Registers
 #define _ARM_N8LW_REGM_CONFIGURATION 			0
 #define _ARM_N8LW_REGM_LOW_POWER 				1
-#define _ARM_N8LW_REGM_CHANNEL1_LED 			2
+#define _ARM_N8LW_REGM_LED			 			2
 
 // Configuration (M000)
 #define	_ARM_N8LW_REGM_CONFIGURATION_TYPE_NETWORK		0x01
