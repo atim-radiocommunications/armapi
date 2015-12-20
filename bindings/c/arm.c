@@ -201,7 +201,7 @@ armError_t armReboot(arm_t* arm)
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
 	{
-		_ARM_REG8_INIT (N8LPLD, H, APPLICATION);
+		_ARM_REG8_INIT (N8LPLD, H, APPLICATION1);
 		_ARM_REG16_INIT(N8LPLD, H, CHANNEL1);
 		_ARM_REG8_INIT (N8LPLD, H, POWER);
 		_ARM_REG8_INIT (N8LPLD, H, RADIO_BAUDRATE);
@@ -211,6 +211,7 @@ armError_t armReboot(arm_t* arm)
 		_ARM_REG8_INIT (N8LPLD, H, SERIAL_STOPBIT);
 		_ARM_REG8_INIT (N8LPLD, H, ON_BOARD);
 		_ARM_REG16_INIT(N8LPLD, H, CHANNEL2);
+		_ARM_REG8_INIT (N8LPLD, H, APPLICATION5);
 		_ARM_REG8_INIT (N8LPLD, H, RSSI_LEVEL);
 		_ARM_REG16_INIT(N8LPLD, H, NSAMPLE);
 		_ARM_REG8_INIT (N8LPLD, H, USER_GAIN);
@@ -252,7 +253,7 @@ armError_t armReboot(arm_t* arm)
 		}
 		
 		//Set UART to RF Mode in Application register.
-		_ARM_REG8(N8LPLD, H, APPLICATION) = _ARM_N8LPLD_REGH_APPLICATION_UART_RF;
+		_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_RF;
 		#ifdef ARMPORT_WITH_nSLEEP
 			//Enable Wake up on the sleep pin
 			_ARM_REG8(N8LPLD, H, WAKE_UP_PWR) |=  _ARM_N8LPLD_REGH_WAKE_UP_PWR_INT0;
@@ -449,6 +450,90 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 	return err;
 }
 
+armError_t armSetMode(arm_t* arm, armMode_t mode)
+{
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP1(N8_LP)
+	{
+		if(mode == ARM_MODE_FSK)
+		{
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_RF;
+			return ARM_ERR_NONE;
+		}
+		
+		if(mode == ARM_MODE_SFX_NETWORK)
+		{
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX;
+			return ARM_ERR_NONE;
+		}
+	}
+	
+	_ARM_IMP1(N8_LD)
+	{
+		if(mode == ARM_MODE_FSK)
+			return ARM_ERR_NONE;
+	}
+	#endif
+	
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(mode == ARM_MODE_LORA_NETWORK)
+			return ARM_ERR_NONE;
+	}
+	#endif
+	
+	return ARM_ERR_NO_SUPORTED;
+}
+
+armMode_t armGetMode(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_RF)
+			return ARM_MODE_FSK;
+		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX)
+			return ARM_MODE_SFX_NETWORK;
+	}
+	#endif
+	
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return ARM_MODE_LORA_NETWORK;
+	}
+	#endif
+	
+	return ARM_MODE_FSK;
+}
+
+armError_t armSfxEnableDownlink(arm_t* arm, bool downlink)
+{
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP1(N8_LP)
+	{
+		if(downlink)
+			_ARM_REG8(N8LPLD, H, APPLICATION5) |= _ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+		else
+			_ARM_REG8(N8LPLD, H, APPLICATION5) &= ~_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+	}
+	#endif
+	
+	return ARM_ERR_NO_SUPORTED;
+}
+
+bool armSfxIsEnableDownlink(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LPLD
+	_ARM_IMP1(N8_LP)
+	{
+		return (_ARM_REG8(N8LPLD, H, APPLICATION5)&_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK)?true:false;
+	}
+	#endif
+	
+	return false;
+}
 //armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx)
 //{
 	//#ifndef ARM_WITHOUT_N8_LPLD

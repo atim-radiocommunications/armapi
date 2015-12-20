@@ -151,6 +151,17 @@ typedef enum
 	ARM_LBTAFA_LBTAFA,	//!< Enable Listen Before Talk and adaptive Frequency Agility, listen on the tow channels and talk on the free channels.
 }armLbtAfa_t;
 
+/*!	\brief Constant to define the working mode.
+ * 
+ * \see armSetMode()
+ */
+typedef enum
+{
+	ARM_MODE_FSK,				//!< Mode for a local radio.
+	ARM_MODE_SFX_NETWORK,		//!< Mode for Sigfox network.
+	ARM_MODE_LORA_NETWORK,		//!< Mode for Lora network (LoRaWan).
+}armMode_t;
+
 /*!	\brief Type of \b ARM
  * 
  * \see armInfo()
@@ -302,7 +313,11 @@ armError_t armReboot(arm_t* arm);
  */
 armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
-//armError_t armSetModulation(armModulation_t mod);
+armError_t armSetMode(arm_t* arm, armMode_t mode);
+armMode_t armGetMode(arm_t* arm);
+
+armError_t armSfxEnableDownlink(arm_t* arm, bool downlink);
+bool armSfxIsEnableDownlink(arm_t* arm);
 
 /////////////////////////////////*! \ingroup arm_send_receive_data_sigfox
  ////////////////////////////////* \brief Send message to Sigfox network.
