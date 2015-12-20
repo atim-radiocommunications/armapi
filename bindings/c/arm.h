@@ -154,8 +154,9 @@ typedef enum
 	ARM_LBTAFA_LBTAFA,	//!< Enable Listen Before Talk and adaptive Frequency Agility, listen on the tow channels and talk on the free channels.
 }armLbtAfa_t;
 
-/*!	\brief 
+/*!	\brief Type of \b ARM
  * 
+ * \see armInfo()
  */
 typedef enum
 {
@@ -210,6 +211,15 @@ typedef struct
 		armN8Lw_t 	_N8LW;
 	};
 }arm_t;
+
+/*!	\brief 128 bits variable type.
+ * 
+ */
+typedef struct
+{
+	uint64_t lsb;
+	uint64_t msb;
+}uint128_t;
 #endif
 
 // ---------------------------------------------------------------------
@@ -277,9 +287,9 @@ armError_t armReboot(arm_t* arm);
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param armType If the pointer is valid, The \b ARM type is set. The possible values is:
- * 	- ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version. 
- * 	- ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version. 
- * 	- ARM_TYPE_N8_LW For \b ARM Nano in 868MHz LoraWan version.
+ * 	- \ref ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version. 
+ * 	- \ref ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version. 
+ * 	- \ref ARM_TYPE_N8_LW For \b ARM Nano in 868MHz LoraWan version.
  * \param rev If the pointer is valid, the firmware version is copied.
  * This parameter must be a string buffer capacity equal or more of 16 bytes.
  * \param sn If the pointer is valid, the serial number is set. 
@@ -781,7 +791,8 @@ bool armIsEnableWakeUpUart(arm_t *arm);
  * 
  * \note This function is defined only if \b ARMPORT_WITH_nSLEEP is defined.
  * \note The sleep must be disable if the \b Wake \b Up \b Uart is disable
- * and you went call \ref armSend(), \ref armReceive(), \ref armUpdateConfig() or \ref armGetInfo().
+ * and you went call \ref armSend(), \ref armReceive(),
+ * \ref armGetInfo(), \ref armGetIds() or \ref armUpdateConfig()
  * 
  */
 void armSleep(arm_t* arm, bool sleep);
@@ -890,6 +901,34 @@ void armSetLed(arm_t* arm, armLed_t led);
  */
 armLed_t armGetLed(arm_t* arm);
 
+/*! \ingroup arm_n8_lw_ids
+ * \brief Get the IDs.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param devAddr If the pointer is valid, the \p devAddr is set.
+ * \param devEui If the pointer is valid, the \p devEui is set.
+ * \param appEui If the pointer is valid, the \p appEui is set.
+ * \param appKey If the pointer is valid, the \p appKey is set.
+ * \param nwkSKey If the pointer is valid, the \p nwkSKey is set.
+ * \param appSKey If the pointer is valid, the \p appSKey is set.
+ * 
+ * \return Error available:
+ * 	- \ref ARM_ERR_NONE If success.
+ * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
+ * 	- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
+ * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
+ * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 
+ */
+armError_t armGetIds(arm_t* arm, 	uint32_t* devAddr,
+									uint64_t* devEui,
+									uint64_t* appEui,
+									uint128_t* appKey,
+									uint128_t* nwkSKey,
+									uint128_t* appSKey);
+
 /*! \ingroup arm_init_various
  * \brief Update the configuration in \b ARM.
  * 
@@ -922,7 +961,7 @@ armError_t armUpdateConfig(arm_t* arm);
  * 
  * \warning You can use your method to write data to \b ARM (for example:
  * in interruption method), but you don't must influence on the behavior
- * of serial port when \ref armInit(), \ref armReboot(), \ref armGetInfo() or \ref armUpdateConfig() is call.
+ * of serial port when \ref armInit(), \ref armReboot(), \ref armGetInfo(), \ref armGetIds() or \ref armUpdateConfig() is call.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param buf The buffer.
@@ -945,7 +984,7 @@ ssize_t armSend(arm_t* arm, const void* buf, size_t nbyte);
  * 
  * \warning You can use your method to read data from \b ARM (for example:
  * in interruption method), but you don't must influence on the behavior
- * of serial port when \ref armInit(), \ref armReboot(), \ref armGetInfo() or \ref armUpdateConfig() is call.
+ * of serial port when \ref armInit(), \ref armReboot(), \ref armGetInfo(), \ref armGetIds() or \ref armUpdateConfig() is call.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param buf The buffer.

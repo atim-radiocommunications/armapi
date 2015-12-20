@@ -158,7 +158,21 @@
 // ---------------------------------------------------------------------
 
 // Other values
-#define _ARM_N8LW_MAX_POWER		14
+#define _ARM_N8LW_MAX_POWER			14
+
+// O Registers no saved in arm_t structure
+#define _ARM_N8LW_REGO_DEVADDR		0
+#define _ARM_N8LW_SIZE_DEVADDR		4
+#define _ARM_N8LW_REGO_DEVEUI		4
+#define _ARM_N8LW_SIZE_DEVEUI		8
+#define _ARM_N8LW_REGO_APPEUI		12
+#define _ARM_N8LW_SIZE_APPEUI		8
+#define _ARM_N8LW_REGO_APPKEY		20
+#define _ARM_N8LW_SIZE_APPKEY		16
+#define _ARM_N8LW_REGO_NWKSKEY		36
+#define _ARM_N8LW_SIZE_NWKSKEY		16
+#define _ARM_N8LW_REGO_APPSKEY		52
+#define _ARM_N8LW_SIZE_APPSKEY		16
 
 // Index M Registers
 #define _ARM_N8LW_IREGM_CONFIGURATION 			0

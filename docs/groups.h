@@ -100,6 +100,11 @@
  * 
  */
  
+/*! \defgroup arm_n8_lw_ids IDs
+ * \ingroup arm_n8_lw
+ * 
+ */
+ 
 /*! \defgroup arm_send_receive_data Send and receive data
  * \ingroup arm_n8_lpld
  * \ingroup arm_n8_lw

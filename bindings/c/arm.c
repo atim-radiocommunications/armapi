@@ -39,7 +39,7 @@
 
 // Time
 #define _ARM_TIME_RESET 				10		//10ms
-#define _ARM_TIME_TIMEOUT 				100		//100ms
+#define _ARM_TIME_TIMEOUT 				20		//20ms
 #define _ARM_TIME_BACK_AT				100		//100ms
 #define _ARM_TIME_SF_UPLINK_TIMEOUT		10000	//10s
 #define _ARM_TIME_SF_DOWNLINK_TIMEOUT	45000	//45s
@@ -1374,6 +1374,95 @@ armLed_t armGetLed(arm_t* arm)
 	return ARM_LED_OFF;
 }
 
+armError_t armGetIds(arm_t* arm, 	uint32_t* devAddr,
+									uint64_t* devEui,
+									uint64_t* appEui,
+									uint128_t* appKey,
+									uint128_t* nwkSKey,
+									uint128_t* appSKey)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		armError_t err = ARM_ERR_NONE;
+		int i;
+		
+		//Go to AT commend
+		err = _armGoAt(arm);
+		if(err != ARM_ERR_NONE)
+			return err;
+			
+		if(devAddr)
+		{
+			*devAddr = 0;
+			for(i=0; i<_ARM_N8LW_SIZE_DEVADDR; i++)
+			{
+				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVADDR, ((uint8_t*)devAddr)+i)))
+					return err;
+			}
+		}
+		
+		if(devEui)
+		{
+			*devEui = 0;
+			for(i=0; i<_ARM_N8LW_SIZE_DEVEUI; i++)
+			{
+				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVEUI, ((uint8_t*)devEui)+i)))
+					return err;
+			}
+		}
+		
+		if(appEui)
+		{
+			*appEui = 0;
+			for(i=0; i<_ARM_N8LW_SIZE_APPEUI; i++)
+			{
+				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPEUI, ((uint8_t*)appEui)+i)))
+					return err;
+			}
+		}
+		
+		if(appKey)
+		{
+			appKey->lsb = 0;
+			appKey->msb = 0;
+			for(i=0; i<_ARM_N8LW_SIZE_APPKEY; i++)
+			{
+				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPKEY, ((uint8_t*)appKey)+i)))
+					return err;
+			}
+		}
+			
+		if(nwkSKey)
+		{
+			nwkSKey->lsb = 0;
+			nwkSKey->msb = 0;
+			for(i=0; i<_ARM_N8LW_SIZE_NWKSKEY; i++)
+			{
+				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_NWKSKEY, ((uint8_t*)nwkSKey)+i)))
+					return err;
+			}
+		}
+
+		if(appSKey)
+		{
+			appSKey->lsb = 0;
+			appSKey->msb = 0;
+			for(i=0; i<_ARM_N8LW_SIZE_APPSKEY; i++)
+			{
+				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPSKEY, ((uint8_t*)appSKey)+i)))
+					return err;
+			}
+		}
+		
+		//Quit AT commend
+		return _armBackAt(arm);
+	}
+	#endif
+	
+	return ARM_ERR_BAD_TYPE;
+}
+
 armError_t armUpdateConfig(arm_t* arm)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
@@ -1654,8 +1743,6 @@ uint64_t _armStrToUint(uint8_t* str, uint8_t base)
 	//Convert digits
 	while(1)
 	{
-		
-		
 		if((*str >= '0') && (*str <= '9'))
 		{
 			val *= base;
