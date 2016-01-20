@@ -58,7 +58,7 @@
 
 #ifndef __DOXYGEN__
 	//Number of H registers for N8LPLD
-	#define _ARM_N8LPLD_REGH_SIZE 	25
+	#define _ARM_N8LPLD_REGH_SIZE 	26
 	//Number of M registers for N8LW
 	#define _ARM_N8LW_REGM_SIZE 	3
 	//Number of O registers for N8LW
