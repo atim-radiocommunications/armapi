@@ -75,7 +75,7 @@
 typedef enum
 {
 	ARM_ERR_NONE,					//!< No error.
-	ARM_ERR_NO_SUPORTED,			//!< Functionality no supported by the\b ARM.
+	ARM_ERR_NO_SUPPORTED,			//!< Functionality no supported by the\b ARM.
 
 	ARM_ERR_PORT_OPEN,				//!< Port Error, at the port opening.
 	ARM_ERR_PORT_CONFIG,			//!< Port Error, at the port configuring.
@@ -157,7 +157,7 @@ typedef enum
  */
 typedef enum
 {
-	ARM_MODE_FSK,				//!< Mode for a local radio.
+	ARM_MODE_LOCAL,				//!< Mode for local radio.
 	ARM_MODE_SFX_NETWORK,		//!< Mode for Sigfox network.
 	ARM_MODE_LORA_NETWORK,		//!< Mode for Lora network (LoRaWan).
 }armMode_t;
@@ -169,7 +169,7 @@ typedef enum
 typedef enum
 {
 	ARM_TYPE_NONE	= 0x01,	//!< No \b Arm type.
-	ARM_TYPE_N8_LP	= 0x02, //!< \b ARM Nano in 868MHz low power version. 
+	ARM_TYPE_N8_LP	= 0x02, //!< \b ARM Nano in 868MHz low power version (and Sigfox). 
 	ARM_TYPE_N8_LD	= 0x04, //!< \b ARM Nano in 868MHz long distance version. 
 	ARM_TYPE_N8_LW	= 0x08, //!< \b ARM Nano in 868MHz LoraWan version. 
 }armType_t;
@@ -234,10 +234,10 @@ typedef struct
 // Prototypes functions
 // ---------------------------------------------------------------------
 
-/*! \ingroup
+/*! 
  * \brief Initialize the structure, port and \b ARM.
  * 
- * This function must be call before call other function depend of the \ref arm_t structure.
+ * This function must be call before call other function depend of the \b arm_t structure.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param port Pointer to something which mean you serial port.
@@ -256,7 +256,7 @@ typedef struct
  */
 armError_t armInit(arm_t* arm, void* port);
 
-/*! \ingroup
+/*! 
  * \brief De-initialize the port.
  * 
  * \param arm Pointer to your \b ARM structure.
@@ -267,14 +267,14 @@ armError_t armInit(arm_t* arm, void* port);
  */
 armError_t armDeInit(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Reboot the \b ARM.
  * 
  * \param arm Pointer to your \b ARM structure.
  * 
  * \return Error available:
  * 		- \ref ARM_ERR_NONE If the reboot is success.
- * 		- \ref ARM_ERR_NO_SUPORTED If there is bad \b ARM type.
+ * 		- \ref ARM_ERR_NO_SUPPORTED If there is bad \b ARM type.
  * 			Probably the \b ARM structure is not initialized.
  * 			In this case you can call \ref armInit() and check the returned error.
  * 		- \ref ARM_ERR_PORT_CONFIG If the port can't is configured.
@@ -288,19 +288,19 @@ armError_t armDeInit(arm_t* arm);
  */
 armError_t armReboot(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Get information about the \b ARM.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param armType If the pointer is valid, The \b ARM type is set. The possible values is:
- * 	- \ref ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version. 
+ * 	- \ref ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version (and Sigfox). 
  * 	- \ref ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version. 
  * 	- \ref ARM_TYPE_N8_LW For \b ARM Nano in 868MHz LoraWan version.
  * \param rev If the pointer is valid, the firmware version is copied.
  * This parameter must be a string buffer capacity equal or more of 16 bytes.
- * \param sn If the pointer is valid, the serial number is set. 
+ * \param sn If the pointer is valid, the serial number is set.
  * This parameter is the ID Sigfox in the case where the \b ARM support the Sigfox Network.
  * \param rfFreq If the pointer is valid, the work frequency of your \b ARM is set.
  * \param rfPower If the pointer is valid, the max power supported by your \b ARM is set.
@@ -313,39 +313,75 @@ armError_t armReboot(arm_t* arm);
  */
 armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
+/*! 
+ * \brief Set the mode.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param mode The mode, the possible value:
+ * 	- \ref ARM_MODE_LOCAL To set the \b ARM in local radio mode.
+ * 	- \ref ARM_MODE_SFX_NETWORK To set the \b ARM in Sigfox network mode.
+ * 	- \ref ARM_MODE_LORA_NETWORK To set the \b ARM in Lora network (LoRaWan) mode.
+ * 
+ * \return Error available:
+ * - \ref ARM_ERR_NONE If successful.
+ * - \ref ARM_ERR_NO_SUPPORTED If you \b ARM don't support the mode.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armGetMode()
+ */
 armError_t armSetMode(arm_t* arm, armMode_t mode);
+
+/*! 
+ * \brief Get the mode.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return The Mode:
+ * 		- \ref ARM_MODE_LOCAL, Mode for local radio.
+ * 		- \ref ARM_MODE_SFX_NETWORK, Mode for Sigfox network.
+ * 		- \ref ARM_MODE_LORA_NETWORK, Mode for Lora network (LoRaWan).
+ * 
+ * \see armSetMode()
+ */
 armMode_t armGetMode(arm_t* arm);
 
-armError_t armSfxEnableDownlink(arm_t* arm, bool downlink);
+/*! 
+ * \brief Enable/Disable the Sigfox downlink.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable Sigfox downlink, false to disable.
+ * 
+ * \return Error available:
+ *	- \ref ARM_ERR_NONE If successful.
+ *	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * \warning In the case here Sigfox network is supporter by your \b ARM only on uplink, this
+ * function don't return error.
+ * 
+ * \see armSfxIsEnableDownlink()
+ */
+armError_t armSfxEnableDownlink(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if the Sigfox downlink is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the Sigfox downlink is enable or \e false if disable.
+ * 
+ * \see armSfxEnableDownlink()
+ */
 bool armSfxIsEnableDownlink(arm_t* arm);
 
-/////////////////////////////////*! \ingroup arm_send_receive_data_sigfox
- ////////////////////////////////* \brief Send message to Sigfox network.
- ////////////////////////////////* 
- ////////////////////////////////* \param arm Pointer to your \b ARM structure.
- ////////////////////////////////* \param bufTx The buffer of your data at send.
- ////////////////////////////////* \param nbyteTx The number byte to send. \b Strictly less than or equal to 12.
- ////////////////////////////////* \param bufRx The buffer of receive data, capacity's is must of 8 byte.
- ////////////////////////////////* You can pass \b NULL is you don't want the acknowledge from Sigfox.
- ////////////////////////////////* 
- ////////////////////////////////* \return Error available:
- ////////////////////////////////* 		- \ref ARM_ERR_NONE If the data have sent/receive correctly.
- ////////////////////////////////* 		- \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
- ////////////////////////////////* 		- \ref ARM_ERR_SIGFOX_SEND_RECEIVE If the data could not be send.
- ////////////////////////////////* 		- \ref ARM_ERR_SIGFOX_DATA If \b nbyte bigger than 12.
- ////////////////////////////////* 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
- ////////////////////////////////* 		- \ref ARM_ERR_PORT_READ If can't read through the port.
- ////////////////////////////////* 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- ////////////////////////////////* 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
- ////////////////////////////////* 
- ////////////////////////////////* \warning If \p bufRx is not \b NULL and your \b ARM don't support the Sigfox in
- ////////////////////////////////* downlink the \ref ARM_ERR_SIGFOX_SEND_RECEIVE is returned.
- ////////////////////////////////* 
- ////////////////////////////////* \todo Implement downlink.
- ////////////////////////////////*/
-////////////////////////////////armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx);
-
-/*! \ingroup
+/*! 
  * \brief Get The maximal possible power.
  * 
  * Get the maximal possible power of function channel and baudrate.
@@ -362,11 +398,15 @@ bool armSfxIsEnableDownlink(arm_t* arm);
  */
 int8_t armFskMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud);
 
-/*! \ingroup
+/*! 
  * \brief Setup the local radio configuration.
  * 
- * For more information, please consulate the main radio parameter page.
- * \todo Create the main parameter page.
+ * For more information, please consulate the local radio parameters page.
+ * \todo Create the local parameter page.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param channel The main radio channel.
@@ -389,30 +429,33 @@ int8_t armFskMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud);
  * - If you have a \b ARM in LD 'Long Distence' version the max value is 27 for 27dBm.
  * - If you have a \b ARM in LP 'Low Power' version the max value is 14 for 14dBm.
  * - The min value is -18 for -18dBm.
- * - You can passe the \ref ARM_POWER_AUTO value to set the max power according from the \p channel and \p baud parameter.
+ * - You can passe the \ref ARM_FSK_POWER_AUTO value to set the max power according from the \p channel and \p baud parameter.
  * In this case, you can choose the \p channel and \p baud value without worry the \p power value.
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * - \ref ARM_ERR_PARAM_INCOMPATIBLE The parameters of this function is link between them.
- * Is very important to chose the correct value. For more information, please consulate the main radio parameter page.
+ * Is very important to chose the correct value. For more information, please consulate the local radio parameter page.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
- * \todo Create the main parameter page.
  * 
  * \see armFskGetRadio()
  * \see armFskMaxRadioPower()
  */
 armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t power);
 
-/*! \ingroup
+/*! 
  * \brief Get the local radio configuration.
  * 
  * Please, for more information about parameter consult the documentation of the \ref  armFskSetRadio() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param channel If the pointer is valid, the \p channel is set.
@@ -423,8 +466,12 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
  */
 void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* power);
 
-/*! \ingroup
+/*! 
  * \brief Set the radio remote address.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param add Remote address of 0 to 255. The 255 value is used for \e broadcast, the
@@ -432,7 +479,7 @@ void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* 
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_ADDRESSING_NOT_ENABLE If the addressing is not enable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -443,10 +490,14 @@ void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* 
  */
 armError_t armFskSetRadioRemoteAdd(arm_t* arm, uint8_t add);
 
-/*! \ingroup
+/*! 
  * \brief Get the remote address.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return The remote address.
@@ -455,15 +506,19 @@ armError_t armFskSetRadioRemoteAdd(arm_t* arm, uint8_t add);
  */
 uint8_t armFskGetRadioRemoteAdd(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Set the radio local address.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param add Local address of 0 to 255.
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_ADDRESSING_NOT_ENABLE If the addressing is not enable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -474,10 +529,14 @@ uint8_t armFskGetRadioRemoteAdd(arm_t* arm);
  */
 armError_t armFskSetRadioLocalAdd(arm_t* arm, uint8_t add);
 
-/*! \ingroup
+/*! 
  * \brief Get the local address.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return The local address.
@@ -486,10 +545,14 @@ armError_t armFskSetRadioLocalAdd(arm_t* arm, uint8_t add);
  */
 uint8_t armFskGetRadioLocalAdd(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Enable/Disable \b Addressing.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Addressing or \e false to disable.
@@ -500,10 +563,14 @@ uint8_t armFskGetRadioLocalAdd(arm_t* arm);
  */
 void armFskEnableAddressing(arm_t* arm, bool enable);
 
-/*! \ingroup
+/*! 
  * \brief Get enable \b Addressing.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Addressing is enable or \e false if disable.
@@ -512,11 +579,15 @@ void armFskEnableAddressing(arm_t* arm, bool enable);
  */
 bool armFskIsEnableAddressing(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Enable/Disable \b CRC.
  * 
  * \warning This functions disable automatically the \b infinity \b mode.
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b CRC or \e false to disable.
@@ -528,10 +599,14 @@ bool armFskIsEnableAddressing(arm_t* arm);
  */
 void armFskEnableCrc(arm_t* arm, bool enable);
 
-/*! \ingroup
+/*! 
  * \brief Get enable \b CRC.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b CRC is enable or \e false if disable.
@@ -540,17 +615,21 @@ void armFskEnableCrc(arm_t* arm, bool enable);
  */
 bool armFskIsEnableCrc(arm_t* arm);
  
-/*! \ingroup
+/*! 
  * \brief Enable/Disable \b Infinity \b mode.
  * 
  * \warning This functions disable automatically the \b CRC.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Infinity \b mode or \e false to disable.
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_WOR_ENABLE If the WOR mode is enable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -560,10 +639,14 @@ bool armFskIsEnableCrc(arm_t* arm);
  */
 armError_t armFskEnableInfinityMode(arm_t* arm, bool enable);
 
-/*! \ingroup
+/*! 
  * \brief Get enable \b Infinity \b mode.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Infinity \b mode is enable or \e false if disable.
@@ -572,10 +655,14 @@ armError_t armFskEnableInfinityMode(arm_t* arm, bool enable);
  */
 bool armFskIsEnableInfinityMode(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Enable/Disable \b Whitening.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Whitening false to disable.
@@ -586,10 +673,14 @@ bool armFskIsEnableInfinityMode(arm_t* arm);
  */
 void armFskEnableWhitening(arm_t *arm, bool enable);
 
-/*! \ingroup
+/*! 
  * \brief Get enable \b Whitening.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Whitening is enable or \e false if disable.
@@ -598,12 +689,16 @@ void armFskEnableWhitening(arm_t *arm, bool enable);
  */
 bool armFskIsEnableWhitening(arm_t *arm);
 
-/*! \ingroup
+/*! 
  * \brief Setup serial port configuration.
  * 
  * \warning In the case or the port don't support one of below parameters,
  * this function don't return error. But, the error
  * \ref ARM_ERR_PORT_CONFIG will return to next call \ref armUpdateConfig().
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param baud The serial baudrate.
@@ -638,7 +733,7 @@ bool armFskIsEnableWhitening(arm_t *arm);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -648,11 +743,15 @@ bool armFskIsEnableWhitening(arm_t *arm);
  */
 armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t databits, armPortParity_t parity, armPortStopbit_t stopbit);
 
-/*! \ingroup
+/*! 
  * \brief Get the serial port configuration.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param baud If the pointer is valid, the \p baud is set. If \ref ARMPORT_BAUDRATE_NONE is set, there is probably a error.
@@ -662,9 +761,9 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * 
  * \see armSetSerial()
  */
- void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit);
+void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit);
 
-/*! \ingroup 
+/*!  
  * \brief Enable/Disable and configure the \b wake \b on \b radio mode.
  * 
  * \warning If \b ARMPORT_WITH_nSLEEP is not defined and the \p mode 
@@ -678,6 +777,10 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * \p mode is \ref ARM_WOR_CS the \p rssiLevel
  * is the same register in \b ARM, so if change this value with this function,
  * the \p rssiLevel value of the \b LBT is also modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * 
@@ -719,7 +822,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * 
  * \note You need to call \ref armUpdateConfig() for update the parameters in you \b ARM.\n
@@ -732,14 +835,18 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * \see armFskSetLbtAfaMode()
  * \see armSleep()
  */
- armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
+armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
 
-/*! \ingroup
+/*! 
  * \brief Get the \b wake \b on \b radio mode configuration.
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armFskSetWorMode() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param mode If the pointer is valid, the \p mode is set.
@@ -754,20 +861,24 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  * 
  * \see armFskSetWorMode()
  */
- void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
+void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
 
-/*! \ingroup
+/*! 
  * \brief Enable/Disable the \b Wake \b Up \b Uart.
  * 
  * \warning The \b Wake \b Up \b Uart don't supporter the serially baudrate
  * upper than 38400 bps. This function set the baudrate at 38400bps if necessary.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Wake \b Up \b Uart false to disable.
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_WOR_ENABLE This errors is returned if you went disable the \b Wake \b Up \b Uart (\p enable = false)
  * and the \b ARMPORT_WITH_nSLEEP is not define and the \b WOR is
  * enable in \ref ARM_WOR_CS or \ref ARM_WOR_PQT.
@@ -784,10 +895,14 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  */
 armError_t armEnableWakeUpUart(arm_t *arm, bool enable);
 
-/*! \ingroup
- * \brief Get enable \b Wake \b Up \b Uart.
+/*! 
+ * \brief Get if \b Wake \b Up \b Uart is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return \e true if the \b Wake \b Up \b Uart is enable or \e false if disable.
@@ -797,22 +912,27 @@ armError_t armEnableWakeUpUart(arm_t *arm, bool enable);
 bool armIsEnableWakeUpUart(arm_t *arm);
 
 #if defined ARMPORT_WITH_nSLEEP || defined __DOXYGEN__
-/*! \ingroup
+/*! 
  * \brief Enable/Disable sleep with pin.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param sleep \e true to enable sleep false to disable.
  * 
  * \note This function is defined only if \b ARMPORT_WITH_nSLEEP is defined.
  * \note The sleep must be disable if the \b Wake \b Up \b Uart is disable
- * and you went call \ref armSend(), \ref armReceive(),
+ * and you want call \ref armSend(), \ref armReceive(),
  * \ref armInfo(), \ref armLoraIds() or \ref armUpdateConfig()
  * 
  */
 void armSleep(arm_t* arm, bool sleep);
 #endif
  
-/*! \ingroup
+/*! 
  * \brief Enable/Disable and configure the \b Lbt&Afa mode.
  * 
  * \warning If you have the \b WOR mode enable (in \ref ARM_WOR_CS
@@ -820,6 +940,10 @@ void armSleep(arm_t* arm, bool sleep);
  * \p mode is not \ref ARM_LBTAFA_DISABLE the \p rssiLevel
  * is the same register in \b ARM, so if change this value with this function,
  * the \p rssiLevel value of the \b WOR mode is also modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * 
@@ -831,7 +955,7 @@ void armSleep(arm_t* arm, bool sleep);
  * on one channel of the two (\p channel in \ref armFskSetRadio() and \p channel2).
  * - \ref ARM_LBTAFA_LBTAFA To enable Listen Before Talk and
  * adaptive Frequency Agility, listen on the tow channels (\p channel in
- * \ref armSetRadio() and \p channel2) and talk on the free channels.
+ * \ref armFskSetRadio() and \p channel2) and talk on the free channels.
  * 
  * \param rssiLevel This parameter in dBm is used by \ref ARM_LBTAFA_AFA and
  * \ref ARM_LBTAFA_LBTAFA (the default value is -95) for define the
@@ -846,14 +970,14 @@ void armSleep(arm_t* arm, bool sleep);
  * 
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
- * - \ref ARM_ERR_NO_SUPORTED If your \b ARM don't support this function.
+ * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * - \ref ARM_ERR_PARAM_INCOMPATIBLE The parameter \p channel2 of this function is link
  * with the parameters of the function \ref armFskSetRadio(). Is very important to chose the correct value.
  * For more information, please consulate the main radio parameter page
  * and the documentation of \ref armFskSetRadio() function.
  * 
- * \note To configured the other radio parameters please call \ref armSFsketRadio() function.
+ * \note To configured the other radio parameters please call \ref armFskSetRadio() function.
  * \note You need to call \ref armUpdateConfig() for update the parameters in you \b ARM.
  * 
  * \see armFskGetLbtAfaMode()
@@ -863,12 +987,16 @@ void armSleep(arm_t* arm, bool sleep);
  */
 armError_t armFskSetLbtAfaMode(arm_t* arm, armLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2);
 
-/*! \ingroup
+/*! 
  * \brief Get the wake up on mode configuration.
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armFskSetLbtAfaMode() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param mode If the pointer is valid, the \p mode is set.
@@ -883,10 +1011,15 @@ armError_t armFskSetLbtAfaMode(arm_t* arm, armLbtAfa_t mode, int8_t rssiLevel, u
  */
 void armFskGetLbtAfaMode(arm_t* arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2);
 
-/*! \ingroup
+/*! 
  * \brief Set the \a LED behavior.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions in ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param led The behavior of the \a LED:
@@ -900,10 +1033,15 @@ void armFskGetLbtAfaMode(arm_t* arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint1
  */
 void armSetLed(arm_t* arm, armLed_t led);
 
-/*! \ingroup
+/*! 
  * \brief Get the \a LED behavior.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ *	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ *	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ *	- \b ARM_N8_LW, \b ARM Nano 868MHz in Lora Wan.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \return The behavior of the \a LED:
@@ -915,10 +1053,13 @@ void armSetLed(arm_t* arm, armLed_t led);
  */
 armLed_t armGetLed(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Get the IDs.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano 868MHz in Lora Wan.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param devAddr If the pointer is valid, the \p devAddr is set.
@@ -943,7 +1084,7 @@ armError_t armLoraIds(arm_t* arm, 	uint32_t* devAddr,
 									uint128_t* nwkSKey,
 									uint128_t* appSKey);
 
-/*! \ingroup
+/*! 
  * \brief Update the configuration in \b ARM.
  * 
  * None of parameters/modes previously configured, is no set in your \b ARM.
@@ -954,7 +1095,7 @@ armError_t armLoraIds(arm_t* arm, 	uint32_t* devAddr,
  * 
  * \return Error available:
  * 		- \ref ARM_ERR_NONE If success.
- * 		- \ref ARM_ERR_NO_SUPORTED If there is bad \b ARM type.
+ * 		- \ref ARM_ERR_NO_SUPPORTED If there is bad \b ARM type.
  * 			Probably the \b ARM structure is not initialized.
  * 			In this case you can call \ref armInit() and check the returned error.
  * 		- \ref ARM_ERR_PORT_CONFIG If the port can't is configured.
@@ -965,7 +1106,7 @@ armError_t armLoraIds(arm_t* arm, 	uint32_t* devAddr,
  */
 armError_t armUpdateConfig(arm_t* arm);
 
-/*! \ingroup
+/*! 
  * \brief Send data to \b ARM.
  * 
  * - In the case or the infinity mode is enable, this function send the data.
@@ -990,7 +1131,7 @@ armError_t armUpdateConfig(arm_t* arm);
  */
 ssize_t armSend(arm_t* arm, const void* buf, size_t nbyte);
 
-/*! \ingroup
+/*! 
  * \brief Receive data from \b ARM.
  * 
  * This function is exit when the timeout is achieved from the last receive

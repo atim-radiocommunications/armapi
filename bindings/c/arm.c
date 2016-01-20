@@ -455,7 +455,7 @@ armError_t armSetMode(arm_t* arm, armMode_t mode)
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP1(N8_LP)
 	{
-		if(mode == ARM_MODE_FSK)
+		if(mode == ARM_MODE_LOCAL)
 		{
 			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_RF;
 			return ARM_ERR_NONE;
@@ -470,8 +470,11 @@ armError_t armSetMode(arm_t* arm, armMode_t mode)
 	
 	_ARM_IMP1(N8_LD)
 	{
-		if(mode == ARM_MODE_FSK)
+		if(mode == ARM_MODE_LOCAL)
+		{
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_RF;
 			return ARM_ERR_NONE;
+		}
 	}
 	#endif
 	
@@ -483,7 +486,7 @@ armError_t armSetMode(arm_t* arm, armMode_t mode)
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 armMode_t armGetMode(arm_t* arm)
@@ -492,7 +495,7 @@ armMode_t armGetMode(arm_t* arm)
 	_ARM_IMP2(N8_LP, N8_LD)
 	{
 		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_RF)
-			return ARM_MODE_FSK;
+			return ARM_MODE_LOCAL;
 		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX)
 			return ARM_MODE_SFX_NETWORK;
 	}
@@ -505,22 +508,24 @@ armMode_t armGetMode(arm_t* arm)
 	}
 	#endif
 	
-	return ARM_MODE_FSK;
+	return ARM_MODE_LOCAL;
 }
 
-armError_t armSfxEnableDownlink(arm_t* arm, bool downlink)
+armError_t armSfxEnableDownlink(arm_t* arm, bool enable)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP1(N8_LP)
 	{
-		if(downlink)
+		if(enable)
 			_ARM_REG8(N8LPLD, H, APPLICATION5) |= _ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
 		else
 			_ARM_REG8(N8LPLD, H, APPLICATION5) &= ~_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+			
+		return ARM_ERR_NONE;
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 bool armSfxIsEnableDownlink(arm_t* arm)
@@ -534,76 +539,6 @@ bool armSfxIsEnableDownlink(arm_t* arm)
 	
 	return false;
 }
-//armError_t armDataToSigfox(arm_t* arm, const uint8_t* bufTx, size_t nbyteTx, uint8_t* bufRx)
-//{
-	//#ifndef ARM_WITHOUT_N8_LPLD
-	//_ARM_IMP1(N8_LP)
-	//{
-		//armError_t err1 = ARM_ERR_NONE;
-		//armError_t err2 = ARM_ERR_NONE;
-		//size_t i = 0;
-		//ssize_t nread;
-		//uint8_t _buf[32] = "AT$SF=";
-		
-		////Check size
-		//if(nbyteTx > _ARM_SIGFOX_PAYLOAD_MAX)
-			//return ARM_ERR_SIGFOX_DATA;
-			
-		////Converter bufTx to acii
-		//for(i=0; i<nbyteTx; i++)
-			//_armUintToStr(bufTx[i], _buf+6+i*2, _ARM_BASE_HEX, 2);
-			
-		////Frame in Rx mode ?
-		//if(bufRx)
-		//{
-			//_buf[6+i*2] = ',';
-			//_buf[7+i*2] = '1';
-			//i++;
-		//}
-		//_buf[6+i*2] = '\r';
-			
-		////Go to AT
-		//err1 = _armGoAt(arm);
-		//if(err1 != ARM_ERR_NONE)
-			//return err1;
-		
-		////Write AT commend and read reply
-		//nread = _armWriteRead(arm, _buf, 6+i*2+1, _buf, sizeof _buf, _ARM_TIME_TIMEOUT);
-		//if(nread < 0)
-			//return ARM_ERR_PORT_WRITE_READ;
-			
-		////Read/Wait response
-		//nread = _armRead(arm, _buf, sizeof _buf, bufRx?_ARM_TIME_SF_DOWNLINK_TIMEOUT:_ARM_TIME_SF_UPLINK_TIMEOUT);
-		//if(nread < 0)
-			//return ARM_ERR_PORT_READ;
-			
-		////Check the message if downlink
-		//if(bufRx)
-		//{
-			//uint8_t* pbuf = memmem(_buf, nread, "+RX=", 2);
-			//if(pbuf == NULL)
-				//err1 = ARM_ERR_SIGFOX_SEND_RECEIVE;
-			//else //Convert data from ASCII value
-				//*((uint64_t*)bufRx) = _armStrToUint(pbuf+4, _ARM_BASE_HEX);
-		//}
-		//else //Check the message if uplink
-		//{
-			//if(memmem(_buf, nread, "OK", 2) == NULL)
-				//err1 = ARM_ERR_SIGFOX_SEND_RECEIVE;
-		//}
-
-		////Back AT
-		//err2 = _armBackAt(arm);
-		
-		//if(err2 != ARM_ERR_NONE)
-			//return err2;
-		
-		//return err1;
-	//}
-	//#endif
-	
-	//return ARM_ERR_NO_SUPORTED;
-//}
 
 int8_t armFskMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud)
 {
@@ -692,7 +627,7 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* power)
@@ -776,7 +711,7 @@ armError_t armFskSetRadioRemoteAdd(arm_t *arm, uint8_t add)
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 uint8_t armFskGetRadioRemoteAdd(arm_t *arm)
@@ -805,7 +740,7 @@ armError_t armFskSetRadioLocalAdd(arm_t *arm, uint8_t add)
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 uint8_t armFskGetRadioLocalAdd(arm_t *arm)
@@ -905,7 +840,7 @@ armError_t armFskEnableInfinityMode(arm_t *arm, bool enable)
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 bool armFskIsEnableInfinityMode(arm_t *arm)
@@ -1026,7 +961,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit)
@@ -1185,7 +1120,7 @@ armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble)
@@ -1262,7 +1197,7 @@ armError_t armEnableWakeUpUart(arm_t *arm, bool enable)
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 bool armIsEnableWakeUpUart(arm_t *arm)
@@ -1334,7 +1269,7 @@ armError_t armFskSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, u
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 void armFskGetLbtAfaMode(arm_t *arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2)
@@ -1545,7 +1480,7 @@ armError_t armLoraIds(arm_t* arm, 	uint32_t* devAddr,
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 armError_t armUpdateConfig(arm_t* arm)
@@ -1676,7 +1611,7 @@ armError_t armUpdateConfig(arm_t* arm)
 	}
 	#endif
 	
-	return ARM_ERR_NO_SUPORTED;
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 ssize_t armSend(arm_t *arm, const void* buf, size_t nbyte)
