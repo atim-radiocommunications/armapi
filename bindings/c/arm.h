@@ -1110,12 +1110,12 @@ void armLwGetRadio(arm_t* arm, uint8_t* txChannel, uint8_t* power, uint8_t* txSf
  * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * \param arm Pointer to your \b ARM structure.
- * \param port the value available:
+ * \param nbFrame the value available:
  * 	- 0: Enable \e unconfirmed frame, will use LoRaWan default value,
  * can be adapt by gateway with MacCommand.
  * 	- -1 down -15: Enable \e unconfirmed frame, send unconfirmed frame of 1 up to 15.
  * You can use the \ref ARM_LW_UNCONFIRMED() macro to set a positive value.
- * 	- 1 to 15 : Enable \e confirmed frame, send unconfirmed frame of 1 up to 15.
+ * 	- 1 to 15 : Enable \e confirmed frame, send confirmed frame of 1 up to 15.
  * 
  * \return Error available:
  * 	- \ref ARM_ERR_NONE If successful.
@@ -1166,7 +1166,7 @@ armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame);
  * or (this is same thing):
  * \code
  * int8_t nbFrame = armLwGetConfirmedFrame(&myArm);
- * if(ARM_LW_IS_UNCONFIRMED(nbFrame))
+ * if(nbFrame <= 0)
  * {
  * 		nbFrame = -1*nbFrame);
  * 		//...
@@ -1210,7 +1210,7 @@ void armLwSetPortField(arm_t* arm, uint8_t port);
  * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * \param arm Pointer to your \b ARM structure.
- * \return The rport field.
+ * \return The port field.
  * 
  * \see armLwSetPortField()
  */
@@ -1228,7 +1228,7 @@ uint8_t armLwGetPortField(arm_t* arm);
  * \param enable \e true to enable \b Over \b The \b Air \b Activation or \e false to disable.
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
- * The \b ARM will be restart if necessary to call \ref armUpdateConfig().
+ * The \b ARM will be restart if necessary.
  * 
  * \see armLwIsEnableOtaa()
  */
@@ -1259,7 +1259,7 @@ bool armLwIsEnableOtaa(arm_t* arm);
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Rx \b windows or \e false to disable.
- * If the case or the \p enable is true, the \b ARM will ignore the parameters \p rx2Sf and \p rx2Channel of the function 
+ * In the case where \p enable is true, the \b ARM will ignore the parameters \p rx2Sf and \p rx2Channel of the function 
  * \ref armLwSetRadio().
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -1293,7 +1293,7 @@ bool armLwIsEnableRxWindows(arm_t* arm);
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Tx \b Adaptive \b Speed or \e false to disable.
- * If the case or the \p enable is true, the \b ARM will ignore the parameters \p power and \p txSf of the function 
+ * In the case where \p enable is true, the \b ARM will ignore the parameters \p power and \p txSf of the function 
  * \ref armLwSetRadio().
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -1360,7 +1360,7 @@ bool armLwIsEnableDutyCycle(arm_t* arm);
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Tx \b Adaptive \b Channel or \e false to disable.
- * If the case or the \p enable is true, the \b ARM will ignore the parameter \p txChannel of the function 
+ * In the case where \p enable is true, the \b ARM will ignore the parameter \p txChannel of the function 
  * \ref armLwSetRadio().
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
@@ -1394,7 +1394,7 @@ bool armLwIsEnableTxAdaptiveChannel(arm_t* arm);
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param enable \e true to enable \b Rx2 windows \b Adaptive or \e false to disable.
- * If the case or the \p enable is true, the \b ARM will ignore the parameter \p rx2Sf and \p rx2Channel 
+ * In the case where \p enable is true, the \b ARM will ignore the parameter \p rx2Sf and \p rx2Channel 
  * of the function \ref armLwSetRadio().
  * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
