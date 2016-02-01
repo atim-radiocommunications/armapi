@@ -233,6 +233,13 @@ armError_t armReboot(arm_t* arm)
 		_ARM_REG8_INIT (N8LW, M, CONFIGURATION);
 		_ARM_REG8_INIT (N8LW, M, LOW_POWER);
 		_ARM_REG8_INIT (N8LW, M, LED);
+		
+		_ARM_REG8_INIT (N8LW, O, TXRX2_SF);
+		_ARM_REG8_INIT (N8LW, O, POWER);
+		_ARM_REG8_INIT (N8LW, O, TXRX2_CHANNEL);
+		_ARM_REG8_INIT (N8LW, O, CONFIRMED_FRAME);
+		_ARM_REG8_INIT (N8LW, O, PORT_FIELD);
+		_ARM_REG8_INIT (N8LW, O, CONFIG);
 	}
 	#endif
 	
@@ -1051,7 +1058,7 @@ void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databi
 	#endif
 }
 
-armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble)
+armError_t armFskSetWorMode(arm_t* arm, armFskWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble)
 {	
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
@@ -1064,7 +1071,7 @@ armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint
 		_ARM_REG8(N8LPLD, H, SETTING1) &= ~_ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE;
 		
 		//Return if disable mode.
-		if(mode == ARM_WOR_DISABLE)
+		if(mode == ARM_FSK_WOR_DISABLE)
 			return ARM_ERR_NONE;
 
 		//periodTime out of rang?
@@ -1082,7 +1089,7 @@ armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint
 		_ARM_REG8(N8LPLD, H, POST_TIME) = postTime/10;
 		
 		//Enable long preamble?
-		if(mode == ARM_WOR_LP)
+		if(mode == ARM_FSK_WOR_LP)
 		{
 			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE;
 			return ARM_ERR_NONE;
@@ -1100,7 +1107,7 @@ armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint
 		#endif
 		
 		//Set WOR in CS 'Carrier Sense'?
-		if(mode == ARM_WOR_CS)
+		if(mode == ARM_FSK_WOR_CS)
 		{
 			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_WOR_CS;
 			
@@ -1126,7 +1133,7 @@ armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint
 	return ARM_ERR_NO_SUPPORTED;
 }
 
-void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble)
+void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
@@ -1139,15 +1146,15 @@ void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t
 			{
 				//WOR in CS 'Carrier Sense'?
 				if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_WOR_CS)
-					*mode = ARM_WOR_CS;
+					*mode = ARM_FSK_WOR_CS;
 				else//WOR in PQT 'Preamble Quality Threshold'?
-					*mode = ARM_WOR_PQT;
+					*mode = ARM_FSK_WOR_PQT;
 			}
 			//long preamble is enable? 
 			else if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_LONG_PREAMBLE)
-				*mode = ARM_WOR_LP;
+				*mode = ARM_FSK_WOR_LP;
 			else //WOR is disable?
-				*mode = ARM_WOR_DISABLE;
+				*mode = ARM_FSK_WOR_DISABLE;
 		}
 		
 		//Get post time
@@ -1222,7 +1229,7 @@ void armSleep(arm_t* arm, bool sleep)
 }
 #endif
 
-armError_t armFskSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2)
+armError_t armFskSetLbtAfaMode(arm_t *arm, armFskLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
@@ -1232,7 +1239,7 @@ armError_t armFskSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, u
 		int8_t maxPower;
 		
 		//Disable LBT&AFA mode?
-		if(mode == ARM_LBTAFA_DISABLE)
+		if(mode == ARM_FSK_LBTAFA_DISABLE)
 		{
 			_ARM_REG8(N8LPLD, H, SETTING1) &= (_ARM_N8LPLD_REGH_SETTING1_LBT|_ARM_N8LPLD_REGH_SETTING1_AFA);
 			return ARM_ERR_NONE;
@@ -1259,7 +1266,7 @@ armError_t armFskSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, u
 		_ARM_REG16_SET(N8LPLD, H, NSAMPLE, nSamples);
 		
 		//Enable AFA mode?
-		if(mode == ARM_LBTAFA_LBTAFA)
+		if(mode == ARM_FSK_LBTAFA_LBTAFA)
 		{
 			//Set AFA mode
 			_ARM_REG8(N8LPLD, H, SETTING1) |= _ARM_N8LPLD_REGH_SETTING1_AFA;
@@ -1275,7 +1282,7 @@ armError_t armFskSetLbtAfaMode(arm_t *arm, armLbtAfa_t mode, int8_t rssiLevel, u
 	return ARM_ERR_NO_SUPPORTED;
 }
 
-void armFskGetLbtAfaMode(arm_t *arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2)
+void armFskGetLbtAfaMode(arm_t *arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2)
 {
 	#ifndef ARM_WITHOUT_N8_LPLD
 	_ARM_IMP2(N8_LP, N8_LD)
@@ -1288,12 +1295,12 @@ void armFskGetLbtAfaMode(arm_t *arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint1
 			{
 				//AFA is enable?
 				if(_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_AFA)
-					*mode = ARM_LBTAFA_LBTAFA;
+					*mode = ARM_FSK_LBTAFA_LBTAFA;
 				else
-					*mode = ARM_LBTAFA_LBT;
+					*mode = ARM_FSK_LBTAFA_LBT;
 			}
 			else
-				*mode = ARM_LBTAFA_DISABLE;
+				*mode = ARM_FSK_LBTAFA_DISABLE;
 		}
 		
 		//Get rssi level
@@ -1397,7 +1404,395 @@ armLed_t armGetLed(arm_t* arm)
 	return ARM_LED_OFF;
 }
 
-armError_t armLoraIds(arm_t* arm, 	uint32_t* devAddr,
+armError_t armLwSetRadio(arm_t* arm, uint8_t txChannel, uint8_t power, uint8_t txSf, uint8_t rx2Sf, uint8_t rx2Channel)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		//Check if txChannel is out of range
+		if(txChannel > 9)
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+			
+		//Check if txSf is out of range
+		if((txSf != 0) && ((txSf < 7) || (txSf > 12)))
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+			
+		//Check if txSf is out of range
+		if((rx2Sf != 0) && ((rx2Sf < 7) || (rx2Sf > 12)))
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+			
+		//Check if rx2Channel is out of range
+		if(rx2Channel > 9)
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+			
+		//Set power?
+		if(power != 0)
+		{
+			uint8_t regPower = _ARM_REG8(N8LW, O, POWER) &= ~0x07;
+			
+			//Set parameter
+			switch(power)
+			{
+				case 2:
+					regPower |= _ARM_N8LW_REGO_POWER_2;
+				break;
+				
+				case 5:
+					regPower |= _ARM_N8LW_REGO_POWER_5;
+				break;
+				
+				case 8:
+					regPower |= _ARM_N8LW_REGO_POWER_8;
+				break;
+				
+				case 11:
+					regPower |= _ARM_N8LW_REGO_POWER_11;
+				break;
+				
+				case 14:
+					regPower |= _ARM_N8LW_REGO_POWER_14;
+				break;
+				
+				default:
+					return ARM_ERR_PARAM_OUT_OF_RANGE;
+				break;
+			}
+			_ARM_REG8(N8LW, O, POWER) = regPower;
+			
+			//Disable Tx Adaptive Speed
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_SPEED;
+		}
+
+		//Set txChannel?
+		if(txChannel != 0)
+		{
+			//Set parameter
+			txChannel -= 1;
+			_ARM_REG8(N8LW, O, TXRX2_CHANNEL) &= ~0x0f;
+			_ARM_REG8(N8LW, O, TXRX2_CHANNEL) |= txChannel;
+			
+			//Disable Adaptive Channel
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_CHANNEL;
+		}
+		
+		//Set txSf?
+		if(txSf != 0)
+		{
+			//Set parameter
+			_ARM_REG8(N8LW, O, TXRX2_SF) &= ~0x07;
+			_ARM_REG8(N8LW, O, TXRX2_SF) |= 12-txSf;
+			
+			//Disable Tx Adaptive Speed
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_SPEED;
+		}
+		
+		//Set rx2Sf?
+		if(rx2Sf != 0)
+		{
+			//Set parameter
+			_ARM_REG8(N8LW, O, TXRX2_SF) &= ~(0x07<<3);
+			_ARM_REG8(N8LW, O, TXRX2_SF) |= (12-rx2Sf)<<3;
+			
+			//Disable rx2 Adaptive
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_RX2;
+		}
+		
+		//Set rx2Channel?
+		if(rx2Channel != 0)
+		{
+			//Set parameter
+			rx2Channel -= 1;
+			_ARM_REG8(N8LW, O, TXRX2_CHANNEL) &= ~0xf0;
+			_ARM_REG8(N8LW, O, TXRX2_CHANNEL) |= rx2Channel<<4;
+			
+			//Disable rx2 Adaptive
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_RX2;
+		}
+		
+		return ARM_ERR_NONE;
+	}
+	#endif
+	
+	return ARM_ERR_NO_SUPPORTED;
+}
+
+void armLwGetRadio(arm_t* arm, uint8_t* txChannel, uint8_t* power, uint8_t* txSf, uint8_t* rx2Sf, uint8_t* rx2Channel)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{	
+		//Get txChannel
+		if(txChannel)
+		{
+			*txChannel = _ARM_REG8(N8LW, O, TXRX2_CHANNEL)&0x0f;
+			*txChannel += 1;
+		}
+		
+		//Get power
+		if(power)
+		{
+			switch(_ARM_REG8(N8LW, O, POWER)&0x07)
+			{
+				case _ARM_N8LW_REGO_POWER_14:
+					*power = 14;
+				break;
+				
+				case _ARM_N8LW_REGO_POWER_11:
+					*power = 11;
+				break;
+				
+				case _ARM_N8LW_REGO_POWER_8:
+					*power = 8;
+				break;
+				
+				case _ARM_N8LW_REGO_POWER_5:
+					*power = 5;
+				break;
+				
+				case _ARM_N8LW_REGO_POWER_2:
+					*power = 2;
+				break;
+				
+				default:
+					*power = 0;
+				break;
+			}
+		}
+		
+		//Get txSf
+		if(txSf)
+		{
+			*txSf = _ARM_REG8(N8LW, O, TXRX2_SF)&0x07;
+			*txSf = 12-(*txSf);
+		}
+		
+		//Get rx2Sf
+		if(rx2Sf)
+		{
+			*rx2Sf = (_ARM_REG8(N8LW, O, TXRX2_SF)>>3)&0x07;
+			*rx2Sf = 12-(*rx2Sf);
+		}
+		
+		//Get rx2Channel
+		if(rx2Channel)
+		{
+			*rx2Channel = (_ARM_REG8(N8LW, O, TXRX2_CHANNEL)>>4)&0x0f;
+			*rx2Channel += 1;
+		}
+	}
+	#endif
+}
+
+armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		//Check if out of range
+		if((nbFrame <= 15) && (nbFrame >= -15))
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+		
+		//Set the value
+		if(ARM_LW_IS_UNCONFIRMED(nbFrame))
+			_ARM_REG8(N8LW, O, CONFIRMED_FRAME) = ARM_LW_UNCONFIRMED(nbFrame);
+		else
+			_ARM_REG8(N8LW, O, CONFIRMED_FRAME) = nbFrame<<4;
+			
+		return ARM_ERR_NONE;
+	}
+	#endif
+	
+	return ARM_ERR_NO_SUPPORTED;
+}
+
+int8_t armLwGetConfirmedFrame(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(_ARM_REG8(N8LW, O, CONFIRMED_FRAME)&0x0f) //Is unconfirmed?
+			return ARM_LW_UNCONFIRMED(_ARM_REG8(N8LW, O, CONFIRMED_FRAME));
+		else //Is confirmed?
+			return _ARM_REG8(N8LW, O, CONFIRMED_FRAME)>>4;
+	}
+	#endif
+	
+	return 0;
+}
+
+void armLwSetPortField(arm_t* arm, uint8_t port)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		_ARM_REG8(N8LW, O, PORT_FIELD) = port;
+	}
+	#endif
+}
+
+uint8_t armLwGetPortField(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return _ARM_REG8(N8LW, O, PORT_FIELD);
+	}
+	#endif
+	
+	return 0;
+}
+
+void armLwEnableOtaa(arm_t* arm, bool enable)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(enable)
+			_ARM_REG8(N8LW, O, CONFIG) |= _ARM_N8LW_REGO_CONFIG_OTAA;
+		else
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_OTAA;
+	}
+	#endif
+}
+
+bool armLwIsEnableOtaa(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (_ARM_REG8(N8LW, O, CONFIG)&_ARM_N8LW_REGO_CONFIG_OTAA)?true:false;
+	}
+	#endif
+	
+	return false;
+}
+
+void armLwEnableRxWindows(arm_t* arm, bool enable)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(enable)
+			_ARM_REG8(N8LW, O, CONFIG) |= _ARM_N8LW_REGO_CONFIG_RX_ON;
+		else
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_RX_ON;
+	}
+	#endif
+}
+
+bool armLwIsEnableRxWindows(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (_ARM_REG8(N8LW, O, CONFIG)&_ARM_N8LW_REGO_CONFIG_RX_ON)?true:false;
+	}
+	#endif
+	
+	return false;
+}
+
+void armLwEnableTxAdaptiveSpeed(arm_t* arm, bool enable)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(enable)
+			_ARM_REG8(N8LW, O, CONFIG) |= _ARM_N8LW_REGO_CONFIG_ADAPTIVE_SPEED;
+		else
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_SPEED;
+	}
+	#endif
+}
+
+bool armLwIsEnableTxAdaptiveSpeed(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (_ARM_REG8(N8LW, O, CONFIG)&_ARM_N8LW_REGO_CONFIG_ADAPTIVE_SPEED)?true:false;
+	}
+	#endif
+	
+	return false;
+}
+
+void armLwEnableDutyCycle(arm_t* arm, bool enable)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(enable)
+			_ARM_REG8(N8LW, O, CONFIG) |= _ARM_N8LW_REGO_CONFIG_DUTY_CYCLE;
+		else
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_DUTY_CYCLE;
+	}
+	#endif
+}
+
+bool armLwIsEnableDutyCycle(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (_ARM_REG8(N8LW, O, CONFIG)&_ARM_N8LW_REGO_CONFIG_DUTY_CYCLE)?true:false;
+	}
+	#endif
+	
+	return false;
+}
+
+void armLwEnableTxAdaptiveChannel(arm_t* arm, bool enable)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(enable)
+			_ARM_REG8(N8LW, O, CONFIG) |= _ARM_N8LW_REGO_CONFIG_ADAPTIVE_CHANNEL;
+		else
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_CHANNEL;
+	}
+	#endif
+}
+
+bool armLwIsEnableTxAdaptiveChannel(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (_ARM_REG8(N8LW, O, CONFIG)&_ARM_N8LW_REGO_CONFIG_ADAPTIVE_CHANNEL)?true:false;
+	}
+	#endif
+	
+	return false;
+}
+
+void armLwEnableRx2Adaptive(arm_t* arm, bool enable)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		if(enable)
+			_ARM_REG8(N8LW, O, CONFIG) |= _ARM_N8LW_REGO_CONFIG_ADAPTIVE_RX2;
+		else
+			_ARM_REG8(N8LW, O, CONFIG) &= ~_ARM_N8LW_REGO_CONFIG_ADAPTIVE_RX2;
+	}
+	#endif
+}
+
+bool armLwIsEnableRx2Adaptive(arm_t* arm)
+{
+	#ifndef ARM_WITHOUT_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (_ARM_REG8(N8LW, O, CONFIG)&_ARM_N8LW_REGO_CONFIG_ADAPTIVE_RX2)?true:false;
+	}
+	#endif
+	
+	return false;
+}
+
+armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 									uint64_t* devEui,
 									uint64_t* appEui,
 									uint128_t* appKey,
@@ -1551,6 +1946,26 @@ armError_t armUpdateConfig(arm_t* arm)
 		armError_t err = ARM_ERR_NONE;
 		int im = 0;
 		int io = 0;
+		
+		//Enable or Disable OTAA?
+		if(	(arm->_N8LW.regsO[_ARM_N8LW_IREGO_CONFIG].newVal&_ARM_N8LW_REGO_CONFIG_OTAA) !=
+			(arm->_N8LW.regsO[_ARM_N8LW_IREGO_CONFIG].val&_ARM_N8LW_REGO_CONFIG_OTAA))
+		{
+			//Go to at commend.
+			if((err = _armGoAt(arm)))
+				return err;
+				
+			//Enable or Disable OTAA
+			io = _ARM_N8LW_IREGO_CONFIG;
+			if((err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal)))
+				return err;
+							
+			//Save the configuration.
+			
+			//Reboot the ARM
+			if((err = armReboot(arm)))
+				return err;
+		}
 		
 		//Find index of first registers M changed.
 		for(im=0; im<_ARM_N8LW_REGM_SIZE; im++)

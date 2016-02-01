@@ -48,13 +48,25 @@
  * 
  * 	Value for parameter \ref armFskSetRadioRemoteAdd() function.
  */
-#define ARM_FSK_BROADCAST 		255
+#define ARM_FSK_BROADCAST 			255
 
 /*!	\brief Constant to define the auto power value.
  * 
  * 	Value for parameter \p power of \ref armFskSetRadioRemoteAdd() function.
  */
-#define ARM_FSK_POWER_AUTO		-127
+#define ARM_FSK_POWER_AUTO			(-127)
+
+/*!	\brief 
+ * 
+ * 	
+ */
+#define ARM_LW_UNCONFIRMED(val)		((-1)*(val))
+
+/*!	\brief 
+ * 
+ * 	
+ */
+#define ARM_LW_IS_UNCONFIRMED(val)	((val)<=0)
 
 #ifndef __DOXYGEN__
 	//Number of H registers for N8LPLD
@@ -62,7 +74,7 @@
 	//Number of M registers for N8LW
 	#define _ARM_N8LW_REGM_SIZE 	3
 	//Number of O registers for N8LW
-	#define _ARM_N8LW_REGO_SIZE 	1
+	#define _ARM_N8LW_REGO_SIZE 	6
 #endif //__DOXYGEN__
 
 // ---------------------------------------------------------------------
@@ -120,13 +132,13 @@ typedef enum
  */
 typedef enum
 {
-	ARM_WOR_DISABLE,	//!< Disable WOR mode.
-	ARM_WOR_LP,			//!< Enable long preamble for the transmitter, then wake up the receptor.
-	ARM_WOR_CS,			//!< Enable WOR mode in 'Carrier Sense'.
-						//!< \note The \b ARM is wake up on level rssi (choose this mode for speed).
-	ARM_WOR_PQT			//!< Enable WOR mode in 'Preamble Quality Threshold'.
-						//!< \note The \b ARM is wake up on the preamble (choose this mode for quality reception).
-}armWor_t;
+	ARM_FSK_WOR_DISABLE,	//!< Disable WOR mode.
+	ARM_FSK_WOR_LP,			//!< Enable long preamble for the transmitter, then wake up the receptor.
+	ARM_FSK_WOR_CS,			//!< Enable WOR mode in 'Carrier Sense'.
+							//!< \note The \b ARM is wake up on level rssi (choose this mode for speed).
+	ARM_FSK_WOR_PQT			//!< Enable WOR mode in 'Preamble Quality Threshold'.
+							//!< \note The \b ARM is wake up on the preamble (choose this mode for quality reception).
+}armFskWor_t;
 
 /*!	\brief Constant to define the comportment of the LED.
  * 
@@ -145,11 +157,11 @@ typedef enum
  */
 typedef enum
 {
-	ARM_LBTAFA_DISABLE,	//!< Disable all LBT&AFA mode.
-	ARM_LBTAFA_LBT,		//!< Enable Listen Before Talk .
-	ARM_LBTAFA_AFA,		//!< Enable Adaptive Frequency Agility, is used to receive data on one channel of the two.
-	ARM_LBTAFA_LBTAFA,	//!< Enable Listen Before Talk and adaptive Frequency Agility, listen on the tow channels and talk on the free channels.
-}armLbtAfa_t;
+	ARM_FSK_LBTAFA_DISABLE,	//!< Disable all LBT&AFA mode.
+	ARM_FSK_LBTAFA_LBT,		//!< Enable Listen Before Talk .
+	ARM_FSK_LBTAFA_AFA,		//!< Enable Adaptive Frequency Agility, is used to receive data on one channel of the two.
+	ARM_FSK_LBTAFA_LBTAFA,	//!< Enable Listen Before Talk and adaptive Frequency Agility, listen on the tow channels and talk on the free channels.
+}armFskLbtAfa_t;
 
 /*!	\brief Constant to define the working mode.
  * 
@@ -184,7 +196,7 @@ typedef enum
  */
 typedef struct
 {	
-	uint8_t reg;	//!< A number of register.
+	uint8_t reg;	//!< A index of register.
 	uint8_t val;	//!< A value of register.
 	uint8_t newVal;	//!< A new value of register.
 }armReg_t;
@@ -449,7 +461,7 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
 /*! 
  * \brief Get the local radio configuration.
  * 
- * Please, for more information about parameter consult the documentation of the \ref  armFskSetRadio() function.
+ * Please, for more information about parameter consult the documentation of the \ref armFskSetRadio() function.
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
@@ -767,14 +779,14 @@ void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databi
  * \brief Enable/Disable and configure the \b wake \b on \b radio mode.
  * 
  * \warning If \b ARMPORT_WITH_nSLEEP is not defined and the \p mode 
- * is \ref ARM_WOR_CS or \ref ARM_WOR_PQT
+ * is \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT
  * this function enable the wake up on uart (see \ref armEnableWakeUpUart())
  * and change the serial baudrate if necessary. In other mode
  * (and if \b ARMPORT_WITH_nSLEEP is not defined) this function 
  * disable the wake up on uart.
- * \warning If you have the \b LBT mode enable (in \ref ARM_LBTAFA_LBT or
- * \ref ARM_LBTAFA_LBTAFA see \ref armFskSetLbtAfaMode()) and the
- * \p mode is \ref ARM_WOR_CS the \p rssiLevel
+ * \warning If you have the \b LBT mode enable (in \ref ARM_FSK_LBTAFA_LBT or
+ * \ref ARM_FSK_LBTAFA_LBTAFA see \ref armFskSetLbtAfaMode()) and the
+ * \p mode is \ref ARM_FSK_WOR_CS the \p rssiLevel
  * is the same register in \b ARM, so if change this value with this function,
  * the \p rssiLevel value of the \b LBT is also modified.
  * 
@@ -785,39 +797,39 @@ void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databi
  * \param arm Pointer to your \b ARM structure.
  * 
  * \param mode The value available:
- * - \ref ARM_WOR_DISABLE To disable the wake on radio mode. The other parameters is ignored.
- * - \ref ARM_WOR_LP To enable the long preamble, necessary for the
+ * - \ref ARM_FSK_WOR_DISABLE To disable the wake on radio mode. The other parameters is ignored.
+ * - \ref ARM_FSK_WOR_LP To enable the long preamble, necessary for the
  * transmitter to wake up the receptor. The parameters \p rssiLevel and \p filterLongPreamble is ignored.
- * - \ref ARM_WOR_CS To enable the wake on radio in 'Carrier Sense'
+ * - \ref ARM_FSK_WOR_CS To enable the wake on radio in 'Carrier Sense'
  * (choose this mode for speed).
- * - \ref ARM_WOR_PQT To enable the wake on radio in 'Preamble Quality Threshold'
+ * - \ref ARM_FSK_WOR_PQT To enable the wake on radio in 'Preamble Quality Threshold'
  * (choose this mode for quality reception). The parameter \p rssiLevel is ignored.
  * 
  * \param periodTime The period time in milliseconds.
  * - The maximal value possible is 900.
  * - The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
- * - If the \p mode is \ref ARM_WOR_CS or \ref ARM_WOR_PQT the \p periodTime
+ * - If the \p mode is \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT the \p periodTime
  * is the time between two wake up. If the condition of mode is check, the \b ARM keep awaken to receive the frame.
- * This value must be same of emitter (mode in \ref ARM_WOR_LP).
- * - If the \p mode is \ref ARM_WOR_LP the \p periodTime is the time of
+ * This value must be same of emitter (mode in \ref ARM_FSK_WOR_LP).
+ * - If the \p mode is \ref ARM_FSK_WOR_LP the \p periodTime is the time of
  * emission long preamble. It is necessary to emit the loge preamble for considerate the wake-up period of the receiver.
- *  This value must be same of receptor (mode in \ref ARM_WOR_CS or \ref ARM_WOR_PQT).
+ *  This value must be same of receptor (mode in \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT).
  * 
  * \param postTime The time in milliseconds where the WOR is disable.
  * - The maximal value possible is 2550.
  * - The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
  * - In the case or \p mode is:
- * 		- \ref ARM_WOR_CS or \ref ARM_WOR_PQT, the \p postTime is the time
+ * 		- \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT, the \p postTime is the time
  * here the \b ARM keep awaken after the receive the last frame.
- * 		- \ref ARM_WOR_LP after send the first frame with long preamble,
+ * 		- \ref ARM_FSK_WOR_LP after send the first frame with long preamble,
  * the next frames are send without long preamble. After the last frame send
  * and after the \p postTime the \b ARM send the next frame with long preamble.
  * 
- * \param rssiLevel This parameter in dBm is used by \ref ARM_WOR_CS (the default value is -95).
- * In \ref ARM_WOR_CS mode the wake up is generate by the rssi level. This Level
+ * \param rssiLevel This parameter in dBm is used by \ref ARM_FSK_WOR_CS (the default value is -95).
+ * In \ref ARM_FSK_WOR_CS mode the wake up is generate by the rssi level. This Level
  * is configurable by \p rssiLevel parameter.
  * 
- * \param filterLongPreamble In the case where \p mode is \ref ARM_WOR_CS or \ref ARM_WOR_PQT,
+ * \param filterLongPreamble In the case where \p mode is \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT,
  * if \p filterLongPreamble is true the receive frames with long preamble is not push on the serial port.
  * 
  * \return Error available:
@@ -835,7 +847,7 @@ void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databi
  * \see armFskSetLbtAfaMode()
  * \see armSleep()
  */
-armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
+armError_t armFskSetWorMode(arm_t* arm, armFskWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
 
 /*! 
  * \brief Get the \b wake \b on \b radio mode configuration.
@@ -851,17 +863,17 @@ armError_t armFskSetWorMode(arm_t* arm, armWor_t mode, uint16_t periodTime, uint
  * \param arm Pointer to your \b ARM structure.
  * \param mode If the pointer is valid, the \p mode is set.
  * \param periodTime If the pointer is valid, the \p periodTime is set. If
- * the \p mode is \ref ARM_WOR_DISABLE the value is not workable.
+ * the \p mode is \ref ARM_FSK_WOR_DISABLE the value is not workable.
  * \param postTime If the pointer is valid, the \p postTime is set. If the
- * \p mode is \ref ARM_WOR_DISABLE the value is not workable.
+ * \p mode is \ref ARM_FSK_WOR_DISABLE the value is not workable.
  * \param rssiLevel If the pointer is valid, the \p rssiLevel is set. If
- * the \p mode is not \ref ARM_WOR_CS the value is not workable.
+ * the \p mode is not \ref ARM_FSK_WOR_CS the value is not workable.
  * \param filterLongPreamble If the pointer is valid, the \p filterLongPreamble is set. If
- * the \p mode is \ref ARM_WOR_DISABLE or \ref ARM_WOR_LP the value is not workable.
+ * the \p mode is \ref ARM_FSK_WOR_DISABLE or \ref ARM_FSK_WOR_LP the value is not workable.
  * 
  * \see armFskSetWorMode()
  */
-void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
+void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
 
 /*! 
  * \brief Enable/Disable the \b Wake \b Up \b Uart.
@@ -881,7 +893,7 @@ void armFskGetWorMode(arm_t* arm, armWor_t* mode, uint16_t* periodTime, uint16_t
  * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * - \ref ARM_ERR_WOR_ENABLE This errors is returned if you went disable the \b Wake \b Up \b Uart (\p enable = false)
  * and the \b ARMPORT_WITH_nSLEEP is not define and the \b WOR is
- * enable in \ref ARM_WOR_CS or \ref ARM_WOR_PQT.
+ * enable in \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT.
  * 
  * \note The \b Wake \b Up \b Uart can be disable by \ref armFskSetWorMode().
  * \note You need to call \ref armUpdateConfig() for update the parameters in you \b ARM.\n
@@ -926,7 +938,7 @@ bool armIsEnableWakeUpUart(arm_t *arm);
  * \note This function is defined only if \b ARMPORT_WITH_nSLEEP is defined.
  * \note The sleep must be disable if the \b Wake \b Up \b Uart is disable
  * and you want call \ref armSend(), \ref armReceive(),
- * \ref armInfo(), \ref armLoraIds() or \ref armUpdateConfig()
+ * \ref armInfo(), \ref armLwIds() or \ref armUpdateConfig()
  * 
  */
 void armSleep(arm_t* arm, bool sleep);
@@ -935,9 +947,9 @@ void armSleep(arm_t* arm, bool sleep);
 /*! 
  * \brief Enable/Disable and configure the \b Lbt&Afa mode.
  * 
- * \warning If you have the \b WOR mode enable (in \ref ARM_WOR_CS
+ * \warning If you have the \b WOR mode enable (in \ref ARM_FSK_WOR_CS
  *  see \ref armFskSetWorMode()) and the
- * \p mode is not \ref ARM_LBTAFA_DISABLE the \p rssiLevel
+ * \p mode is not \ref ARM_FSK_LBTAFA_DISABLE the \p rssiLevel
  * is the same register in \b ARM, so if change this value with this function,
  * the \p rssiLevel value of the \b WOR mode is also modified.
  * 
@@ -948,17 +960,17 @@ void armSleep(arm_t* arm, bool sleep);
  * \param arm Pointer to your \b ARM structure.
  * 
  * \param mode The value available:
- * - \ref ARM_LBTAFA_DISABLE To disable the LBT&AFA mode. 
- * - \ref ARM_LBTAFA_LBT To enable Listen Before Talk mode. Use this to emit
+ * - \ref ARM_FSK_LBTAFA_DISABLE To disable the LBT&AFA mode. 
+ * - \ref ARM_FSK_LBTAFA_LBT To enable Listen Before Talk mode. Use this to emit
  * on the radio if the rssi is less than \p rssiLevel.
- * - \ref ARM_LBTAFA_AFA To enable Adaptive Frequency Agility mode. Use this to receive
+ * - \ref ARM_FSK_LBTAFA_AFA To enable Adaptive Frequency Agility mode. Use this to receive
  * on one channel of the two (\p channel in \ref armFskSetRadio() and \p channel2).
- * - \ref ARM_LBTAFA_LBTAFA To enable Listen Before Talk and
+ * - \ref ARM_FSK_LBTAFA_LBTAFA To enable Listen Before Talk and
  * adaptive Frequency Agility, listen on the tow channels (\p channel in
  * \ref armFskSetRadio() and \p channel2) and talk on the free channels.
  * 
- * \param rssiLevel This parameter in dBm is used by \ref ARM_LBTAFA_AFA and
- * \ref ARM_LBTAFA_LBTAFA (the default value is -95) for define the
+ * \param rssiLevel This parameter in dBm is used by \ref ARM_FSK_LBTAFA_AFA and
+ * \ref ARM_FSK_LBTAFA_LBTAFA (the default value is -95) for define the
  * level rssi who say if the channels is busy or not.
  * 
  * \param nSamples This is the number of rssi sample (the default value is 240).
@@ -985,7 +997,7 @@ void armSleep(arm_t* arm, bool sleep);
  * \see armFskSetWorMode()
  * \see armFskMaxRadioPower()
  */
-armError_t armFskSetLbtAfaMode(arm_t* arm, armLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2);
+armError_t armFskSetLbtAfaMode(arm_t* arm, armFskLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2);
 
 /*! 
  * \brief Get the wake up on mode configuration.
@@ -1001,16 +1013,443 @@ armError_t armFskSetLbtAfaMode(arm_t* arm, armLbtAfa_t mode, int8_t rssiLevel, u
  * \param arm Pointer to your \b ARM structure.
  * \param mode If the pointer is valid, the \p mode is set.
  * \param rssiLevel If the pointer is valid, the \p rssiLevel is set. If
- * the \p mode is \ref ARM_LBTAFA_DISABLE  the value is not workable.
+ * the \p mode is \ref ARM_FSK_LBTAFA_DISABLE  the value is not workable.
  * \param nSamples If the pointer is valid, the \p nSamples is set. If
- * the \p mode is \ref ARM_LBTAFA_DISABLE  the value is not workable.
+ * the \p mode is \ref ARM_FSK_LBTAFA_DISABLE  the value is not workable.
  * \param channel2 If the pointer is valid, the \p channel2 is set. If
- * the \p mode is \ref ARM_LBTAFA_DISABLE  the value is not workable.
+ * the \p mode is \ref ARM_FSK_LBTAFA_DISABLE  the value is not workable.
  * 
  * \see armFskSetLbtAfaMode()
  */
-void armFskGetLbtAfaMode(arm_t* arm, armLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2);
+void armFskGetLbtAfaMode(arm_t* arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2);
 
+
+/*! 
+ * \brief Setup the LoraWan radio configuration.
+ * 
+ * For more information, please consulate the LoraWan radio parameters page.
+ * \todo Create the LoraWan parameter page.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \note If you don't want set a value, pass the 0 value to parameters.
+ * \warning This functions disable automatically the \b Tx \b Adaptive \b Speed if the parameter \p txSf or \p power is not set to 0.
+ * \warning This functions disable automatically the \b Adaptive \b Channel if the parameter \p txChannel is not set to 0.
+ * \warning This functions disable automatically the \b rx2 \b Adaptive if the parameter \p rx2Sf or \p rx2Channel is not set to 0.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param txChannel the emission channel.
+ * 	- The range possible is of 1 to 9. In this case the \b Adaptive \b Channel is automatically disable.
+ * 	- Set 0 if you don't want set this parameter.
+ * 	- The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
+ * 
+ * \param power the output power.
+ * 	- The possibles values are 2, 5, 8, 11, 14 (value in dBm). In this case the \b Tx \b Adaptive \b Speed is automatically disable.
+ * 	- Set 0 if you don't want set this parameter.
+ * 	- The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
+ * 
+ * \param txSf the emission spreading factor.
+ * 	- The range possible is of 7 to 12. In this case the \b Tx \b Adaptive \b Speed is automatically disable.
+ * 	- Set 0 if you don't want set this parameter.
+ * 	- The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
+ * 
+ * \param rx2Sf the Rx2 spreading factor.
+ * 	- The range possible is of 7 to 12. In this case the \b rx2 \b Adaptive is automatically disable.
+ * 	- Set 0 if you don't want set this parameter.
+ * 	- The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
+ * 
+ * \param rx2Channel the Rx2 channel.
+ * 	- The range possible is of 1 to 9. In this case the \b rx2 \b Adaptive is automatically disable.
+ * 	- Set 0 if you don't want set this parameter.
+ * 	- The function, return the error \ref ARM_ERR_PARAM_OUT_OF_RANGE if this value is out of rang.
+ * 
+ * \return Error available:
+ * 	- \ref ARM_ERR_NONE If successful.
+ * 	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ * 	- \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwGetRadio()
+ * \see armLwEnableRxWindows()
+ * \see armLwEnableTxAdaptiveSpeed()
+ * \see armLwEnableDutyCycle()
+ * \see armLwEnableTxAdaptiveChannel()
+ * \see armLwIsEnableRx2Adaptive()
+ */
+armError_t armLwSetRadio(arm_t* arm, uint8_t txChannel, uint8_t power, uint8_t txSf, uint8_t rx2Sf, uint8_t rx2Channel);
+
+/*! 
+ * \brief Get the LoraWan radio configuration.
+ * 
+ * Please, for more information about parameter consult the documentation of the \ref armLwSetRadio() function.
+ * \note If you don't went get a parameter you can give the \b NULL value.
+ * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param txChannel If the pointer is valid, the \p txChannel is set.
+ * \param power If the pointer is valid, the \p power is set.
+ * \param txSf If the pointer is valid, the \p txSf is set.
+ * \param rx2Sf If the pointer is valid, the \p rx2Sf is set.
+ * \param rx2Channel If the pointer is valid, the \p rx2Channel is set.
+ * 
+ * \see armLwSetRadio()
+ */
+void armLwGetRadio(arm_t* arm, uint8_t* txChannel, uint8_t* power, uint8_t* txSf, uint8_t* rx2Sf, uint8_t* rx2Channel);
+
+/*! 
+ * \brief Enable/Disable and set the confirmed frame.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param port the value available:
+ * 	- 0: Enable \e unconfirmed frame, will use LoRaWan default value,
+ * can be adapt by gateway with MacCommand.
+ * 	- -1 down -15: Enable \e unconfirmed frame, send unconfirmed frame of 1 up to 15.
+ * You can use the \ref ARM_LW_UNCONFIRMED() macro to set a positive value.
+ * 	- 1 to 15 : Enable \e confirmed frame, send unconfirmed frame of 1 up to 15.
+ * 
+ * \return Error available:
+ * 	- \ref ARM_ERR_NONE If successful.
+ * 	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ * 	- \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
+ * 
+ * eg:
+ * \code
+ * //Put at 3 the number of frame unconfirmed.
+ * armLwSetConfirmedFrame(&myArm, -3);
+ * \endcode
+ * or (this is same thing):
+ * \code
+ * //Put at 3 the number of frame unconfirmed.
+ * armLwSetConfirmedFrame(&myArm, ARM_LW_UNCONFIRMED(3));
+ * \endcode
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwGetConfirmedFrame()
+ */
+armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame);
+
+/*! 
+ * \brief Get the setup of confirmed frame.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return The confirmed frame setup.
+ * 
+ * eg:
+ * \code
+ * int8_t nbFrame = armLwGetConfirmedFrame(&myArm);
+ * if(ARM_LW_IS_UNCONFIRMED(nbFrame))
+ * {
+ * 		nbFrame = ARM_LW_UNCONFIRMED(nbFrame);
+ * 		//...
+ * }
+ * else
+ * {
+ * 		//...
+ * }
+ * \endcode
+ * or (this is same thing):
+ * \code
+ * int8_t nbFrame = armLwGetConfirmedFrame(&myArm);
+ * if(ARM_LW_IS_UNCONFIRMED(nbFrame))
+ * {
+ * 		nbFrame = -1*nbFrame);
+ * 		//...
+ * }
+ * else
+ * {
+ * 		//...
+ * }
+ * \endcode
+ * 
+ * \see armLwSetConfirmedFrame()
+ */
+int8_t armLwGetConfirmedFrame(arm_t* arm);
+
+/*! 
+ * \brief Set the port field.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param port the value available:
+ * 	- 0x00: indicates that the FRMPayload contains MAC commands only
+ * 	- 0x01 to 0xDF: application specific
+ * 	- 0xE0 to 0xFF: reserved for future standardized application extensions
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwGetPortField()
+ */
+void armLwSetPortField(arm_t* arm, uint8_t port);
+
+/*! 
+ * \brief Get the port field.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return The rport field.
+ * 
+ * \see armLwSetPortField()
+ */
+uint8_t armLwGetPortField(arm_t* arm);
+
+/*! 
+ * \brief Enable/Disable \b Over \b The \b Air \b Activation.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable \b Over \b The \b Air \b Activation or \e false to disable.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * The \b ARM will be restart if necessary to call \ref armUpdateConfig().
+ * 
+ * \see armLwIsEnableOtaa()
+ */
+void armLwEnableOtaa(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if \b Over \b The \b Air \b Activation is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the \b Over \b The \b Air \b Activation is enable or \e false if disable.
+ * 
+ * \see armLwEnableOtaa()
+ */
+bool armLwIsEnableOtaa(arm_t* arm);
+
+/*! 
+ * \brief Enable/Disable \b Rx \b windows.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable \b Rx \b windows or \e false to disable.
+ * If the case or the \p enable is true, the \b ARM will ignore the parameters \p rx2Sf and \p rx2Channel of the function 
+ * \ref armLwSetRadio().
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwIsEnableRxWindows()
+ */
+void armLwEnableRxWindows(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if \b Rx \b windows is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the \b Rx \b windows is enable or \e false if disable.
+ * 
+ * \see armLwEnableRxWindows()
+ */
+bool armLwIsEnableRxWindows(arm_t* arm);
+
+/*! 
+ * \brief Enable/Disable \b Tx \b Adaptive \b Speed.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable \b Tx \b Adaptive \b Speed or \e false to disable.
+ * If the case or the \p enable is true, the \b ARM will ignore the parameters \p power and \p txSf of the function 
+ * \ref armLwSetRadio().
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwIsEnableTxAdaptiveSpeed()
+ */
+void armLwEnableTxAdaptiveSpeed(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if \b Tx \b Adaptive \b Speed is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the \b Tx \b Adaptive \b Speed is enable or \e false if disable.
+ * 
+ * \see armLwEnableTxAdaptiveSpeed()
+ */
+bool armLwIsEnableTxAdaptiveSpeed(arm_t* arm);
+
+/*! 
+ * \brief Enable/Disable \b Duty \b Cycle.
+ * 
+ * \warning The \b Duty \b Cycle should be enable every time.
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable \\b Duty \b Cycle or \e false to disable.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwIsEnableDutyCycle()
+ */
+void armLwEnableDutyCycle(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if \b Duty \b Cycle is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the \b Duty \b Cycle is enable or \e false if disable.
+ * 
+ * \see armLwEnableDutyCycle()
+ */
+bool armLwIsEnableDutyCycle(arm_t* arm);
+
+/*! 
+ * \brief Enable/Disable \b Tx \b Adaptive \b Channel.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable \b Tx \b Adaptive \b Channel or \e false to disable.
+ * If the case or the \p enable is true, the \b ARM will ignore the parameter \p txChannel of the function 
+ * \ref armLwSetRadio().
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwIsEnableTxAdaptiveChannel()
+ */
+void armLwEnableTxAdaptiveChannel(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if \b Tx \b Adaptive \b Channel is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the \b Tx \b Adaptive \b Channel is enable or \e false if disable.
+ * 
+ * \see armLwEnableTxAdaptiveChannel()
+ */
+bool armLwIsEnableTxAdaptiveChannel(arm_t* arm);
+
+/*! 
+ * \brief Enable/Disable \b Rx2 windows \b Adaptive.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions is ignored.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param enable \e true to enable \b Rx2 windows \b Adaptive or \e false to disable.
+ * If the case or the \p enable is true, the \b ARM will ignore the parameter \p rx2Sf and \p rx2Channel 
+ * of the function \ref armLwSetRadio().
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwIsEnableRx2Adaptive()
+ */
+void armLwEnableRx2Adaptive(arm_t* arm, bool enable);
+
+/*! 
+ * \brief Get if \b Rx2 windows \b Adaptive is enable.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return \e true if the \b Rx2 windows \b Adaptive is enable or \e false if disable.
+ * 
+ * \see armLwEnableRx2Adaptive()
+ */
+bool armLwIsEnableRx2Adaptive(arm_t* arm);
+
+/*! 
+ * \brief Get the IDs.
+ * 
+ * This function is supported by:
+ * 	- \b ARM_N8_LW, \b ARM Nano 868MHz in Lora Wan.
+ * 
+ * \note If you don't went get a parameter you can give the \b NULL value.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param devAddr If the pointer is valid, the \p devAddr is set.
+ * \param devEui If the pointer is valid, the \p devEui is set.
+ * \param appEui If the pointer is valid, the \p appEui is set.
+ * \param appKey If the pointer is valid, the \p appKey is set.
+ * \param nwkSKey If the pointer is valid, the \p nwkSKey is set.
+ * \param appSKey If the pointer is valid, the \p appSKey is set.
+ * 
+ * \return Error available:
+ * 	- \ref ARM_ERR_NONE If success.
+ * 	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
+ * 	- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
+ * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
+ * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 
+ */
+armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
+									uint64_t* devEui,
+									uint64_t* appEui,
+									uint128_t* appKey,
+									uint128_t* nwkSKey,
+									uint128_t* appSKey);
+									
 /*! 
  * \brief Set the \a LED behavior.
  * 
@@ -1054,37 +1493,7 @@ void armSetLed(arm_t* arm, armLed_t led);
 armLed_t armGetLed(arm_t* arm);
 
 /*! 
- * \brief Get the IDs.
- * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano 868MHz in Lora Wan.
- * 
- * \param arm Pointer to your \b ARM structure.
- * \param devAddr If the pointer is valid, the \p devAddr is set.
- * \param devEui If the pointer is valid, the \p devEui is set.
- * \param appEui If the pointer is valid, the \p appEui is set.
- * \param appKey If the pointer is valid, the \p appKey is set.
- * \param nwkSKey If the pointer is valid, the \p nwkSKey is set.
- * \param appSKey If the pointer is valid, the \p appSKey is set.
- * 
- * \return Error available:
- * 	- \ref ARM_ERR_NONE If success.
- * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
- * 	- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
- * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
- * 
- */
-armError_t armLoraIds(arm_t* arm, 	uint32_t* devAddr,
-									uint64_t* devEui,
-									uint64_t* appEui,
-									uint128_t* appKey,
-									uint128_t* nwkSKey,
-									uint128_t* appSKey);
-
-/*! 
+ * \todo save OTAA
  * \brief Update the configuration in \b ARM.
  * 
  * None of parameters/modes previously configured, is no set in your \b ARM.
@@ -1116,7 +1525,7 @@ armError_t armUpdateConfig(arm_t* arm);
  * 
  * \warning You can use your method to write data to \b ARM (for example:
  * in interruption method), but you don't must influence on the behavior
- * of serial port when \ref armInit(), \ref armReboot(), \ref armInfo(), \ref armLoraIds() or \ref armUpdateConfig() is call.
+ * of serial port when \ref armInit(), \ref armReboot(), \ref armInfo(), \ref armLwIds() or \ref armUpdateConfig() is call.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param buf The buffer.
@@ -1139,7 +1548,7 @@ ssize_t armSend(arm_t* arm, const void* buf, size_t nbyte);
  * 
  * \warning You can use your method to read data from \b ARM (for example:
  * in interruption method), but you don't must influence on the behavior
- * of serial port when \ref armInit(), \ref armReboot(), \ref armInfo(), \ref armLoraIds() or \ref armUpdateConfig() is call.
+ * of serial port when \ref armInit(), \ref armReboot(), \ref armInfo(), \ref armLwIds() or \ref armUpdateConfig() is call.
  * 
  * \param arm Pointer to your \b ARM structure.
  * \param buf The buffer.
