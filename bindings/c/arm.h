@@ -406,7 +406,6 @@ bool armSfxIsEnableDownlink(arm_t* arm);
  * 
  * \return The maximal power possible in dBm. -1 if no power possible.
  * 
- * \todo to implement.
  */
 int8_t armFskMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud);
 

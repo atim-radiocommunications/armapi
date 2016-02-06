@@ -550,13 +550,109 @@ bool armSfxIsEnableDownlink(arm_t* arm)
 
 int8_t armFskMaxRadioPower(uint16_t radioChannel, armBaudrate_t radioBaud)
 {
+	int a = 0;
+	int b = 0;
+	int8_t maxPower = 14;
+		
 	if(radioBaud == ARM_BAUDRATE_NONE)
 		return -1;
 		
-	if(	(radioChannel < _ARM_MIN_CHANNEL) || (radioChannel > _ARM_MAX_CHANNEL))
+	//Set main coeff
+	if(radioBaud <= ARM_BAUDRATE_4800)
+	{
+		a = 0;
+		b = 1;
+	}
+	else if(radioBaud == ARM_BAUDRATE_9600)
+	{
+		a = 0;
+		b = 2;
+	}
+	else if(radioBaud == ARM_BAUDRATE_19200)
+	{
+		a = -1;
+		b = 3;
+		
+		if(	(radioChannel==1) 	||
+			(radioChannel==511) ||
+			(radioChannel==533))
+			maxPower = -1;
+	}
+	else if(radioBaud == ARM_BAUDRATE_38400)
+	{
+		a = 0;
+		b = 4;
+	}
+	else if(radioBaud == ARM_BAUDRATE_57600)
+	{
+		a = 1;
+		b = 6;
+		
+		if(radioChannel==509)
+			maxPower = -1;
+	}
+	else if(radioBaud == ARM_BAUDRATE_115200)
+	{
+		a = 8;
+		b = 16;
+		
+		if(radioChannel==556)
+			maxPower = -1;
+	}
+
+	if((radioChannel>=_ARM_MIN_CHANNEL) & (radioChannel<512))
+	{
+	}
+	else if((radioChannel>512) && (radioChannel<532))
+	{
+		//What is the max power available for channel?
+		if((radioChannel>=517) && (radioChannel<=527))
+			maxPower = 27;
+		else if((radioChannel>=515) && (radioChannel<=529))
+			maxPower = 23;
+		else
+			maxPower = 21;
+		
+		if(radioBaud == ARM_BAUDRATE_19200)
+		{
+			a = 0;
+			b = 3;
+			
+			if(	(radioChannel==513) ||
+				(radioChannel==531))
+			maxPower = -1;
+		}
+		else if(radioBaud == ARM_BAUDRATE_38400)
+		{
+			a = 0;
+			b = 2;
+			
+			if(	(radioChannel==514) ||
+				(radioChannel==530))
+			maxPower = -1;
+		}
+		else if(radioBaud == ARM_BAUDRATE_57600)
+		{
+			a = -2;
+			b = 5;
+		}
+		else if(radioBaud == ARM_BAUDRATE_115200)
+		{
+			a = 6;
+			b = 16;
+		}
+	}
+	else if((radioChannel>532) && (radioChannel<=_ARM_MAX_CHANNEL))
+	{
+		a -= 4;
+	}
+	else
 		return -1;
 	
-	return 27;
+	if(!((radioChannel+a)%b))
+		return maxPower;
+	
+	return -1;
 }
 
 armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t power)
