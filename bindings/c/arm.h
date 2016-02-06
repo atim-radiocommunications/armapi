@@ -1493,7 +1493,6 @@ void armSetLed(arm_t* arm, armLed_t led);
 armLed_t armGetLed(arm_t* arm);
 
 /*! 
- * \todo save OTAA
  * \brief Update the configuration in \b ARM.
  * 
  * None of parameters/modes previously configured, is no set in your \b ARM.
@@ -1507,11 +1506,12 @@ armLed_t armGetLed(arm_t* arm);
  * 		- \ref ARM_ERR_NO_SUPPORTED If there is bad \b ARM type.
  * 			Probably the \b ARM structure is not initialized.
  * 			In this case you can call \ref armInit() and check the returned error.
- * 		- \ref ARM_ERR_PORT_CONFIG If the port can't is configured.
+ * 		- \ref ARM_ERR_PORT_CONFIG If the port can't be configured.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
  * 		- \ref ARM_ERR_ARM_SET_REG If can't set register from \b ARM.
+ * 		- \ref ARM_ERR_ARM_CMD If can't execute a AT commend from \b ARM.
  */
 armError_t armUpdateConfig(arm_t* arm);
 

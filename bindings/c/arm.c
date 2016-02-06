@@ -1951,6 +1951,9 @@ armError_t armUpdateConfig(arm_t* arm)
 		if(	(arm->_N8LW.regsO[_ARM_N8LW_IREGO_CONFIG].newVal&_ARM_N8LW_REGO_CONFIG_OTAA) !=
 			(arm->_N8LW.regsO[_ARM_N8LW_IREGO_CONFIG].val&_ARM_N8LW_REGO_CONFIG_OTAA))
 		{
+			uint8_t buf[32];
+			ssize_t nread = 0;
+	
 			//Go to at commend.
 			if((err = _armGoAt(arm)))
 				return err;
@@ -1960,7 +1963,11 @@ armError_t armUpdateConfig(arm_t* arm)
 			if((err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal)))
 				return err;
 							
-			//Save the configuration.
+			//Save the configuration 'ATOS'.
+			nread = _armWriteRead(arm, "ATOS\r", 5, buf, sizeof buf, _ARM_TIME_TIMEOUT);
+			//Check reply
+			if(	(memmem(buf, nread, "RAM => EEPROM", 13) == NULL))
+				return ARM_ERR_ARM_CMD;
 			
 			//Reboot the ARM
 			if((err = armReboot(arm)))
