@@ -32,15 +32,18 @@
 #ifndef ARM_CONFIG_H
 #define ARM_CONFIG_H
 
-//Define to use GPIO optimize speed.
-//#define ARMPORT_WITH_nSLEEP
-//#define ARMPORT_WITH_nBOOT
-//#define ARMPORT_WITH_nRESET
+// ---------------------------------------------------------------------
+// Define to use GPIO optimize speed.
+// ---------------------------------------------------------------------
+//#define ARMPORT_WITH_nSLEEP	//Define to compiling with nSLEEP pin.
+//#define ARMPORT_WITH_nBOOT	//Define to compiling with nBOOT pin.
+//#define ARMPORT_WITH_nRESET	//Define to compiling with nRESET pin.
 
-//Define to optimize output size.
-//TODO verifier si il y a tout les define si dessue dans le arm.h ...
-//#define ARM_WITHOUT_N8_LPLD
-//#define ARM_WITHOUT_N8_LW
+// ---------------------------------------------------------------------
+// Define to compiling for ARM type.
+// ---------------------------------------------------------------------
+#define ARM_WITH_N8_LPLD	//Define to compiling with AMR_N8_LPLD.
+#define ARM_WITH_N8_LW		//Define to compiling with AMR_N8_LW.
 
 
 #endif //ARM_CONFIG_H

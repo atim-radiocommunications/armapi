@@ -36,8 +36,6 @@
 // Include
 // ---------------------------------------------------------------------
 #include <stdbool.h>
-
-#include "armconfig.h"
 #include "armport.h"
 
 // ---------------------------------------------------------------------
@@ -56,15 +54,17 @@
  */
 #define ARM_FSK_POWER_AUTO			(-127)
 
-/*!	\brief 
+/*!	\brief Macro to set unconfirmed frame.
  * 
- * 	
+ * 	Can you use this with \ref armLwSetConfirmedFrame()
+ * and \ref armLwGetConfirmedFrame().
  */
 #define ARM_LW_UNCONFIRMED(val)		((-1)*(val))
 
-/*!	\brief 
+/*!	\brief Macro to know if the frame is unconfirmed or not.
  * 
- * 	
+ * 	Can you use this with \ref armLwGetConfirmedFrame()
+ * and \ref armLwSetConfirmedFrame().
  */
 #define ARM_LW_IS_UNCONFIRMED(val)	((val)<=0)
 
