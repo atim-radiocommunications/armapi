@@ -1,7 +1,7 @@
 %{
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,8 +44,9 @@ void yyerror(const char * msg);
 extern FILE * yyin;				
 %} 
 
-%union {char str[4*1024];}
+%union {char str[8*1024];}
 %type<str> INCLUDE
+%type<str> ERROR
 %type<str> MAC_IF
 %type<str> MAC_ELIF
 %type<str> MAC_ELSE
@@ -68,6 +69,7 @@ extern FILE * yyin;
 
 
 %token INCLUDE
+%token ERROR
 
 %token MAC_IF
 %token MAC_ELIF
@@ -130,6 +132,26 @@ entity		: mac
 				PRINT(F_Yellow, "entity INCLUDE");
 				
 				entity_t* ent2 = entNew(ENT_INCLUDE);
+				entStrCat(ent2, $2);
+				
+				entPush($1, ent2);
+				$$ = $1;
+			}
+			//ERROR
+			|  ERROR
+			{
+				PRINT(F_Yellow, "ERROR");
+				
+				entity_t* ent1 = entNew(ENT_ERROR);
+				entStrCat(ent1, $1);
+
+				$$ = ent1;
+			}
+			| entity ERROR
+			{
+				PRINT(F_Yellow, "entity ERROR");
+				
+				entity_t* ent2 = entNew(ENT_ERROR);
 				entStrCat(ent2, $2);
 				
 				entPush($1, ent2);

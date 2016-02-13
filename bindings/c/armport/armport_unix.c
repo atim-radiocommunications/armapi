@@ -4,7 +4,7 @@
 
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -219,7 +219,7 @@ int armPortClose(void* port)
 	return 0;
 }
 
-ssize_t armPortWrite(void* port, const void* buf, size_t nbyte)
+int armPortWrite(void* port, const void* buf, size_t nbyte)
 {
 	//No valid pointer?
 	if(port == NULL)
@@ -238,7 +238,7 @@ ssize_t armPortWrite(void* port, const void* buf, size_t nbyte)
 	return n;
 }
 
-ssize_t armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
+int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
 {
 	//No valid pointer?
 	if(port == NULL)

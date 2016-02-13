@@ -1,6 +1,6 @@
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,7 @@
 typedef enum
 {
 	ENT_INCLUDE,
+	ENT_ERROR,
 	ENT_MAC_IF,
 	ENT_MAC_ELIF,
 	ENT_MAC_ELSE,
@@ -54,7 +55,7 @@ typedef enum
 	ENT_FUNCTION,
 	
 	ENT_DOC,
-	ENT_DOC_ARM_N8,
+	ENT_DOC_ARM,
 	ENT_DOC_ARM_PORT,
 }entType_t;
 
@@ -62,7 +63,7 @@ typedef struct entity_e entity_t;
 struct entity_e
 {
 	entType_t type;
-	char str[4*1024];
+	char str[5*1024];
 	
 	entity_t* nextEntity;
 	entity_t* backEntity;

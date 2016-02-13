@@ -4,7 +4,7 @@
 
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,12 +32,6 @@
 #ifndef ARMPORT_H
 #define ARMPORT_H
 
-#ifndef __DOXYGEN__
-	#ifndef __BEOS__
-	#define __BEOS__
-	#endif
-#endif
-
 // ---------------------------------------------------------------------
 // Include
 // ---------------------------------------------------------------------
@@ -45,7 +39,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-
 #include "armconfig.h"
 
 #ifdef __cplusplus
@@ -149,9 +142,9 @@ int armPortConfig(void* port,	armPortBaudrate_t baudrate,
 								armPortStopbit_t stopbit);
 int armPortClose(void* port);
 
-ssize_t armPortWrite(void* port, const void* buf, size_t nbyte);
+int armPortWrite(void* port, const void* buf, size_t nbyte);
 
-ssize_t armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout);
+int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout);
 
 void armPortDelay(int ms);
 

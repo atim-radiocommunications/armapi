@@ -147,6 +147,8 @@ $(DCOBJS)/%.o: %.c
 # convert the armapi from c source to cpp source
 run:
 	@./$(OUTPUT_FILE)
+	@cp ../../bindings/c/armconfig.h ../../bindings/cpp/armconfig.h
+	@cp ../../bindings/c/armconst.h ../../bindings/cpp/armconst.h
 	
 # Run gdb for debug.
 gdb:debug

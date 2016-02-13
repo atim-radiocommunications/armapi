@@ -1,7 +1,7 @@
 %{
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -68,6 +68,9 @@ comm2			\/\*[^!][^\/]*\*\/[\n]*
 init_arm				bzero[^\n]*
 init_port				"arm->_port = port;"[\n]*
 
+/* #error */
+error					#error[ \t]+\"[^"]*\"
+
 /* include */
 include					#include[ \t]+[^\n]*
 
@@ -91,24 +94,24 @@ doc_end					\*\/
 
 /* enum and struct */
 enum				^[a-zA-Z0-9_ *\t]+enum[a-zA-Z0-9_ *\t\n\r]*\{[^}]+\}[^;]*;
-struct				^[a-zA-Z0-9_ *\t]+struct[a-zA-Z0-9_ *\t\n\r]*\{[^}]+\}[^;]*;
+struct				^[a-zA-Z0-9_ *\t]+struct[a-zA-Z0-9_ *\t\n\r]*\{[a-zA-Z0-9_ *\t\n\r;{}\[\]/!<.#]+_t;
 
 /* fuction */
-fun_arm_port_proto			^[a-zA-Z0-9_]+[ \t]+armPort[a-zA-Z0-9_]+\(void[a-zA-Z0-9_ \t\r\n,*]+\);
-_fun_arm_port_proto			^[a-zA-Z0-9_]+[ \t]+_armPort[a-zA-Z0-9_]+\(void[a-zA-Z0-9_ \t\r\n,*]+\);
-fun_arm_port_static_proto	^[a-zA-Z0-9_]+[ \t]+armPort[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
-_fun_arm_port_static_proto	^[a-zA-Z0-9_]+[ \t]+_armPort[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
-fun_arm_proto				^[a-zA-Z0-9_]+[ \t]+arm[a-zA-Z0-9_]+\(arm[a-zA-Z0-9]*_t[a-zA-Z0-9_ \t\r\n,*]+\);
-_fun_arm_proto				^[a-zA-Z0-9_]+[ \t]+_arm[a-zA-Z0-9_]+\(arm[a-zA-Z0-9]*_t[a-zA-Z0-9_ \t\r\n,*]+\);
-fun_arm_static_proto		^[a-zA-Z0-9_]+[ \t]+arm[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
-_fun_arm_static_proto		^[a-zA-Z0-9_]+[ \t]+_arm[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
-fun_proto					^[a-zA-Z0-9_]+[a-zA-Z0-9_ \t*]+\([a-zA-Z0-9_ \t\r\n,*]+\);
-fun_start					^[a-zA-Z0-9_]+[a-zA-Z0-9_ \t*]+\([a-zA-Z0-9_ \t\r\n,*]+\)[ \t\r\n]\{
+fun_arm_port_proto			^[a-zA-Z0-9_*]+[ \t]+armPort[a-zA-Z0-9_]+\(void[a-zA-Z0-9_ \t\r\n,*]+\);
+_fun_arm_port_proto			^[a-zA-Z0-9_*]+[ \t]+_armPort[a-zA-Z0-9_]+\(void[a-zA-Z0-9_ \t\r\n,*]+\);
+fun_arm_port_static_proto	^[a-zA-Z0-9_*]+[ \t]+armPort[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
+_fun_arm_port_static_proto	^[a-zA-Z0-9_*]+[ \t]+_armPort[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
+fun_arm_proto				^[a-zA-Z0-9_*]+[ \t]+arm[a-zA-Z0-9_]+\(arm[a-zA-Z0-9]*_t[a-zA-Z0-9_ \t\r\n,*]+\);
+_fun_arm_proto				^[a-zA-Z0-9_*]+[ \t]+_arm[a-zA-Z0-9_]+\(arm[a-zA-Z0-9]*_t[a-zA-Z0-9_ \t\r\n,*]+\);
+fun_arm_static_proto		^[a-zA-Z0-9_*]+[ \t]+arm[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
+_fun_arm_static_proto		^[a-zA-Z0-9_*]+[ \t]+_arm[a-zA-Z0-9_]+\([a-zA-Z0-9_ \t\r\n,*]+\);
+fun_proto					^[a-zA-Z0-9_*]+[a-zA-Z0-9_ \t*]+\([a-zA-Z0-9_ \t\r\n,*]+\);
+fun_start					^[a-zA-Z0-9_*]+[a-zA-Z0-9_ \t*]+\([a-zA-Z0-9_ \t\r\n,*]+\)[ \t\r\n]\{
 fun_end						\}
 
 /* call fuction */
-call_fun_arm				armN8[a-zA-Z0-9_]+\(
-_call_fun_arm				_armN8[a-zA-Z0-9_]+\(
+call_fun_arm				arm[a-zA-Z0-9_]+\(
+_call_fun_arm				_arm[a-zA-Z0-9_]+\(
 call_fun_arm_port			armPort[a-zA-Z0-9_]+\(
 _call_fun_arm_port			_armPort[a-zA-Z0-9_]+\(
 
@@ -170,6 +173,11 @@ call_port_open_from_arm		&arm->_port[ \t,]*
 								strcpy(yylval.str, yytext);
 								PRINT(B_Green);
 								RETURN(INCLUDE);
+							}
+{error}					{/* include */
+								strcpy(yylval.str, yytext);
+								PRINT(B_Light_cyan);
+								RETURN(ERROR);
 							}
 	
 {def_start}					{/* define */
@@ -340,7 +348,7 @@ call_port_open_from_arm		&arm->_port[ \t,]*
 							}
 <inFun>{call_fun_arm}		{/* function -> call fuction */
 								strcat(yylval.str, "this->");
-								strcat(yylval.str, yytext+sizeof("armN8")-1);
+								strcat(yylval.str, yytext+sizeof("arm")-1);
 								//strcpy(yylval.str, yytext);
 								//PRINT(F_Green);
 								
@@ -349,7 +357,7 @@ call_port_open_from_arm		&arm->_port[ \t,]*
 <inFun>{_call_fun_arm}		{/* function -> call fuction */
 								strcat(yylval.str, "this->");
 								strcat(yylval.str, "_");
-								strcat(yylval.str, yytext+sizeof("_armN8")-1);
+								strcat(yylval.str, yytext+sizeof("_arm")-1);
 								//strcpy(yylval.str, yytext);
 								//PRINT(B_Green);
 								

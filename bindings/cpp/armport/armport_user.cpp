@@ -4,7 +4,7 @@
 
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -65,12 +65,12 @@ int ArmPort::Close()
 	return 0;
 }
 
-ssize_t ArmPort::Write(const uint8_t* buf, size_t nbyte)
+int ArmPort::Write(const void* buf, size_t nbyte)
 {
 	return 0;
 }
 
-ssize_t ArmPort::Read(uint8_t* buf, size_t nbyte, unsigned int timeout)
+int ArmPort::Read(void* buf, size_t nbyte, unsigned int timeout)
 {
 	return 0;
 }
