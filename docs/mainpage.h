@@ -59,7 +59,7 @@
  * the files from 'bindings' folders in you project.
  * - Go to github project https://github.com/atim-radiocommunications/armapi
  * to get the source code.
- * - The packages will be proposal for cpp,c language and Arduino.
+ * - For Arduino there is a <a href="http://atim-radiocommunications.github.io/armapi/pkg/arduino/armapi.zip">package</a>.
  * Go to http://atim-radiocommunications.github.io/armapi/ to get the packages.
  * 
  * Go to \ref pgm_guides_page page for next step.

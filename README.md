@@ -7,6 +7,8 @@ You will be able to send and receive data on the Sigfox/LoRaWan network and loca
 ## Installation
 There is no installation. To use this API, just copy or include the
 files from folders 'bindings/<language>' in you project.
+
+For Arduino there is a package, you can get [here](http://atim-radiocommunications.github.io/armapi/pkg/arduino/armapi.zip).
 	
 ## Documentation
 To generate the doc you need to have doxygen installed locally, then run
@@ -25,4 +27,4 @@ To report your problem, open an issue.
 ## Link
 * [Github project](https://github.com/atim-radiocommunications/armapi)
 * [Github page](http://atim-radiocommunications.github.io/armapi)
-* [Last API documentation](http://atim-radiocommunications.github.io/armapi/armapidoc/index.html)
+* [API documentation](http://atim-radiocommunications.github.io/armapi/doc/index.html)

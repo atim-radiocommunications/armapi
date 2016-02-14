@@ -39,7 +39,7 @@
  * 
  * \section arduino_section_installation_sec Installation
  * The installation is easy. The first step is to download the
- * API packages. You can find it <a href="http://atim-radiocommunications.github.io/armapi/armapi.zip">here</a>.
+ * API packages. You can find it <a href="http://atim-radiocommunications.github.io/armapi/pkg/arduino/armapi.zip">here</a>.
  * 
  * Run you arduino IDE and go to a menu Sketch->Include Library->Add .ZIP Library...
  * \image html ide_arduino_add_lib_menu.png

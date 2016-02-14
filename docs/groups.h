@@ -29,4 +29,26 @@
 
 ***********************************************************************/
 
-
+ 
+/*! \defgroup group_main Main and various
+ * 
+ */
+ 
+/*! \defgroup group_fsk Fsk(local) radio
+ * 
+ */
+ 
+/*! \defgroup group_sfx Sigfox network
+ * 
+ */
+ 
+/*! \defgroup group_lw Lora network
+ * 
+ */ 
+ 
+ /*! \defgroup group_port Port
+ * 
+ * All function in this group except \ref armPortGpioSet() must be 
+ * implemented on you platform to use \b armapi.
+ */
+ 

@@ -32,7 +32,7 @@
 /*! \page pgm_guides_page Programming Guides
  * \tableofcontents
  * 
- * TODO
+ * In construction!
  * 
  * \section starting_sec Starting with armapi
  * \ref ports_page

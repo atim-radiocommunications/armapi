@@ -31,6 +31,7 @@
 
 /*! \page lora_page Lora radio
  * 
- * TODO
+ * In construction!
  * 
+ * \see group_lora
  */

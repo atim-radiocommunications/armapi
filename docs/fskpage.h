@@ -600,4 +600,6 @@
  * 
  * You can call \ref armFskMaxPower() to get the maximal possible power 
  * in  function channel and baudrate.
+ * 
+ * \see group_fsk
  */

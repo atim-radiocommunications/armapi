@@ -31,6 +31,7 @@
 
 /*! \page sfx_page Sigfox radio
  * 
- * TODO
+ * In construction!
  * 
+ * \see group_sfx
  */

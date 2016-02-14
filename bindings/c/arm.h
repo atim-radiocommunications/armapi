@@ -45,28 +45,32 @@
 // Define
 // ---------------------------------------------------------------------
 
-/*!	\brief Constant to define the broadcast value.
+/*!	\ingroup group_fsk
+ * \brief Constant to define the broadcast value.
  * 
- * 	Value for parameter \ref armFskSetRemoteAdd() function.
+ * Value for parameter \ref armFskSetRemoteAdd() function.
  */
 #define ARM_FSK_BROADCAST 			255
 
-/*!	\brief Constant to define the auto power value.
+/*!	\ingroup group_fsk
+ * \brief Constant to define the auto power value.
  * 
- * 	Value for parameter \p power of \ref armFskSetRemoteAdd() function.
+ * Value for parameter \p power of \ref armFskSetRemoteAdd() function.
  */
 #define ARM_FSK_POWER_AUTO			(-127)
 
-/*!	\brief Macro to set unconfirmed frame.
+/*!	\ingroup group_lw
+ * \brief Macro to set unconfirmed frame.
  * 
- * 	Can you use this with \ref armLwSetConfirmedFrame()
+ * Can you use this with \ref armLwSetConfirmedFrame()
  * and \ref armLwGetConfirmedFrame().
  */
 #define ARM_LW_UNCONFIRMED(val)		((-1)*(val))
 
-/*!	\brief Macro to know if the frame is unconfirmed or not.
+/*!	\ingroup group_lw
+ * \brief Macro to know if the frame is unconfirmed or not.
  * 
- * 	Can you use this with \ref armLwGetConfirmedFrame()
+ * Can you use this with \ref armLwGetConfirmedFrame()
  * and \ref armLwSetConfirmedFrame().
  */
 #define ARM_LW_IS_UNCONFIRMED(val)	((val)<=0)
@@ -75,7 +79,8 @@
 // Enum
 // ---------------------------------------------------------------------
 
-/*!	\brief Constant to define the errors.
+/*!	\ingroup group_main
+ * \brief Constant to define the errors.
  * 
  */
 typedef enum
@@ -104,7 +109,8 @@ typedef enum
 	ARM_ERR_ARM_SET_REG,			//!< \b ARM commend Error, from set register.
 }armError_t;
 
-/*!	\brief Constant to define the baudrate value.
+/*!	\ingroup group_main
+ * \brief Constant to define the baudrate value.
  * 
  */
 typedef enum
@@ -120,7 +126,8 @@ typedef enum
 	ARM_BAUDRATE_115200		= 115200,	//!< 115200 bps.
 }armBaudrate_t;
 
-/*!	\brief Constant to define the WOR mode 'Wake On Radio'.
+/*!	\ingroup group_fsk
+ * \brief Constant to define the WOR mode 'Wake On Radio'.
  * 
  * \see armFskSetWorMode()
  */
@@ -134,7 +141,8 @@ typedef enum
 							//!< \note The \b ARM is wake up on the preamble (choose this mode for quality reception).
 }armFskWor_t;
 
-/*!	\brief Constant to define the comportment of the LED.
+/*!	\ingroup group_main
+ * \brief Constant to define the comportment of the LED.
  * 
  * \see armSetLed()
  */
@@ -145,7 +153,8 @@ typedef enum
 	ARM_LED_ON_RF		//!< The LED is 'on' on RF activity and 'off' other time.
 }armLed_t;
 
-/*!	\brief Constant to define the LBT&AFA mode 'Listen before talk' and 'Adaptive Frequency Agility'.
+/*!	\ingroup group_fsk
+ * \brief Constant to define the LBT&AFA mode 'Listen before talk' and 'Adaptive Frequency Agility'.
  * 
  * \see armFskSetLbtAfaMode()
  */
@@ -157,7 +166,8 @@ typedef enum
 	ARM_FSK_LBTAFA_LBTAFA,	//!< Enable Listen Before Talk and adaptive Frequency Agility, listen on the tow channels and talk on the free channels.
 }armFskLbtAfa_t;
 
-/*!	\brief Constant to define the working mode.
+/*!	\ingroup group_main
+ * \brief Constant to define the working mode.
  * 
  * \see armSetMode()
  */
@@ -168,7 +178,8 @@ typedef enum
 	ARM_MODE_LORAWAN,		//!< Mode for Lora network (LoRaWan).
 }armMode_t;
 
-/*!	\brief Type of \b ARM
+/*!	\ingroup group_main
+ * \brief Type of \b ARM
  * 
  * \see armInfo()
  */
@@ -245,7 +256,7 @@ typedef struct
 // Prototypes functions
 // ---------------------------------------------------------------------
 
-/*! 
+/*! \ingroup group_main
  * \brief Initialize the structure, port and \b ARM.
  * 
  * This function must be call before call other function depend of the \b arm_t structure.
@@ -267,7 +278,7 @@ typedef struct
  */
 armError_t armInit(arm_t* arm, void* port);
 
-/*! 
+/*! \ingroup group_main
  * \brief De-initialize the port.
  * 
  * \param arm Pointer to your \b ARM structure.
@@ -278,7 +289,7 @@ armError_t armInit(arm_t* arm, void* port);
  */
 armError_t armDeInit(arm_t* arm);
 
-/*! 
+/*! \ingroup group_main
  * \brief Reboot the \b ARM.
  * 
  * \param arm Pointer to your \b ARM structure.
@@ -299,7 +310,7 @@ armError_t armDeInit(arm_t* arm);
  */
 armError_t armReboot(arm_t* arm);
 
-/*! 
+/*! \ingroup group_main
  * \brief Get information about the \b ARM.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
@@ -324,7 +335,7 @@ armError_t armReboot(arm_t* arm);
  */
 armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
-/*! 
+/*! \ingroup group_main
  * \brief Set the mode.
  * 
  * \param arm Pointer to your \b ARM structure.
@@ -343,7 +354,7 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
  */
 armError_t armSetMode(arm_t* arm, armMode_t mode);
 
-/*! 
+/*! \ingroup group_main
  * \brief Get the mode.
  * 
  * \param arm Pointer to your \b ARM structure.
@@ -356,7 +367,7 @@ armError_t armSetMode(arm_t* arm, armMode_t mode);
  */
 armMode_t armGetMode(arm_t* arm);
 
-/*! 
+/*! \ingroup group_sfx
  * \brief Enable/Disable the Sigfox downlink.
  * 
  * This function is supported by:
@@ -377,7 +388,7 @@ armMode_t armGetMode(arm_t* arm);
  */
 armError_t armSfxEnableDownlink(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_sfx
  * \brief Get if the Sigfox downlink is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -392,7 +403,7 @@ armError_t armSfxEnableDownlink(arm_t* arm, bool enable);
  */
 bool armSfxIsEnableDownlink(arm_t* arm);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get The maximal possible power.
  * 
  * Get the maximal possible power of function channel and baudrate.
@@ -406,7 +417,7 @@ bool armSfxIsEnableDownlink(arm_t* arm);
  */
 int8_t armFskMaxPower(uint16_t radioChannel, armBaudrate_t radioBaud);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Setup the Fsk (local) radio configuration.
  * 
  * For more information, please consulate \ref fsk_page page.
@@ -453,7 +464,7 @@ int8_t armFskMaxPower(uint16_t radioChannel, armBaudrate_t radioBaud);
  */
 armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t power);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get the fsk (local) radio configuration.
  * 
  * Please, for more information about parameter consult the documentation of the \ref armFskSetRadio() function.
@@ -473,7 +484,7 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
  */
 void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* power);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Set the radio remote address.
  * 
  * This function is supported by:
@@ -497,7 +508,7 @@ void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* 
  */
 armError_t armFskSetRemoteAdd(arm_t* arm, uint8_t add);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get the remote address.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -513,7 +524,7 @@ armError_t armFskSetRemoteAdd(arm_t* arm, uint8_t add);
  */
 uint8_t armFskGetRemoteAdd(arm_t* arm);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Set the radio local address.
  * 
  * This function is supported by:
@@ -536,7 +547,7 @@ uint8_t armFskGetRemoteAdd(arm_t* arm);
  */
 armError_t armFskSetLocalAdd(arm_t* arm, uint8_t add);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get the local address.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -552,7 +563,7 @@ armError_t armFskSetLocalAdd(arm_t* arm, uint8_t add);
  */
 uint8_t armFskGetLocalAdd(arm_t* arm);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Enable/Disable \b Addressing.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -570,7 +581,7 @@ uint8_t armFskGetLocalAdd(arm_t* arm);
  */
 void armFskEnableAddressing(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get enable \b Addressing.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -586,7 +597,7 @@ void armFskEnableAddressing(arm_t* arm, bool enable);
  */
 bool armFskIsEnableAddressing(arm_t* arm);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Enable/Disable \b CRC.
  * 
  * \warning This functions disable automatically the \b infinity \b mode.
@@ -606,7 +617,7 @@ bool armFskIsEnableAddressing(arm_t* arm);
  */
 void armFskEnableCrc(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get enable \b CRC.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -622,7 +633,7 @@ void armFskEnableCrc(arm_t* arm, bool enable);
  */
 bool armFskIsEnableCrc(arm_t* arm);
  
-/*! 
+/*! \ingroup group_fsk
  * \brief Enable/Disable \b Infinity \b mode.
  * 
  * \warning This functions disable automatically the \b CRC.
@@ -646,7 +657,7 @@ bool armFskIsEnableCrc(arm_t* arm);
  */
 armError_t armFskEnableInfinityMode(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get enable \b Infinity \b mode.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -662,7 +673,7 @@ armError_t armFskEnableInfinityMode(arm_t* arm, bool enable);
  */
 bool armFskIsEnableInfinityMode(arm_t* arm);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Enable/Disable \b Whitening.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -680,7 +691,7 @@ bool armFskIsEnableInfinityMode(arm_t* arm);
  */
 void armFskEnableWhitening(arm_t *arm, bool enable);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get enable \b Whitening.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -696,7 +707,7 @@ void armFskEnableWhitening(arm_t *arm, bool enable);
  */
 bool armFskIsEnableWhitening(arm_t *arm);
 
-/*! 
+/*! \ingroup group_main
  * \brief Setup serial port configuration.
  * 
  * \warning In the case or the port don't support one of below parameters,
@@ -750,7 +761,7 @@ bool armFskIsEnableWhitening(arm_t *arm);
  */
 armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t databits, armPortParity_t parity, armPortStopbit_t stopbit);
 
-/*! 
+/*! \ingroup group_main
  * \brief Get the serial port configuration.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
@@ -770,7 +781,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
  */
 void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit);
 
-/*!  
+/*!  \ingroup group_fsk
  * \brief Enable/Disable and configure the \b wake \b on \b radio mode.
  * 
  * \warning If \b ARMPORT_WITH_nSLEEP is not defined and the \p mode 
@@ -844,7 +855,7 @@ void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databi
  */
 armError_t armFskSetWorMode(arm_t* arm, armFskWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get the \b wake \b on \b radio mode configuration.
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armFskSetWorMode() function.
@@ -870,7 +881,7 @@ armError_t armFskSetWorMode(arm_t* arm, armFskWor_t mode, uint16_t periodTime, u
  */
 void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble);
 
-/*! 
+/*! \ingroup group_main
  * \brief Enable/Disable the \b Wake \b Up \b Uart.
  * 
  * \warning The \b Wake \b Up \b Uart don't supporter the serially baudrate
@@ -902,7 +913,7 @@ void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint1
  */
 armError_t armEnableWakeUpUart(arm_t *arm, bool enable);
 
-/*! 
+/*! \ingroup group_main
  * \brief Get if \b Wake \b Up \b Uart is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -919,7 +930,7 @@ armError_t armEnableWakeUpUart(arm_t *arm, bool enable);
 bool armIsEnableWakeUpUart(arm_t *arm);
 
 #if defined ARMPORT_WITH_nSLEEP || defined __DOXYGEN__
-/*! 
+/*! \ingroup group_main
  * \brief Enable/Disable sleep with pin.
  * 
  * This function is supported by:
@@ -939,7 +950,7 @@ bool armIsEnableWakeUpUart(arm_t *arm);
 void armSleep(arm_t* arm, bool sleep);
 #endif
  
-/*! 
+/*! \ingroup group_fsk
  * \brief Enable/Disable and configure the \b Lbt&Afa mode.
  * 
  * \warning If you have the \b WOR mode enable (in \ref ARM_FSK_WOR_CS
@@ -994,7 +1005,7 @@ void armSleep(arm_t* arm, bool sleep);
  */
 armError_t armFskSetLbtAfaMode(arm_t* arm, armFskLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2);
 
-/*! 
+/*! \ingroup group_fsk
  * \brief Get the wake up on mode configuration.
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armFskSetLbtAfaMode() function.
@@ -1019,7 +1030,7 @@ armError_t armFskSetLbtAfaMode(arm_t* arm, armFskLbtAfa_t mode, int8_t rssiLevel
 void armFskGetLbtAfaMode(arm_t* arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2);
 
 
-/*! 
+/*! \ingroup group_lw
  * \brief Setup the LoraWan radio configuration.
  * 
  * For more information, please consulate \ref lora_page page.
@@ -1074,7 +1085,7 @@ void armFskGetLbtAfaMode(arm_t* arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, ui
  */
 armError_t armLwSetRadio(arm_t* arm, uint8_t txChannel, uint8_t power, uint8_t txSf, uint8_t rx2Sf, uint8_t rx2Channel);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get the LoraWan radio configuration.
  * 
  * Please, for more information about parameter consult the documentation of the \ref armLwSetRadio() function.
@@ -1095,7 +1106,7 @@ armError_t armLwSetRadio(arm_t* arm, uint8_t txChannel, uint8_t power, uint8_t t
  */
 void armLwGetRadio(arm_t* arm, uint8_t* txChannel, uint8_t* power, uint8_t* txSf, uint8_t* rx2Sf, uint8_t* rx2Channel);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable and set the confirmed frame.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1133,7 +1144,7 @@ void armLwGetRadio(arm_t* arm, uint8_t* txChannel, uint8_t* power, uint8_t* txSf
  */
 armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get the setup of confirmed frame.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1175,7 +1186,7 @@ armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame);
  */
 int8_t armLwGetConfirmedFrame(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Set the port field.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1195,7 +1206,7 @@ int8_t armLwGetConfirmedFrame(arm_t* arm);
  */
 void armLwSetPortField(arm_t* arm, uint8_t port);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get the port field.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1210,7 +1221,7 @@ void armLwSetPortField(arm_t* arm, uint8_t port);
  */
 uint8_t armLwGetPortField(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable \b Over \b The \b Air \b Activation.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1228,7 +1239,7 @@ uint8_t armLwGetPortField(arm_t* arm);
  */
 void armLwEnableOtaa(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get if \b Over \b The \b Air \b Activation is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1243,7 +1254,7 @@ void armLwEnableOtaa(arm_t* arm, bool enable);
  */
 bool armLwIsEnableOtaa(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable \b Rx \b windows.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1262,7 +1273,7 @@ bool armLwIsEnableOtaa(arm_t* arm);
  */
 void armLwEnableRxWindows(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get if \b Rx \b windows is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1277,7 +1288,7 @@ void armLwEnableRxWindows(arm_t* arm, bool enable);
  */
 bool armLwIsEnableRxWindows(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable \b Tx \b Adaptive \b Speed.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1296,7 +1307,7 @@ bool armLwIsEnableRxWindows(arm_t* arm);
  */
 void armLwEnableTxAdaptiveSpeed(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get if \b Tx \b Adaptive \b Speed is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1311,7 +1322,7 @@ void armLwEnableTxAdaptiveSpeed(arm_t* arm, bool enable);
  */
 bool armLwIsEnableTxAdaptiveSpeed(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable \b Duty \b Cycle.
  * 
  * \warning The \b Duty \b Cycle should be enable every time.
@@ -1329,7 +1340,7 @@ bool armLwIsEnableTxAdaptiveSpeed(arm_t* arm);
  */
 void armLwEnableDutyCycle(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get if \b Duty \b Cycle is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1344,7 +1355,7 @@ void armLwEnableDutyCycle(arm_t* arm, bool enable);
  */
 bool armLwIsEnableDutyCycle(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable \b Tx \b Adaptive \b Channel.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1363,7 +1374,7 @@ bool armLwIsEnableDutyCycle(arm_t* arm);
  */
 void armLwEnableTxAdaptiveChannel(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get if \b Tx \b Adaptive \b Channel is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1378,7 +1389,7 @@ void armLwEnableTxAdaptiveChannel(arm_t* arm, bool enable);
  */
 bool armLwIsEnableTxAdaptiveChannel(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Enable/Disable \b Rx2 windows \b Adaptive.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
@@ -1397,7 +1408,7 @@ bool armLwIsEnableTxAdaptiveChannel(arm_t* arm);
  */
 void armLwEnableRx2Adaptive(arm_t* arm, bool enable);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get if \b Rx2 windows \b Adaptive is enable.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1412,7 +1423,7 @@ void armLwEnableRx2Adaptive(arm_t* arm, bool enable);
  */
 bool armLwIsEnableRx2Adaptive(arm_t* arm);
 
-/*! 
+/*! \ingroup group_lw
  * \brief Get the IDs.
  * 
  * This function is supported by:
@@ -1444,7 +1455,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 									uint128_t* nwkSKey,
 									uint128_t* appSKey);
 									
-/*! 
+/*! \ingroup group_main
  * \brief Set the \a LED behavior.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions in ignored.
@@ -1466,7 +1477,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
  */
 void armSetLed(arm_t* arm, armLed_t led);
 
-/*! 
+/*! \ingroup group_main
  * \brief Get the \a LED behavior.
  * 
  * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
@@ -1486,7 +1497,7 @@ void armSetLed(arm_t* arm, armLed_t led);
  */
 armLed_t armGetLed(arm_t* arm);
 
-/*! 
+/*! \ingroup group_main
  * \brief Update the configuration in \b ARM.
  * 
  * None of parameters/modes previously configured, is no set in your \b ARM.
@@ -1509,7 +1520,7 @@ armLed_t armGetLed(arm_t* arm);
  */
 armError_t armUpdateConfig(arm_t* arm);
 
-/*! 
+/*! \ingroup group_main
  * \brief Send data to \b ARM.
  * 
  * - In the case or the infinity mode is enable, this function send the data.
@@ -1534,7 +1545,7 @@ armError_t armUpdateConfig(arm_t* arm);
  */
 int armSend(arm_t* arm, const void* buf, size_t nbyte);
 
-/*! 
+/*! \ingroup group_main
  * \brief Receive data from \b ARM.
  * 
  * This function is exit when the timeout is achieved from the last receive
