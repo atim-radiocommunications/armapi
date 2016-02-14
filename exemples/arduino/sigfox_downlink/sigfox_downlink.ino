@@ -2,7 +2,7 @@
 // This file is a example for use the library armapi with
 // ARM NANO (NANO_LP with sigfox) on arduino board.
 //
-// This software send periodique 'Hello Sigfox' to Sigfox network
+// This software send periodically 'Hello Sigfox' to Sigfox network
 // and get the message from sigfox to on/off the led.
 // The first byte is user to switch on/off the led.
 // - If the byte is 0 the led is switch to off.
