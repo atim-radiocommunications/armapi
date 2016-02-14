@@ -396,9 +396,7 @@ bool armSfxIsEnableDownlink(arm_t* arm);
  * \brief Get The maximal possible power.
  * 
  * Get the maximal possible power of function channel and baudrate.
- * 
- * For more information, please consulate the main radio parameter page.
- * \todo Create the main parameter page.
+ * For more information, please consulate \ref fsk_page page.
  * 
  * \param radioChannel The radio channel.
  * \param radioBaud The radio baudrate.
@@ -411,8 +409,7 @@ int8_t armFskMaxPower(uint16_t radioChannel, armBaudrate_t radioBaud);
 /*! 
  * \brief Setup the Fsk (local) radio configuration.
  * 
- * For more information, please consulate the Fsk (local) radio parameters page.
- * \todo Create the Fsk (local) parameter page.
+ * For more information, please consulate \ref fsk_page page.
  * 
  * This function is supported by:
  * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
@@ -1025,8 +1022,7 @@ void armFskGetLbtAfaMode(arm_t* arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, ui
 /*! 
  * \brief Setup the LoraWan radio configuration.
  * 
- * For more information, please consulate the LoraWan radio parameters page.
- * \todo Create the LoraWan parameter page.
+ * For more information, please consulate \ref lora_page page.
  * 
  * This function is supported by:
  * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
@@ -1121,12 +1117,12 @@ void armLwGetRadio(arm_t* arm, uint8_t* txChannel, uint8_t* power, uint8_t* txSf
  * 	- \ref ARM_ERR_PARAM_OUT_OF_RANGE If one of the parameters is out of rang.
  * 
  * eg:
- * \code
+ * \code {c}
  * //Put at 3 the number of frame unconfirmed.
  * armLwSetConfirmedFrame(&myArm, -3);
  * \endcode
  * or (this is same thing):
- * \code
+ * \code {c}
  * //Put at 3 the number of frame unconfirmed.
  * armLwSetConfirmedFrame(&myArm, ARM_LW_UNCONFIRMED(3));
  * \endcode
@@ -1149,7 +1145,7 @@ armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame);
  * \return The confirmed frame setup.
  * 
  * eg:
- * \code
+ * \code {c}
  * int8_t nbFrame = armLwGetConfirmedFrame(&myArm);
  * if(ARM_LW_IS_UNCONFIRMED(nbFrame))
  * {
@@ -1162,7 +1158,7 @@ armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame);
  * }
  * \endcode
  * or (this is same thing):
- * \code
+ * \code {c}
  * int8_t nbFrame = armLwGetConfirmedFrame(&myArm);
  * if(nbFrame <= 0)
  * {
