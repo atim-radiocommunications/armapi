@@ -1,6 +1,10 @@
+// ---------------------------------------------------------------------
+// Created date: 14.12.2015
+// ---------------------------------------------------------------------
+
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,4 +28,43 @@
  THE SOFTWARE.
 
 ***********************************************************************/
+
+/*! \mainpage Armapi API for ARM module
+ * 
+ * \section intro_sec Introduction
+ *
+ * This API allow you to control easily the modules \b ARM from
+ * ATIM company in c or cpp. You will be able to send and receive data
+ * on the Sigfox/LoRaWan network and local network.
+ * 
+ * This API is actually published in bêta version.
+ * Please, contact us to report a bug.
+ * 
+ * \section support_sec ARM modules supported
+ * 
+ * Actually, the \b armapi is supports by follow \b ARM:
+ *	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ *	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ *	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * 
+ * \section user_manual_sec User Manual
+ *	- \ref install_page
+ *	- \ref arduino_page
+ *	- \ref pgm_guides_page
+ */
+
+/*! \page install_page Installation
+ * 
+ * There is no installation. To use this API, just copy or include
+ * the files from 'bindings' folders in you project.
+ * - Go to github project https://github.com/atim-radiocommunications/armapi
+ * to get the source code.
+ * - For Arduino there is a <a href="http://atim-radiocommunications.github.io/armapi/pkg/arduino/armapi.zip">package</a>.
+ * Go to http://atim-radiocommunications.github.io/armapi/ to get the packages.
+ * 
+ * Go to \ref pgm_guides_page page for next step.
+ */
+
+
+
 

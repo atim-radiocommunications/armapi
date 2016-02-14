@@ -4,7 +4,7 @@
 
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,12 +31,14 @@
 
 #include "../armport.h"
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
-
+#include <unistd.h>
+ 
 int armPortOpen(void** ptrPort)
 {
 	int* ptrFd = NULL;
@@ -44,6 +46,7 @@ int armPortOpen(void** ptrPort)
 	
 	//Open uart file port
 	fd = open(*ptrPort, O_RDWR);
+	*ptrPort = NULL;
 	if(fd == -1)
 	{
 		fprintf(stderr, "ERROR - %s: %s\n", __func__, strerror(errno));
@@ -68,6 +71,10 @@ int armPortConfig(void* port, 	armPortBaudrate_t baudrate,
 								armPortParity_t parity,
 								armPortStopbit_t stopbit)
 {
+	//No valid pointer?
+	if(port == NULL)
+		return -1;
+	
 	int fd = *((int*)port);
 	
 	//struct to configure the urat port
@@ -193,6 +200,10 @@ int armPortConfig(void* port, 	armPortBaudrate_t baudrate,
 
 int armPortClose(void* port)
 {
+	//No valid pointer?
+	if(port == NULL)
+		return -1;
+		
 	int fd = *((int*)port);
 	
 	//Close file
@@ -208,8 +219,12 @@ int armPortClose(void* port)
 	return 0;
 }
 
-ssize_t armPortWrite(void* port, const uint8_t *buf, size_t nbyte)
+int armPortWrite(void* port, const void* buf, size_t nbyte)
 {
+	//No valid pointer?
+	if(port == NULL)
+		return -1;
+		
 	int fd = *((int*)port);
 	int n = 0;
 	
@@ -223,8 +238,12 @@ ssize_t armPortWrite(void* port, const uint8_t *buf, size_t nbyte)
 	return n;
 }
 
-ssize_t armPortRead(void* port, uint8_t *buf, size_t nbyte, unsigned int timeout)
+int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
 {
+	//No valid pointer?
+	if(port == NULL)
+		return -1;
+		
 	int fd = *((int*)port);
 	struct timeval _timeout;
 	size_t nread = 0;

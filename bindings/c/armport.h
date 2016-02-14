@@ -4,7 +4,7 @@
 
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,12 +32,6 @@
 #ifndef ARMPORT_H
 #define ARMPORT_H
 
-#ifndef __DOXYGEN__
-	#ifndef __BEOS__
-	#define __BEOS__
-	#endif
-#endif
-
 // ---------------------------------------------------------------------
 // Include
 // ---------------------------------------------------------------------
@@ -45,6 +39,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include "armconfig.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -56,20 +51,13 @@ extern "C"
 extern void bzero(void *s, size_t n);
 extern void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen);
 #endif
-
-/*! \defgroup armport The port for armapi
- * 
- * All function in this group except \ref armPortGpioSet() must be 
- * implemented on you platform for use \b armapi.
- * 
- * @{
- */
  
 // ---------------------------------------------------------------------
 // Enum
 // ---------------------------------------------------------------------
 
 /*!	\brief Constant to define the baudrate value.
+ * \ingroup group_port
  * 
  */
 typedef enum
@@ -87,6 +75,7 @@ typedef enum
 }armPortBaudrate_t;
 
 /*!	\brief Constant to define the data bits value.
+ * \ingroup group_port
  * 
  */
 typedef enum
@@ -96,6 +85,7 @@ typedef enum
 }armPortDatabits_t;
 
 /*!	\brief Constant to define the parity type.
+ * \ingroup group_port
  * 
  */
 typedef enum
@@ -106,6 +96,7 @@ typedef enum
 }armPortParity_t;
 
 /*!	\brief Constant to define the number stop bits.
+ * \ingroup group_port
  * 
  */
 typedef enum
@@ -120,6 +111,7 @@ typedef enum
 
 #if defined ARMPORT_WITH_nSLEEP || defined ARMPORT_WITH_nBOOT || defined ARMPORT_WITH_nRESET || __DOXYGEN__
 /*!	\brief Constant to define the pins.
+ * \ingroup group_port
  * 
  */
 typedef enum
@@ -140,24 +132,48 @@ typedef enum
 // Prototypes functions
 // ---------------------------------------------------------------------
 
+/*!	\brief
+ * \ingroup group_port
+ * 
+ */
 int armPortOpen(void** port);
+
+/*!	\brief
+ * \ingroup group_port
+ * 
+ */
 int armPortConfig(void* port,	armPortBaudrate_t baudrate,
 								armPortDatabits_t databits,
 								armPortParity_t parity,
 								armPortStopbit_t stopbit);
 int armPortClose(void* port);
 
-ssize_t armPortWrite(void* port, const uint8_t* buf, size_t nbyte);
+/*!	\brief
+ * \ingroup group_port
+ * 
+ */
+int armPortWrite(void* port, const void* buf, size_t nbyte);
 
-ssize_t armPortRead(void* port, uint8_t* buf, size_t nbyte, unsigned int timeout);
+/*!	\brief
+ * \ingroup group_port
+ * 
+ */
+int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout);
 
+/*!	\brief
+ * \ingroup group_port
+ * 
+ */
 void armPortDelay(int ms);
 
 #if defined ARMPORT_WITH_nSLEEP || defined ARMPORT_WITH_nBOOT || defined ARMPORT_WITH_nRESET || __DOXYGEN__
+/*!	\brief
+ * \ingroup group_port
+ * 
+ */
 void armPortGpioSet(void* port, armPortPin_t pin, bool val);
 #endif
 
-/** @}*/ //armport
 
 #ifdef __cplusplus
 }

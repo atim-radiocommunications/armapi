@@ -1,6 +1,6 @@
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -156,6 +156,11 @@ void entCToCpp(entity_t* ent)
 		}
 		break;
 		
+		case ENT_ERROR:
+		{
+		}
+		break;
+		
 		case ENT_DEFINE:
 			while(strRepExp(ent->str, "arm->", "this->"));
 		break;
@@ -165,17 +170,17 @@ void entCToCpp(entity_t* ent)
 		break;
 		
 		case ENT_FUN_PROTO_ARM:
-			strRepExp(ent->str, "[ \t]+armN8", " ");
-			strRepExp(ent->str, "armN8_t[* \t]+arm[, \t\n\r]*", "");
+			strRepExp(ent->str, "[ \t]+arm", " ");
+			strRepExp(ent->str, "arm_t[* \t]+arm[, \t\n\r]*", "");
 		break;
 		
 		case ENT__FUN_PROTO_ARM:
-			strRepExp(ent->str, "[ \t]+_armN8", " _");
-			strRepExp(ent->str, "armN8_t[* \t]+arm[, \t\n\r]*", "");
+			strRepExp(ent->str, "[ \t]+_arm", " _");
+			strRepExp(ent->str, "arm_t[* \t]+arm[, \t\n\r]*", "");
 		break;
 		
 		case ENT_FUN_STATIC_PROTO_ARM:
-			strRepExp(ent->str, "[ \t]+armN8", " ");
+			strRepExp(ent->str, "[ \t]+arm", " ");
 			cstr = strdup(ent->str);
 			strcpy(ent->str, "static ");
 			strcat(ent->str, cstr);
@@ -183,7 +188,7 @@ void entCToCpp(entity_t* ent)
 		break;
 		
 		case ENT__FUN_STATIC_PROTO_ARM:
-			strRepExp(ent->str, "[ \t]+_armN8", " _");
+			strRepExp(ent->str, "[ \t]+_arm", " _");
 			cstr = strdup(ent->str);
 			strcpy(ent->str, "static ");
 			strcat(ent->str, cstr);
@@ -230,21 +235,15 @@ void entCToCpp(entity_t* ent)
 			char* lf = index(ent->str, '\n');
 			*lf = '\0';
 			lf++;
-			char strfunc[4*1024];
+			char strfunc[8*1024];
 			strcpy(strfunc, lf);
 			
+			strRepExp(ent->str, "arm_t[* \t]+arm[, \t\n\r]*", "");
+			strRepExp(ent->str, "[ \t]+_arm", " Arm::_");
+			strRepExp(ent->str, "[ \t]+arm", " Arm::");
 
-			
-			strRepExp(ent->str, "[ \t]+_armN8", " ArmN8::_");
-			strRepExp(ent->str, "[ \t]+armN8", " ArmN8::");
-			strRepExp(ent->str, "armN8_t[* \t]+arm[, \t\n\r]*", "");
-
-
-			while(strRepExp(strfunc, "[(][ \t\r\n]*\"", "((const uint8_t*)\""));
-			while(strRepExp(strfunc, "[,][ \t\r\n]*\"", ", (const uint8_t*)\""));			
-			
-			//while(strRepExp(strfunc, "_armN8", "this->_"));
-			//while(strRepExp(strfunc, "armN8", "this->"));
+			//while(strRepExp(strfunc, "[(][ \t\r\n]*\"", "((const uint8_t*)\""));
+			//while(strRepExp(strfunc, "[,][ \t\r\n]*\"", ", (const uint8_t*)\""));			
 	
 			
 			strcat(ent->str, "\n");
@@ -258,9 +257,9 @@ void entCToCpp(entity_t* ent)
 			while(strRepExp(ent->str, "struct", "class"));
 		break;
 		
-		case ENT_DOC_ARM_N8:
-			while(strRepExp(ent->str, "\\\\param[ ]armN8[^\n\r]*", ""));
-			while(strRepExp(ent->str, "armN8", "ArmN8::"));
+		case ENT_DOC_ARM:
+			while(strRepExp(ent->str, "\\\\param[ ]arm[^\n\r]*", ""));
+			while(strRepExp(ent->str, "arm", "Arm::"));
 			while(strRepExp(ent->str, "struct", "class"));
 		break;
 		

@@ -1,6 +1,6 @@
 /***********************************************************************
 
- Copyright (c) 2015 ATIM
+ Copyright (c) 2016 ATIM
  
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,7 +50,7 @@ extern FILE *yyin;
 					
 #define LICENCE		 "/***********************************************************************\n"		\
 					"\n"																				\
-					" Copyright (c) 2015 ATIM\n"														\
+					" Copyright (c) 2016 ATIM\n"														\
                     " \n"																				\
                     " \n"																				\
 					" Permission is hereby granted, free of charge, to any person obtaining a copy\n"	\
@@ -81,65 +81,39 @@ void cFileNameToCppFileName(char* fileName);
 //Arm port
 void writeHeaderArmPortClass(entity_t* treeHeader, entity_t* treeSource, int fd);
 
-//ArmN8
-void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd);
-void writeSourceArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd);
+//Arm
+void writeHeaderArmClass(entity_t* treeHeader, entity_t* treeSource, int fd);
+void writeSourceArmClass(entity_t* treeHeader, entity_t* treeSource, int fd);
 
 int main(int argc, char *argv[])
 {
 	//c file name
 	char headerFileArmPort[SIZE_FILE_NAME] = "../../bindings/c/armport.h";
-	char headerFileArmN8[SIZE_FILE_NAME] = "../../bindings/c/armn8.h";
-	char sourceFileArmN8[SIZE_FILE_NAME] = "../../bindings/c/armn8.c";
+	char headerFileArm[SIZE_FILE_NAME] = "../../bindings/c/arm.h";
+	char sourceFileArm[SIZE_FILE_NAME] = "../../bindings/c/arm.c";
 	
 	//Create tree from file
 	entity_t* treeHeaderArmPort = makeTreeFromFile(headerFileArmPort);
-	entity_t* treeHeaderArmN8 = makeTreeFromFile(headerFileArmN8);
-	entity_t* treeSourceArmN8 = makeTreeFromFile(sourceFileArmN8);
+	entity_t* treeHeaderArm = makeTreeFromFile(headerFileArm);
+	entity_t* treeSourceArm = makeTreeFromFile(sourceFileArm);
 	
 	//convert c file name to cpp file name
 	cFileNameToCppFileName(headerFileArmPort);
-	cFileNameToCppFileName(headerFileArmN8);
-	cFileNameToCppFileName(sourceFileArmN8);
+	cFileNameToCppFileName(headerFileArm);
+	cFileNameToCppFileName(sourceFileArm);
 	
 	int fdHeaderArmPort = 	open(headerFileArmPort, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-	int fdHeaderArmN8 = 	open(headerFileArmN8, 	O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-	int fdSourceArmN8 = 	open(sourceFileArmN8, 	O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	int fdHeaderArm = 		open(headerFileArm, 	O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+	int fdSourceArm = 		open(sourceFileArm, 	O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	
 	//Write files
 	writeHeaderArmPortClass(treeHeaderArmPort, NULL, fdHeaderArmPort);
-	writeHeaderArmN8Class(treeHeaderArmN8, treeSourceArmN8, fdHeaderArmN8);
-	writeSourceArmN8Class(treeHeaderArmN8, treeSourceArmN8, fdSourceArmN8);
-	
-	
-	
-	//entity_t* ent = treeHeaderArmPort;
-	//while(ent)
-	//{
-		//entCToCpp(ent);
-		//entWrite(fdHeaderArmPort, ent);
-		//ent = ent->nextEntity;
-	//}
-	
-	//ent = treeHeaderArm;
-	//while(ent)
-	//{
-		//entCToCpp(ent);
-		//entWrite(fdHeaderArm, ent);
-		//ent = ent->nextEntity;
-	//}
-	
-	//ent = treeSourceArm;
-	//while(ent)
-	//{
-		//entCToCpp(ent);
-		//entWrite(fdSourceArm, ent);
-		//ent = ent->nextEntity;
-	//}
+	writeHeaderArmClass(treeHeaderArm, treeSourceArm, fdHeaderArm);
+	writeSourceArmClass(treeHeaderArm, treeSourceArm, fdSourceArm);
 	
 	close(fdHeaderArmPort);
-	close(fdHeaderArmN8);
-	close(fdSourceArmN8);
+	close(fdHeaderArm);
+	close(fdSourceArm);
 	
 	
 	return EXIT_SUCCESS;
@@ -239,7 +213,7 @@ void writeHeaderArmPortClass(entity_t* treeHeader, entity_t* treeSource, int fd)
 	}
 }
 
-void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
+void writeHeaderArmClass(entity_t* treeHeader, entity_t* treeSource, int fd)
 {
 	entity_t* ent = treeHeader;
 	bool inClassPublic = false;
@@ -259,8 +233,8 @@ void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 			
 		if(ent->type == ENT_STRUCT)
 		{
-			//Is armN8_t structure ?
-			if(strstr(ent->str, "}armN8_t;"))
+			//Is arm_t structure ?
+			if(strstr(ent->str, "}arm_t;"))
 			{
 				entArmStruc = ent;
 				ent = ent->nextEntity;
@@ -276,11 +250,11 @@ void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 			if(!inClassPublic)
 			{
 				//dprintf(fd, "class ArmPort;\n");
-				dprintf(fd, "class ArmN8\n");
+				dprintf(fd, "class Arm\n");
 				dprintf(fd, "{\n");
 				dprintf(fd, "\tpublic:\n");
-				dprintf(fd, "\t\tArmN8();\n");
-				dprintf(fd, "\t\t~ArmN8();\n\n\t\t");
+				dprintf(fd, "\t\tArm();\n");
+				dprintf(fd, "\t\t~Arm();\n\n\t\t");
 				
 				inClassPublic = true;
 			}
@@ -310,13 +284,14 @@ void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 			//Write private attributes
 			dprintf(fd, "\n\tArmPort\t_port;\n");
 			
-			//Extract attributes from armN8_t structure
-			char cstr[1024];
+			//Extract attributes from arm_t structure
+			char cstr[4*1024];
 			strcpy(cstr, entArmStruc->str);
 			strRepExp(cstr, "[^\n]+\n", "");
 			strRepExp(cstr, "[^\n]+\n", "");
 			strRepExp(cstr, "[^\n]+\n", "");
-			strRepExp(cstr, "}armN8_t;", "");
+			strRepExp(cstr, "[^\n]+_port[^\n]\n", "");
+			strRepExp(cstr, "}arm_t;", "");
 			
 			dprintf(fd, "%s", cstr);
 			
@@ -328,7 +303,7 @@ void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 		}
 		
 		if(ent->type == ENT_DOC)
-			ent->type = ENT_DOC_ARM_N8;
+			ent->type = ENT_DOC_ARM;
 			
 		entCToCpp(ent);
 		entWrite(fd, ent);
@@ -336,7 +311,7 @@ void writeHeaderArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 	}
 }
 
-void writeSourceArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
+void writeSourceArmClass(entity_t* treeHeader, entity_t* treeSource, int fd)
 {
 	bool writConstructor = false;
 	entity_t* ent = treeSource;
@@ -356,11 +331,11 @@ void writeSourceArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 		if(	!writConstructor &&
 			(ent->type == ENT_FUNCTION))
 		{
-			dprintf(fd, "ArmN8::ArmN8()\n");
+			dprintf(fd, "Arm::Arm()\n");
 			dprintf(fd, "{\n");
 			dprintf(fd, "}\n\n");
 
-			dprintf(fd, "ArmN8::~ArmN8()\n");
+			dprintf(fd, "Arm::~Arm()\n");
 			dprintf(fd, "{\n");
 			dprintf(fd, "}\n\n");
 			
@@ -368,7 +343,7 @@ void writeSourceArmN8Class(entity_t* treeHeader, entity_t* treeSource, int fd)
 		}
 		
 		if(ent->type == ENT_DOC)
-			ent->type = ENT_DOC_ARM_N8;
+			ent->type = ENT_DOC_ARM;
 			
 		entCToCpp(ent);
 		entWrite(fd, ent);
