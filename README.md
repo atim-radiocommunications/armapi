@@ -15,7 +15,7 @@ To generate the doc you need to have doxygen installed locally, then run
 doxygen in 'docs' folder.
 The documentation is generated locally in the docs/html/index.html folder.
 
-Or you can access the last generated [documentation](http://atim-radiocommunications.github.io/armapi/armapidoc/index.html).
+Or you can access the last generated [documentation](http://atim-radiocommunications.github.io/armapi/doc/html/index.html).
 
 ## Library status
 Currently the API is in bêta and support the module ARM_N8_LP, ARM_N8_LD and ARM_N8_LW.
