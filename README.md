@@ -27,4 +27,4 @@ To report your problem, open an issue.
 ## Link
 * [Github project](https://github.com/atim-radiocommunications/armapi)
 * [Github page](http://atim-radiocommunications.github.io/armapi)
-* [API documentation](http://atim-radiocommunications.github.io/armapi/doc/index.html)
+* [API documentation](http://atim-radiocommunications.github.io/armapi/doc/html/index.html)
