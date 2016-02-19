@@ -114,7 +114,7 @@ typedef enum
  * \ingroup group_port
  * 
  */
-typedef enum
+typedef enum armPortPin_e
 {
 	#if defined ARMPORT_WITH_nSLEEP || __DOXYGEN__
 	ARMPORT_PIN_nSLEEP,		//!< nSLEEP pin.
@@ -164,7 +164,7 @@ int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout);
  * \ingroup group_port
  * 
  */
-void armPortDelay(int ms);
+void armPortDelay(unsigned int ms);
 
 #if defined ARMPORT_WITH_nSLEEP || defined ARMPORT_WITH_nBOOT || defined ARMPORT_WITH_nRESET || __DOXYGEN__
 /*!	\brief

@@ -325,7 +325,7 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 	//Get arm type, rev and sn from 'ATV' commend
 	if((arm->_type==ARM_TYPE_NONE) || rev || sn)
 	{
-		uint8_t buf[64];
+		uint8_t buf[68];
 		int nread;
 	
 		//Go to AT commend
@@ -1688,7 +1688,7 @@ armError_t armLwSetConfirmedFrame(arm_t* arm, int8_t nbFrame)
 	_ARM_IMP1(N8_LW)
 	{
 		//Check if out of range
-		if((nbFrame <= 15) && (nbFrame >= -15))
+		if((nbFrame > 15) && (nbFrame < -15))
 			return ARM_ERR_PARAM_OUT_OF_RANGE;
 		
 		//Set the value
@@ -1911,7 +1911,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 			
 		if(devAddr)
 		{
-			*devAddr = 0;
+			bzero(devAddr, sizeof devAddr);
 			for(i=0; i<_ARM_N8LW_SIZE_DEVADDR; i++)
 			{
 				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVADDR, ((uint8_t*)devAddr)+i)))
@@ -1921,7 +1921,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		
 		if(devEui)
 		{
-			*devEui = 0;
+            		bzero(devEui, sizeof devEui);
 			for(i=0; i<_ARM_N8LW_SIZE_DEVEUI; i++)
 			{
 				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVEUI, ((uint8_t*)devEui)+i)))
@@ -1931,7 +1931,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		
 		if(appEui)
 		{
-			*appEui = 0;
+            		bzero(appEui, sizeof appEui);
 			for(i=0; i<_ARM_N8LW_SIZE_APPEUI; i++)
 			{
 				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPEUI, ((uint8_t*)appEui)+i)))
@@ -1941,8 +1941,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		
 		if(appKey)
 		{
-			appKey->lsb = 0;
-			appKey->msb = 0;
+            		bzero(appKey, sizeof appKey);
 			for(i=0; i<_ARM_N8LW_SIZE_APPKEY; i++)
 			{
 				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPKEY, ((uint8_t*)appKey)+i)))
@@ -1952,8 +1951,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 			
 		if(nwkSKey)
 		{
-			nwkSKey->lsb = 0;
-			nwkSKey->msb = 0;
+            		bzero(nwkSKey, sizeof nwkSKey);
 			for(i=0; i<_ARM_N8LW_SIZE_NWKSKEY; i++)
 			{
 				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_NWKSKEY, ((uint8_t*)nwkSKey)+i)))
@@ -1963,8 +1961,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 
 		if(appSKey)
 		{
-			appSKey->lsb = 0;
-			appSKey->msb = 0;
+            		bzero(appSKey, sizeof appSKey);
 			for(i=0; i<_ARM_N8LW_SIZE_APPSKEY; i++)
 			{
 				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPSKEY, ((uint8_t*)appSKey)+i)))
@@ -2374,8 +2371,8 @@ armError_t _armGoAt(arm_t* arm)
 	{
 		ntry++;
 		
-		//Write '+++' for go to AT commend and read reply
-		#if !defined ARM_WITH_N8_LPLD && !defined ARMPORT_WITH_nBOOT
+		//Write '+++' to go to AT commend and read reply
+		#if defined ARM_WITH_N8_LPLD && !defined ARMPORT_WITH_nBOOT
 		if(arm->_type&(ARM_TYPE_NONE))
 		{
 			nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_N8LPLD_TIME_BOOTING/_ARM_NUMBER_OF_TRIALS_GO_AT);

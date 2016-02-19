@@ -173,7 +173,7 @@ int ArmPort::Read(void* buf, size_t nbyte, unsigned int timeout)
 	return ((HardwareSerial*)_port)->readBytes((uint8_t*)buf, 1);
 }
 
-void ArmPort::Delay(int ms)
+void ArmPort::Delay(unsigned int ms)
 {
 	delay(ms);
 }

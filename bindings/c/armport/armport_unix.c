@@ -281,7 +281,7 @@ int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
 	return nread;
 }
 
-void armPortDelay(int ms)
+void armPortDelay(unsigned int ms)
 {
 	if(usleep(ms*1000) == -1)
 		fprintf(stderr, "ERROR - %s: %s\n", __func__, strerror(errno));

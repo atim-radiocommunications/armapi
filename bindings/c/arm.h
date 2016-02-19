@@ -83,7 +83,7 @@
  * \brief Constant to define the errors.
  * 
  */
-typedef enum
+typedef enum armError_e
 {
 	ARM_ERR_NONE,					//!< No error.
 	ARM_ERR_NO_SUPPORTED,			//!< Functionality no supported by the\b ARM.
@@ -113,7 +113,7 @@ typedef enum
  * \brief Constant to define the baudrate value.
  * 
  */
-typedef enum
+typedef enum armBaudrate_e
 {
 	ARM_BAUDRATE_NONE		= 0,		//!< That is probably a error.
 	ARM_BAUDRATE_1200		= 1200,		//!< 1200 bps.
@@ -131,7 +131,7 @@ typedef enum
  * 
  * \see armFskSetWorMode()
  */
-typedef enum
+typedef enum armFskWor_e
 {
 	ARM_FSK_WOR_DISABLE,	//!< Disable WOR mode.
 	ARM_FSK_WOR_LP,			//!< Enable long preamble for the transmitter, then wake up the receptor.
@@ -146,7 +146,7 @@ typedef enum
  * 
  * \see armSetLed()
  */
-typedef enum
+typedef enum armLed_e
 {
 	ARM_LED_OFF,		//!< The LED is 'off' all the time.
 	ARM_LED_OFF_RF,		//!< The LED is 'off' on RF activity and 'on' other time.
@@ -158,7 +158,7 @@ typedef enum
  * 
  * \see armFskSetLbtAfaMode()
  */
-typedef enum
+typedef enum armFskLbtAfa_e
 {
 	ARM_FSK_LBTAFA_DISABLE,	//!< Disable all LBT&AFA mode.
 	ARM_FSK_LBTAFA_LBT,		//!< Enable Listen Before Talk .
@@ -171,7 +171,7 @@ typedef enum
  * 
  * \see armSetMode()
  */
-typedef enum
+typedef enum armMode_e
 {
 	ARM_MODE_FSK,				//!< Mode for Fsk (local) radio.
 	ARM_MODE_SFX,		//!< Mode for Sigfox network.
@@ -183,7 +183,7 @@ typedef enum
  * 
  * \see armInfo()
  */
-typedef enum
+typedef enum armType_e
 {
 	ARM_TYPE_NONE	= 0x01,	//!< No \b Arm type.
 	ARM_TYPE_N8_LP	= 0x02, //!< \b ARM Nano in 868MHz low power version (and Sigfox). 
@@ -199,7 +199,7 @@ typedef enum
 /*!	\brief 128 bits variable type.
  * 
  */
-typedef struct
+typedef struct uint128_s
 {
 	uint64_t lsb;
 	uint64_t msb;
@@ -208,7 +208,7 @@ typedef struct
 /*!	\brief Register struct, this struct a representation one register.
  * 
  */
-typedef struct
+typedef struct armReg_s
 {	
 	uint8_t reg;	//!< A index of register.
 	uint8_t val;	//!< A value of register.
@@ -218,7 +218,7 @@ typedef struct
 /*!	\brief H registers for ARM_N8_LP and ARM_N8_LD
  * 
  */
-typedef struct
+typedef struct armN8LpLd_s
 {
 	armReg_t	regsH[_ARM_N8LPLD_REGH_SIZE];
 }armN8LpLd_t;
@@ -226,7 +226,7 @@ typedef struct
 /*!	\brief H registers for ARM_N8_LP and ARM_N8_LD
  * 
  */
-typedef struct
+typedef struct armN8Lw_s
 {
 	armReg_t	regsM[_ARM_N8LW_REGM_SIZE];
 	armReg_t	regsO[_ARM_N8LW_REGO_SIZE];
@@ -235,7 +235,7 @@ typedef struct
 /*!	\brief Arm struct.
  * 
  */
-typedef struct
+typedef struct arm_s
 {
 	void* 		_port;
 	armType_t	_type;
@@ -321,7 +321,7 @@ armError_t armReboot(arm_t* arm);
  * 	- \ref ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version. 
  * 	- \ref ARM_TYPE_N8_LW For \b ARM Nano in 868MHz LoraWan version.
  * \param rev If the pointer is valid, the firmware version is copied.
- * This parameter must be a string buffer capacity equal or more of 16 bytes.
+ * This parameter must be a string buffer capacity equal or more of \b 16 \b bytes.
  * \param sn If the pointer is valid, the serial number is set.
  * This parameter is the ID Sigfox in the case where the \b ARM support the Sigfox Network.
  * \param rfFreq If the pointer is valid, the work frequency of your \b ARM is set.

@@ -75,7 +75,7 @@ int ArmPort::Read(void* buf, size_t nbyte, unsigned int timeout)
 	return 0;
 }
 
-void ArmPort::Delay(int ms)
+void ArmPort::Delay(unsigned int ms)
 {
 }
 

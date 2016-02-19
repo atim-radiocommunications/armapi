@@ -161,7 +161,7 @@ int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
 	return -1;
 }
 
-void armPortDelay(int ms)
+void armPortDelay(unsigned int ms)
 {
 	HAL_Delay(ms);
 }
