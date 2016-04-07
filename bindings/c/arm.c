@@ -2139,71 +2139,71 @@ int armSend(arm_t* arm, const void* buf, size_t nbyte)
 {
 	int nwrite = 0;
 		
-	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
-	{
-		int n = 0;
-		int baud = 0;
+	//#ifdef ARM_WITH_N8_LPLD
+	//_ARM_IMP2(N8_LP, N8_LD)
+	//{
+		//int n = 0;
+		//int baud = 0;
 		
-		armFskGetRadio(arm, NULL, (armBaudrate_t*)&baud, NULL);
-		if(baud <= 0)
-			return -1;
+		//armFskGetRadio(arm, NULL, (armBaudrate_t*)&baud, NULL);
+		//if(baud <= 0)
+			//return -1;
 		
-		//if(infini mode disabel)
-		if(1)
-		{
-			//Send _ARM_RF_PAYLOAD_MAX by _ARM_RF_PAYLOAD_MAX
-			while((nbyte-nwrite) > _ARM_RF_PAYLOAD_MAX)
-			{
-				n = armPortWrite(arm->_port, (const uint8_t*)buf+nwrite, _ARM_RF_PAYLOAD_MAX);
-				if(n == -1)
-					return -1;
-				nwrite += n;
+		////if(infini mode disabel)
+		//if(1)
+		//{
+			////Send _ARM_RF_PAYLOAD_MAX by _ARM_RF_PAYLOAD_MAX
+			//while((nbyte-nwrite) > _ARM_RF_PAYLOAD_MAX)
+			//{
+				//n = armPortWrite(arm->_port, (const uint8_t*)buf+nwrite, _ARM_RF_PAYLOAD_MAX);
+				//if(n == -1)
+					//return -1;
+				//nwrite += n;
 				
-				armPortDelay(((n*8000)/baud)+100);
-			}
+				//armPortDelay(((n*8000)/baud)+100);
+			//}
 			
-			//Send last data
-			n = armPortWrite(arm->_port, (const uint8_t*)buf+nwrite, (nbyte-nwrite));
-			if(n == -1)
-				return -1;
+			////Send last data
+			//n = armPortWrite(arm->_port, (const uint8_t*)buf+nwrite, (nbyte-nwrite));
+			//if(n == -1)
+				//return -1;
 				
-			nwrite += n;
+			//nwrite += n;
 			
-			//TODO temporaier aven de trouver mieu ce qui serai bine ce cerai de lancer un timer
-			//et de verifier si le timer a finie aven char ehnvoi de nouvelle données ou
-			// aven de rentrer en commende AT
-			//armPortDelay((n*8000)/baud+100);
+			////TODO temporaier aven de trouver mieu ce qui serai bine ce cerai de lancer un timer
+			////et de verifier si le timer a finie aven char ehnvoi de nouvelle données ou
+			//// aven de rentrer en commende AT
+			////armPortDelay((n*8000)/baud+100);
 			
-			//Wait Te+Ta+Tb+Tc+Tpreamble+Tsync+Tdata+Tcrc
-			//Te: 3 byte time
-			//Ta: 5ms if "listen before talk" is enable else 0ms
-			//Tb: Pseudorandom if "listen before talk" is enable
-			//Tc: Time before radio Tx 0 by default
-			//Tpreamble:
-			//Tsync:
-			//Tdata: nbyte * byte time
-			//Tcrc: 2 byte time if crc is enable
-			armPortDelay(((n*8000)/baud)+100);
-		}
-		else 
-		{
-			//Send all buf
-			nwrite = armPortWrite(arm->_port, buf, nbyte);
+			////Wait Te+Ta+Tb+Tc+Tpreamble+Tsync+Tdata+Tcrc
+			////Te: 3 byte time
+			////Ta: 5ms if "listen before talk" is enable else 0ms
+			////Tb: Pseudorandom if "listen before talk" is enable
+			////Tc: Time before radio Tx 0 by default
+			////Tpreamble:
+			////Tsync:
+			////Tdata: nbyte * byte time
+			////Tcrc: 2 byte time if crc is enable
+			//armPortDelay(((n*8000)/baud)+100);
+		//}
+		//else 
+		//{
+			////Send all buf
+			//nwrite = armPortWrite(arm->_port, buf, nbyte);
 			
-			//Wait end send
-			//armPortDelay();
-		}
-	}
-	#endif
+			////Wait end send
+			////armPortDelay();
+		//}
+	//}
+	//#endif
 	
-	#ifdef ARM_WITH_N8_LW
-	_ARM_IMP1(N8_LW)
-	{
+	//#ifdef ARM_WITH_N8_LW
+	//_ARM_IMP1(N8_LW)
+	//{
 		//Send all buf
 		nwrite = armPortWrite(arm->_port, buf, nbyte);
-	}
-	#endif
+	//}
+	//#endif
 	
 	return nwrite;
 }
