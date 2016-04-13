@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------
 // This file is a example for use the library armapi with
-// ARM NANO (NANO_LP with sigfox) on arduino board.
+// ARM NANO (NANO_LP with sigfox and NANO_LW) on arduino board.
 //
 // This software send periodically 'Hello world' to Sigfox network or 
 // Lora network. The choice of the network is automatically choose by
