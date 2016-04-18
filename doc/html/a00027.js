@@ -2,17 +2,19 @@ var a00027 =
 [
     [ "ARM_FSK_BROADCAST", "a00027.html#gaa9650169e15b56d484f70b61881dca6e", null ],
     [ "ARM_FSK_POWER_AUTO", "a00027.html#gada078b963772be3469f191f4c3cecbf9", null ],
-    [ "armFskLbtAfa_t", "a00027.html#gac7e8e2589afdf4f8012d0ff4a4d5780e", [
-      [ "ARM_FSK_LBTAFA_DISABLE", "a00027.html#ggac7e8e2589afdf4f8012d0ff4a4d5780ea30445881f2aa9b1b95a697d250ffd03c", null ],
-      [ "ARM_FSK_LBTAFA_LBT", "a00027.html#ggac7e8e2589afdf4f8012d0ff4a4d5780ea96d7e001e7a670992ee665624a241fce", null ],
-      [ "ARM_FSK_LBTAFA_AFA", "a00027.html#ggac7e8e2589afdf4f8012d0ff4a4d5780ea0f5a71886bf71d134edc6aec1687249d", null ],
-      [ "ARM_FSK_LBTAFA_LBTAFA", "a00027.html#ggac7e8e2589afdf4f8012d0ff4a4d5780eadb98bfadfbf59ef34f187079258721b5", null ]
+    [ "armFskLbtAfa_t", "a00027.html#gafcb6fd2a8ef1950f8e655e8279a42226", null ],
+    [ "armFskWor_t", "a00027.html#ga04b9313d464d0fdf87c5188ba3cb1364", null ],
+    [ "armFskLbtAfa_e", "a00027.html#ga5913c91856c17039e6f885978c9501d5", [
+      [ "ARM_FSK_LBTAFA_DISABLE", "a00027.html#gga5913c91856c17039e6f885978c9501d5a30445881f2aa9b1b95a697d250ffd03c", null ],
+      [ "ARM_FSK_LBTAFA_LBT", "a00027.html#gga5913c91856c17039e6f885978c9501d5a96d7e001e7a670992ee665624a241fce", null ],
+      [ "ARM_FSK_LBTAFA_AFA", "a00027.html#gga5913c91856c17039e6f885978c9501d5a0f5a71886bf71d134edc6aec1687249d", null ],
+      [ "ARM_FSK_LBTAFA_LBTAFA", "a00027.html#gga5913c91856c17039e6f885978c9501d5adb98bfadfbf59ef34f187079258721b5", null ]
     ] ],
-    [ "armFskWor_t", "a00027.html#ga4109575561ccc6da8246f3338c1c4dfe", [
-      [ "ARM_FSK_WOR_DISABLE", "a00027.html#gga4109575561ccc6da8246f3338c1c4dfea6229bce1b85f8c4d72ab3521bb7752ec", null ],
-      [ "ARM_FSK_WOR_LP", "a00027.html#gga4109575561ccc6da8246f3338c1c4dfea97d6fcf77c021064f43c6ee7045ce919", null ],
-      [ "ARM_FSK_WOR_CS", "a00027.html#gga4109575561ccc6da8246f3338c1c4dfea885d560342febb49cf3ed6be09f5a66b", null ],
-      [ "ARM_FSK_WOR_PQT", "a00027.html#gga4109575561ccc6da8246f3338c1c4dfeaac991f037d67a40d1d61134d40323a88", null ]
+    [ "armFskWor_e", "a00027.html#ga874532d9e894b4fa006d5c9791d46a5f", [
+      [ "ARM_FSK_WOR_DISABLE", "a00027.html#gga874532d9e894b4fa006d5c9791d46a5fa6229bce1b85f8c4d72ab3521bb7752ec", null ],
+      [ "ARM_FSK_WOR_LP", "a00027.html#gga874532d9e894b4fa006d5c9791d46a5fa97d6fcf77c021064f43c6ee7045ce919", null ],
+      [ "ARM_FSK_WOR_CS", "a00027.html#gga874532d9e894b4fa006d5c9791d46a5fa885d560342febb49cf3ed6be09f5a66b", null ],
+      [ "ARM_FSK_WOR_PQT", "a00027.html#gga874532d9e894b4fa006d5c9791d46a5faac991f037d67a40d1d61134d40323a88", null ]
     ] ],
     [ "armFskEnableAddressing", "a00027.html#ga78808b0e5adcb02f423054bf85049e32", null ],
     [ "armFskEnableCrc", "a00027.html#gaed8f473083408603a7dc6da683145d06", null ],

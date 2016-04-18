@@ -1,5 +1,6 @@
 var a00018 =
 [
+    [ "armPortPin_t", "a00030.html#ga076b7372573b03c06301b7c81b1f76f2", null ],
     [ "armPortBaudrate_t", "a00030.html#gac07c573650cc3369dde6d9a8c9041112", [
       [ "ARMPORT_BAUDRATE_NONE", "a00030.html#ggac07c573650cc3369dde6d9a8c9041112aa7036c80de36c66903d58ce88972e72d", null ],
       [ "ARMPORT_BAUDRATE_1200", "a00030.html#ggac07c573650cc3369dde6d9a8c9041112a2f809543cbc431390fc35119cfff8f98", null ],
@@ -21,10 +22,10 @@ var a00018 =
       [ "ARMPORT_PARITY_ODD", "a00030.html#gga43cd28b8430726bee76f2c3ac55421c8a15dfa86f2857589980526a31a3538314", null ],
       [ "ARMPORT_PARITY_EVEN", "a00030.html#gga43cd28b8430726bee76f2c3ac55421c8a3c3ced43c086138163a56a75947f3e57", null ]
     ] ],
-    [ "armPortPin_t", "a00030.html#ga6369a0fa72a7227477545dc2e8a8647c", [
-      [ "ARMPORT_PIN_nSLEEP", "a00030.html#gga6369a0fa72a7227477545dc2e8a8647cad2947e6680cf2ffa3fe955e51b8f2dbc", null ],
-      [ "ARMPORT_PIN_nBOOT", "a00030.html#gga6369a0fa72a7227477545dc2e8a8647ca345ca0c71e4c8f25ebca72dd70e04e39", null ],
-      [ "ARMPORT_PIN_nRESET", "a00030.html#gga6369a0fa72a7227477545dc2e8a8647ca108cd8337a9945450cd84751a735213b", null ]
+    [ "armPortPin_e", "a00030.html#ga56856e0107d04a816b414e26367c5a6c", [
+      [ "ARMPORT_PIN_nSLEEP", "a00030.html#gga56856e0107d04a816b414e26367c5a6cad2947e6680cf2ffa3fe955e51b8f2dbc", null ],
+      [ "ARMPORT_PIN_nBOOT", "a00030.html#gga56856e0107d04a816b414e26367c5a6ca345ca0c71e4c8f25ebca72dd70e04e39", null ],
+      [ "ARMPORT_PIN_nRESET", "a00030.html#gga56856e0107d04a816b414e26367c5a6ca108cd8337a9945450cd84751a735213b", null ]
     ] ],
     [ "armPortStopbit_t", "a00030.html#gaba214755beccac837d5cce52f52107e1", [
       [ "ARMPORT_STOPBIT_1", "a00030.html#ggaba214755beccac837d5cce52f52107e1aed9715defd8fe62d306b7ad3c75795c8", null ],
@@ -32,7 +33,7 @@ var a00018 =
     ] ],
     [ "armPortClose", "a00018.html#a65e9477c66467b0c1bcd7fb121b07990", null ],
     [ "armPortConfig", "a00030.html#gaf7e5e9a3d46c6255bc40141e6f7db749", null ],
-    [ "armPortDelay", "a00030.html#ga3917ea680750f068a867d25bf53850e2", null ],
+    [ "armPortDelay", "a00030.html#gabefdd0e32f7eeabb5e2604c23dd7166e", null ],
     [ "armPortGpioSet", "a00030.html#ga08361215a02e226fab8afc862e0b2720", null ],
     [ "armPortOpen", "a00030.html#ga6ee0758c41e50a5542d40cafefcabbda", null ],
     [ "armPortRead", "a00030.html#ga14348ed220524fa3f1dbb915f0435121", null ],

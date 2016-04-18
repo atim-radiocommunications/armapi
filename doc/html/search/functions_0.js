@@ -48,7 +48,7 @@ var searchData=
   ['armlwsetradio',['armLwSetRadio',['../a00029.html#gadde352169d1cc9ecbb4f68ce0d693151',1,'arm.h']]],
   ['armportclose',['armPortClose',['../a00018.html#a65e9477c66467b0c1bcd7fb121b07990',1,'armport.h']]],
   ['armportconfig',['armPortConfig',['../a00030.html#gaf7e5e9a3d46c6255bc40141e6f7db749',1,'armport.h']]],
-  ['armportdelay',['armPortDelay',['../a00030.html#ga3917ea680750f068a867d25bf53850e2',1,'armport.h']]],
+  ['armportdelay',['armPortDelay',['../a00030.html#gabefdd0e32f7eeabb5e2604c23dd7166e',1,'armport.h']]],
   ['armportgpioset',['armPortGpioSet',['../a00030.html#ga08361215a02e226fab8afc862e0b2720',1,'armport.h']]],
   ['armportopen',['armPortOpen',['../a00030.html#ga6ee0758c41e50a5542d40cafefcabbda',1,'armport.h']]],
   ['armportread',['armPortRead',['../a00030.html#ga14348ed220524fa3f1dbb915f0435121',1,'armport.h']]],

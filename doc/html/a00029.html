@@ -121,13 +121,13 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gadde352169d1cc9ecbb4f68ce0d693151"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00026.html#ga2b04cb4b5da0c964d123601fa0558c41">armError_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gadde352169d1cc9ecbb4f68ce0d693151">armLwSetRadio</a> (arm_t *arm, uint8_t txChannel, uint8_t power, uint8_t txSf, uint8_t rx2Sf, uint8_t rx2Channel)</td></tr>
+<tr class="memitem:gadde352169d1cc9ecbb4f68ce0d693151"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00026.html#ga3da0f105852827128d740e41dda80484">armError_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gadde352169d1cc9ecbb4f68ce0d693151">armLwSetRadio</a> (arm_t *arm, uint8_t txChannel, uint8_t power, uint8_t txSf, uint8_t rx2Sf, uint8_t rx2Channel)</td></tr>
 <tr class="memdesc:gadde352169d1cc9ecbb4f68ce0d693151"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup the LoraWan radio configuration.  <a href="#gadde352169d1cc9ecbb4f68ce0d693151">More...</a><br /></td></tr>
 <tr class="separator:gadde352169d1cc9ecbb4f68ce0d693151"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf2820663b9bc5fa984d90f3aa99dfbab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gaf2820663b9bc5fa984d90f3aa99dfbab">armLwGetRadio</a> (arm_t *arm, uint8_t *txChannel, uint8_t *power, uint8_t *txSf, uint8_t *rx2Sf, uint8_t *rx2Channel)</td></tr>
 <tr class="memdesc:gaf2820663b9bc5fa984d90f3aa99dfbab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the LoraWan radio configuration.  <a href="#gaf2820663b9bc5fa984d90f3aa99dfbab">More...</a><br /></td></tr>
 <tr class="separator:gaf2820663b9bc5fa984d90f3aa99dfbab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf2d49f3a91de03be1ff0742e38f58bfa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00026.html#ga2b04cb4b5da0c964d123601fa0558c41">armError_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gaf2d49f3a91de03be1ff0742e38f58bfa">armLwSetConfirmedFrame</a> (arm_t *arm, int8_t nbFrame)</td></tr>
+<tr class="memitem:gaf2d49f3a91de03be1ff0742e38f58bfa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00026.html#ga3da0f105852827128d740e41dda80484">armError_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gaf2d49f3a91de03be1ff0742e38f58bfa">armLwSetConfirmedFrame</a> (arm_t *arm, int8_t nbFrame)</td></tr>
 <tr class="memdesc:gaf2d49f3a91de03be1ff0742e38f58bfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable/Disable and set the confirmed frame.  <a href="#gaf2d49f3a91de03be1ff0742e38f58bfa">More...</a><br /></td></tr>
 <tr class="separator:gaf2d49f3a91de03be1ff0742e38f58bfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad8915a2f6456595bbbf569ae3a96ca6c"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gad8915a2f6456595bbbf569ae3a96ca6c">armLwGetConfirmedFrame</a> (arm_t *arm)</td></tr>
@@ -175,7 +175,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ga41f0eb3f08b0a2283bfe9ae7d5d9f703"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#ga41f0eb3f08b0a2283bfe9ae7d5d9f703">armLwIsEnableRx2Adaptive</a> (arm_t *arm)</td></tr>
 <tr class="memdesc:ga41f0eb3f08b0a2283bfe9ae7d5d9f703"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get if <b>Rx2</b> windows <b>Adaptive</b> is enable.  <a href="#ga41f0eb3f08b0a2283bfe9ae7d5d9f703">More...</a><br /></td></tr>
 <tr class="separator:ga41f0eb3f08b0a2283bfe9ae7d5d9f703"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab91877894a51006423ff8409e7d2c6f6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00026.html#ga2b04cb4b5da0c964d123601fa0558c41">armError_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gab91877894a51006423ff8409e7d2c6f6">armLwIds</a> (arm_t *arm, uint32_t *devAddr, uint64_t *devEui, uint64_t *appEui, uint128_t *appKey, uint128_t *nwkSKey, uint128_t *appSKey)</td></tr>
+<tr class="memitem:gab91877894a51006423ff8409e7d2c6f6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00026.html#ga3da0f105852827128d740e41dda80484">armError_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00029.html#gab91877894a51006423ff8409e7d2c6f6">armLwIds</a> (arm_t *arm, uint32_t *devAddr, uint64_t *devEui, uint64_t *appEui, uint128_t *appKey, uint128_t *nwkSKey, uint128_t *appSKey)</td></tr>
 <tr class="memdesc:gab91877894a51006423ff8409e7d2c6f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the IDs.  <a href="#gab91877894a51006423ff8409e7d2c6f6">More...</a><br /></td></tr>
 <tr class="separator:gab91877894a51006423ff8409e7d2c6f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -602,7 +602,7 @@ In the case where this function in not supported by your <b>ARM</b> the value of
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="a00026.html#ga2b04cb4b5da0c964d123601fa0558c41">armError_t</a> armLwIds </td>
+          <td class="memname"><a class="el" href="a00026.html#ga3da0f105852827128d740e41dda80484">armError_t</a> armLwIds </td>
           <td>(</td>
           <td class="paramtype">arm_t *&#160;</td>
           <td class="paramname"><em>arm</em>, </td>
@@ -669,12 +669,12 @@ In the case where this function in not supported by your <b>ARM</b> the value of
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Error available:<ul>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41ab713e6256f470e51139d686a0967f0f1">ARM_ERR_NONE</a> If success.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41acf75111c68e51f0840c1b735cb2e40f5">ARM_ERR_NO_SUPPORTED</a> If your <b>ARM</b> don't support this function.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41ab04ff023c47a3fdccf821f1dce88ec12">ARM_ERR_PORT_WRITE_READ</a> If can't write or read through the port.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41ac05e954ab9bc370b717c60ba785371a6">ARM_ERR_ARM_GET_REG</a> If can't get register from <b>ARM</b>.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a388a4ff66839ee3353f4b805df808368">ARM_ERR_ARM_GO_AT</a> If can't go to AT commend.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a48789952f4a6320f0619f7e4932fe7e5">ARM_ERR_ARM_BACK_AT</a> If can't back AT commend. </li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228ab713e6256f470e51139d686a0967f0f1">ARM_ERR_NONE</a> If success.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228acf75111c68e51f0840c1b735cb2e40f5">ARM_ERR_NO_SUPPORTED</a> If your <b>ARM</b> don't support this function.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228ab04ff023c47a3fdccf821f1dce88ec12">ARM_ERR_PORT_WRITE_READ</a> If can't write or read through the port.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228ac05e954ab9bc370b717c60ba785371a6">ARM_ERR_ARM_GET_REG</a> If can't get register from <b>ARM</b>.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a388a4ff66839ee3353f4b805df808368">ARM_ERR_ARM_GO_AT</a> If can't go to AT commend.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a48789952f4a6320f0619f7e4932fe7e5">ARM_ERR_ARM_BACK_AT</a> If can't back AT commend. </li>
 </ul>
 </dd></dl>
 
@@ -865,7 +865,7 @@ In the case where this function in not supported by your <b>ARM</b> the value of
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="a00026.html#ga2b04cb4b5da0c964d123601fa0558c41">armError_t</a> armLwSetConfirmedFrame </td>
+          <td class="memname"><a class="el" href="a00026.html#ga3da0f105852827128d740e41dda80484">armError_t</a> armLwSetConfirmedFrame </td>
           <td>(</td>
           <td class="paramtype">arm_t *&#160;</td>
           <td class="paramname"><em>arm</em>, </td>
@@ -902,9 +902,9 @@ In the case where this function in not supported by your <b>ARM</b> the value of
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Error available:<ul>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41ab713e6256f470e51139d686a0967f0f1">ARM_ERR_NONE</a> If successful.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41acf75111c68e51f0840c1b735cb2e40f5">ARM_ERR_NO_SUPPORTED</a> If your <b>ARM</b> don't support this function.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> If one of the parameters is out of rang.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228ab713e6256f470e51139d686a0967f0f1">ARM_ERR_NONE</a> If successful.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228acf75111c68e51f0840c1b735cb2e40f5">ARM_ERR_NO_SUPPORTED</a> If your <b>ARM</b> don't support this function.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> If one of the parameters is out of rang.</li>
 </ul>
 </dd></dl>
 <p>eg: </p><div class="fragment"><div class="line"><span class="comment">//Put at 3 the number of frame unconfirmed.</span></div><div class="line"><a class="code" href="a00029.html#gaf2d49f3a91de03be1ff0742e38f58bfa">armLwSetConfirmedFrame</a>(&amp;myArm, -3);</div></div><!-- fragment --><p> or (this is same thing): </p><div class="fragment"><div class="line"><span class="comment">//Put at 3 the number of frame unconfirmed.</span></div><div class="line"><a class="code" href="a00029.html#gaf2d49f3a91de03be1ff0742e38f58bfa">armLwSetConfirmedFrame</a>(&amp;myArm, <a class="code" href="a00029.html#ga4fad73eeadad5da3576bb97c537a73bc">ARM_LW_UNCONFIRMED</a>(3));</div></div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>You need to call <a class="el" href="a00026.html#ga9e56b8b4a573f76f7ceb1776b5ffec33">armUpdateConfig()</a> to update the parameters in you <b>ARM</b>.</dd></dl>
@@ -963,7 +963,7 @@ In the case where this function in not supported by your <b>ARM</b> the value of
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="a00026.html#ga2b04cb4b5da0c964d123601fa0558c41">armError_t</a> armLwSetRadio </td>
+          <td class="memname"><a class="el" href="a00026.html#ga3da0f105852827128d740e41dda80484">armError_t</a> armLwSetRadio </td>
           <td>(</td>
           <td class="paramtype">arm_t *&#160;</td>
           <td class="paramname"><em>arm</em>, </td>
@@ -1023,40 +1023,40 @@ This functions disable automatically the <b>rx2</b> <b>Adaptive</b> if the param
     <tr><td class="paramname">txChannel</td><td>the emission channel.<ul>
 <li>The range possible is of 1 to 9. In this case the <b>Adaptive</b> <b>Channel</b> is automatically disable.</li>
 <li>Set 0 if you don't want set this parameter.</li>
-<li>The function, return the error <a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
+<li>The function, return the error <a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
 </ul>
 </td></tr>
     <tr><td class="paramname">power</td><td>the output power.<ul>
 <li>The possibles values are 2, 5, 8, 11, 14 (value in dBm). In this case the <b>Tx</b> <b>Adaptive</b> <b>Speed</b> is automatically disable.</li>
 <li>Set 0 if you don't want set this parameter.</li>
-<li>The function, return the error <a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
+<li>The function, return the error <a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
 </ul>
 </td></tr>
     <tr><td class="paramname">txSf</td><td>the emission spreading factor.<ul>
 <li>The range possible is of 7 to 12. In this case the <b>Tx</b> <b>Adaptive</b> <b>Speed</b> is automatically disable.</li>
 <li>Set 0 if you don't want set this parameter.</li>
-<li>The function, return the error <a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
+<li>The function, return the error <a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
 </ul>
 </td></tr>
     <tr><td class="paramname">rx2Sf</td><td>the Rx2 spreading factor.<ul>
 <li>The range possible is of 7 to 12. In this case the <b>rx2</b> <b>Adaptive</b> is automatically disable.</li>
 <li>Set 0 if you don't want set this parameter.</li>
-<li>The function, return the error <a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
+<li>The function, return the error <a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
 </ul>
 </td></tr>
     <tr><td class="paramname">rx2Channel</td><td>the Rx2 channel.<ul>
 <li>The range possible is of 1 to 9. In this case the <b>rx2</b> <b>Adaptive</b> is automatically disable.</li>
 <li>Set 0 if you don't want set this parameter.</li>
-<li>The function, return the error <a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
+<li>The function, return the error <a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> if this value is out of rang.</li>
 </ul>
 </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Error available:<ul>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41ab713e6256f470e51139d686a0967f0f1">ARM_ERR_NONE</a> If successful.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41acf75111c68e51f0840c1b735cb2e40f5">ARM_ERR_NO_SUPPORTED</a> If your <b>ARM</b> don't support this function.</li>
-<li><a class="el" href="a00026.html#gga2b04cb4b5da0c964d123601fa0558c41a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> If one of the parameters is out of rang.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228ab713e6256f470e51139d686a0967f0f1">ARM_ERR_NONE</a> If successful.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228acf75111c68e51f0840c1b735cb2e40f5">ARM_ERR_NO_SUPPORTED</a> If your <b>ARM</b> don't support this function.</li>
+<li><a class="el" href="a00026.html#gga9d2c0405563d1fe4171f0333a5769228a6ff61dab04f42167ff16e38ae2145a33">ARM_ERR_PARAM_OUT_OF_RANGE</a> If one of the parameters is out of rang.</li>
 </ul>
 </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>You need to call <a class="el" href="a00026.html#ga9e56b8b4a573f76f7ceb1776b5ffec33">armUpdateConfig()</a> to update the parameters in you <b>ARM</b>.</dd></dl>
