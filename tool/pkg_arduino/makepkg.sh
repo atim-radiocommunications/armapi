@@ -47,7 +47,7 @@ cp ../../bindings/cpp/arm.cpp armapi/src/
 cp ../../bindings/cpp/armport/armport_arduino.cpp armapi/src/
 
 #Make pkg
-zip -r arduino_armapi_$libVersion.zip armapi
+zip -r arduino_armapi_v$libVersion.zip armapi
 
 #Install the pkg
 rm -fr ~/Arduino/libraries/armapi/
@@ -71,7 +71,7 @@ cp ../../README.md armapi/
 cp -r ../../bindings/cpp/* armapi/src/
 
 #Make pkg
-zip -r cpp_armapi_$libVersion.zip armapi
+zip -r cpp_armapi_v$libVersion.zip armapi
 
 #Clean
 rm -rf armapi
@@ -90,7 +90,7 @@ cp ../../README.md armapi/
 cp -r ../../bindings/c/* armapi/src/
 
 #Make pkg
-zip -r c_armapi_$libVersion.zip armapi
+zip -r c_armapi_v$libVersion.zip armapi
 
 #Clean
 rm -rf armapi

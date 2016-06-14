@@ -38,7 +38,7 @@
 
 // Time
 #define _ARM_TIME_RESET 				10		//10ms
-#define _ARM_TIME_TIMEOUT 				20		//20ms
+#define _ARM_TIME_TIMEOUT 				100		//100ms
 #define _ARM_TIME_BACK_AT				100		//100ms
 #define _ARM_TIME_SF_UPLINK_TIMEOUT		10000	//10s
 #define _ARM_TIME_SF_DOWNLINK_TIMEOUT	45000	//45s
@@ -100,7 +100,7 @@ armError_t _armSetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t val);
 // Check ARM_WITHOUT_N8 define
 // ---------------------------------------------------------------------
 #if !defined ARM_WITH_N8_LPLD && !defined ARM_WITH_N8_LW
-#error "ERROR: No arm is declared, please defined ARM_WITH_N8_LPLD or ARM_WITH_N8_LW or both in armconfig.h file."
+#error "ERROR: No arm declared, please defined ARM_WITH_N8_LPLD or ARM_WITH_N8_LW or both in armconfig.h file."
 #endif
 
 #endif //__DOXYGEN__
@@ -175,7 +175,7 @@ armError_t armReboot(arm_t* arm)
 	armPortDelay(_ARM_TIME_BOOTING);
 	
 	#ifdef ARM_WITH_N8_LPLD
-		_ARM_IMP2(N8_LP, N8_LD)
+		_ARM_IMP1(N8_LP)
 		{
 			#ifdef ARMPORT_WITH_nBOOT
 				//nBOOT to '0'
@@ -196,13 +196,13 @@ armError_t armReboot(arm_t* arm)
 		return ARM_ERR_PORT_CONFIG;
 		
 	//Get info to get ARM type
-	err = armInfo(arm, &arm->_type, NULL, NULL, NULL, NULL);
+	err = armInfo(arm, NULL, NULL, NULL, NULL, NULL);
 	if(err != ARM_ERR_NONE)
 		return err;
 		
 	//Init registers	
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		_ARM_REG8_INIT (N8LPLD, H, APPLICATION1);
 		_ARM_REG16_INIT(N8LPLD, H, CHANNEL1);
@@ -215,7 +215,6 @@ armError_t armReboot(arm_t* arm)
 		_ARM_REG8_INIT (N8LPLD, H, BRIDGE_SETTING);
 		_ARM_REG8_INIT (N8LPLD, H, ON_BOARD);
 		_ARM_REG16_INIT(N8LPLD, H, CHANNEL2);
-		_ARM_REG8_INIT (N8LPLD, H, APPLICATION5);
 		_ARM_REG8_INIT (N8LPLD, H, RSSI_LEVEL);
 		_ARM_REG16_INIT(N8LPLD, H, NSAMPLE);
 		_ARM_REG8_INIT (N8LPLD, H, USER_GAIN);
@@ -251,7 +250,7 @@ armError_t armReboot(arm_t* arm)
 		return err;
 	
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		int i = 0;
 		
@@ -317,15 +316,17 @@ armError_t armReboot(arm_t* arm)
 armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower)
 {	
 	armError_t err = ARM_ERR_NONE;
-	armType_t _armType = ARM_TYPE_NONE;
+	//armType_t _armType = ARM_TYPE_NONE;
 	
 	uint16_t _rfFreq = -1;
 	uint8_t _rfPower = -1;
+	uint8_t* ptrstr = NULL;
+	size_t i=0;
 		
-	//Get arm type, rev and sn from 'ATV' commend
-	if((arm->_type==ARM_TYPE_NONE) || rev || sn)
+	//Get arm type from 'ATV' commend
+	if((arm->_type==ARM_TYPE_NONE))
 	{
-		uint8_t buf[68];
+		uint8_t buf[100];
 		int nread;
 	
 		//Go to AT commend
@@ -346,7 +347,7 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		//If Lora ?
 		if(memmem(buf, nread, "LoRa", 4))
 		{
-			_armType = ARM_TYPE_N8_LW;
+			arm->_type = ARM_TYPE_N8_LW;
 			_rfFreq = 868;
 			_rfPower = _ARM_N8LW_MAX_POWER;
 		}
@@ -360,95 +361,111 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 			if(memmem(buf, nread, "14DBM", 5))
 			{
 				_rfPower = _ARM_N8LPLD_LP_MAX_POWER;
-				_armType = ARM_TYPE_N8_LP;
+				arm->_type = ARM_TYPE_N8_LP;
 			}
 			else // or LD ?
 			{
 				_rfPower = _ARM_N8LPLD_LD_MAX_POWER;
-				_armType = ARM_TYPE_N8_LD;
+				arm->_type = ARM_TYPE_N8_LD;
 			}
 		}
 		
 		//Get ARM firmware revision
-		if(rev)
+		#ifdef ARM_WITH_N8_LPLD
+		if(arm->_type&(ARM_TYPE_N8_LP))
 		{
-			size_t i=0;
-			uint8_t* ptrstr = NULL;
+			ptrstr = (uint8_t*)memmem(buf, nread, "REV. ", 5);
+			ptrstr += 5;
+			
+			//N8_LP with Sigfox ?
+			if(*ptrstr == '5')
+			{
+				arm->_type = ARM_TYPE_N8_SFU;
 				
-			#ifdef ARM_WITH_N8_LPLD
-			if(_armType&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LD))
-			{
-				ptrstr = (uint8_t*)memmem(buf, nread, "REV. ", 5);
-				ptrstr += 5;
+				//Sigfox downlink ?
+				if(*(ptrstr+1) >= '9')
+					arm->_type = ARM_TYPE_N8_SFD;
 			}
-			#endif
-			
-			#ifdef ARM_WITH_N8_LW
-			if(_armType&(ARM_TYPE_N8_LW))
+		}
+		#endif
+		
+		#ifdef ARM_WITH_N8_LW
+		if(arm->_type&(ARM_TYPE_N8_LW))
+		{
+			ptrstr = (uint8_t*)memmem(buf, nread, "Rev:", 4);
+			ptrstr += 4;
+		}
+		#endif
+		
+		//Copy string rev
+		if(ptrstr)
+		{
+			i=0;
+			while(!(ptrstr[i] == ' ' ||
+					ptrstr[i] == '\n'||
+					ptrstr[i] == '\0'))
 			{
-				ptrstr = (uint8_t*)memmem(buf, nread, "Rev:", 4);
-				ptrstr += 4;
+				arm->_rev[i] = ptrstr[i];
+				i++;
 			}
-			#endif
-			
-			//Copy string rev
-			if(ptrstr)
-			{
-				while(!(ptrstr[i] == ' ' ||
-						ptrstr[i] == '\n'||
-						ptrstr[i] == '\0'))
-				{
-					rev[i] = ptrstr[i];
-					i++;
-				}
-				rev[i] = '\0';
-			}
+			arm->_rev[i] = '\0';
 		}
 		
 		//Get ARM serial number
-		if(sn)
+		#ifdef ARM_WITH_N8_LPLD
+		if(arm->_type&(ARM_TYPE_N8_LP))
 		{
-			uint8_t* ptrstr = NULL;
-				
-			#ifdef ARM_WITH_N8_LPLD
-			if(_armType&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LD))
-			{
-				ptrstr = (uint8_t*)memmem(buf, nread, "S/N: ", 5);
-				ptrstr += 5;
-			}
-			#endif
-			
-			#ifdef ARM_WITH_N8_LW
-			if(_armType&(ARM_TYPE_N8_LW))
-			{
-				ptrstr = (uint8_t*)memmem(buf, nread, "S/N:", 4);
-				ptrstr += 4;
-			}
-			#endif
-			
-			//Convert serial number string to uint
-			*sn = _armStrToUint(ptrstr, _ARM_BASE_HEX);
+			ptrstr = (uint8_t*)memmem(buf, nread, "S/N: ", 5);
+			ptrstr += 5;
 		}
+		#endif
+		
+		#ifdef ARM_WITH_N8_LW
+		if(arm->_type&(ARM_TYPE_N8_LW))
+		{
+			ptrstr = (uint8_t*)memmem(buf, nread, "S/N:", 4);
+			ptrstr += 4;
+		}
+		#endif
+		
+		//Convert serial number string to uint
+		arm->_sn = _armStrToUint(ptrstr, _ARM_BASE_HEX);
 	}
 	else
 	{
 		//Get type from ARM type
-		_armType = arm->_type;
+		arm->_type = arm->_type;
 		
 		//Get frequency from ARM type
-		if(_armType&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LD|ARM_TYPE_N8_LW))
+		if(arm->_type&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LW))
 			_rfFreq = 868;
 			
 		//Get power from ARM type
-		if(_armType&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LW))
-			_rfPower = _ARM_N8LPLD_LP_MAX_POWER;
-		else if(_armType&(ARM_TYPE_N8_LD))
+		if(arm->_type&(ARM_TYPE_N8_LD))
 			_rfPower = _ARM_N8LPLD_LD_MAX_POWER;
+		else if(arm->_type&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LW))
+			_rfPower = _ARM_N8LPLD_LP_MAX_POWER;
+		
 	}
 	
 	//Get arm type
 	if(armType)
-		*armType = _armType;
+		*armType = arm->_type;
+	
+	//Get arm rev
+	if(rev)
+	{
+		i=0;
+		while(arm->_rev[i] != '\0')
+		{
+			rev[i] = arm->_rev[i];
+			i++;
+		}
+	}
+	
+	//Get arm sn
+	if(sn)
+		*sn = arm->_sn;
 	
 	//Get frequency
 	if(rfFreq)
@@ -503,11 +520,12 @@ armError_t armSetMode(arm_t* arm, armMode_t mode)
 armMode_t armGetMode(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_RF)
 			return ARM_MODE_FSK;
-		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX)
+		if(	(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX) ||
+			(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB))
 			return ARM_MODE_SFX;
 	}
 	#endif
@@ -525,12 +543,16 @@ armMode_t armGetMode(arm_t* arm)
 armError_t armSfxEnableDownlink(arm_t* arm, bool enable)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP1(N8_LP)
+	_ARM_IMP1(N8_SFD)
 	{
+		if(	(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX) ||
+			(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB))
+			return ARM_ERR_NO_SUPPORTED;
+			
 		if(enable)
-			_ARM_REG8(N8LPLD, H, APPLICATION5) |= _ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB;
 		else
-			_ARM_REG8(N8LPLD, H, APPLICATION5) &= ~_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX;
 			
 		return ARM_ERR_NONE;
 	}
@@ -542,13 +564,25 @@ armError_t armSfxEnableDownlink(arm_t* arm, bool enable)
 bool armSfxIsEnableDownlink(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP1(N8_LP)
+	_ARM_IMP1(N8_SFD)
 	{
-		return (_ARM_REG8(N8LPLD, H, APPLICATION5)&_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK)?true:false;
+		return (_ARM_REG8(N8LPLD, H, APPLICATION1)==_ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB)?true:false;
 	}
 	#endif
 	
 	return false;
+}
+
+uint64_t armSfxGetId(arm_t* arm)
+{
+	#ifdef ARM_WITH_N8_LPLD
+	_ARM_IMP1(N8_SFD)
+	{
+		return arm->_sn;
+	}
+	#endif
+	
+	return 0;
 }
 
 int8_t armFskMaxPower(uint16_t radioChannel, armBaudrate_t radioBaud)
@@ -661,10 +695,10 @@ int8_t armFskMaxPower(uint16_t radioChannel, armBaudrate_t radioBaud)
 armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8_t power)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		int8_t maxPower;
-		int8_t armMaxPower = arm->_type&ARM_TYPE_N8_LP?_ARM_N8LPLD_LP_MAX_POWER:_ARM_N8LPLD_LD_MAX_POWER;
+		int8_t armMaxPower = arm->_type&ARM_TYPE_N8_LD?_ARM_N8LPLD_LD_MAX_POWER:_ARM_N8LPLD_LP_MAX_POWER;
 
 		//The parameter is out of range?
 		if(	(channel < _ARM_MIN_CHANNEL) || (channel > _ARM_MAX_CHANNEL) ||
@@ -740,7 +774,7 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
 void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* power)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Get channel
 		if(channel)
@@ -807,7 +841,7 @@ void armFskGetRadio(arm_t* arm, uint16_t* channel, armBaudrate_t* baud, int8_t* 
 armError_t armFskSetRemoteAdd(arm_t* arm, uint8_t add)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Error if the addressing is not enable.
 		if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
@@ -824,7 +858,7 @@ armError_t armFskSetRemoteAdd(arm_t* arm, uint8_t add)
 uint8_t armFskGetRemoteAdd(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return _ARM_REG8(N8LPLD, H, REMOTE_ADDRESS);
 	}
@@ -836,7 +870,7 @@ uint8_t armFskGetRemoteAdd(arm_t* arm)
 armError_t armFskSetLocalAdd(arm_t* arm, uint8_t add)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Error if the addressing is not enable.
 		if(_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)
@@ -853,7 +887,7 @@ armError_t armFskSetLocalAdd(arm_t* arm, uint8_t add)
 uint8_t armFskGetLocalAdd(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return _ARM_REG8(N8LPLD, H, LOCAL_ADDRESS);
 	}
@@ -865,7 +899,7 @@ uint8_t armFskGetLocalAdd(arm_t* arm)
 void armFskEnableAddressing(arm_t* arm, bool enable)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		if(enable) //Enable long header
 			_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE;
@@ -878,7 +912,7 @@ void armFskEnableAddressing(arm_t* arm, bool enable)
 bool armFskIsEnableAddressing(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_LONG_HEADRE)?true:false;
 	}
@@ -890,7 +924,7 @@ bool armFskIsEnableAddressing(arm_t* arm)
 void armFskEnableCrc(arm_t* arm, bool enable)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		if(enable)
 		{
@@ -910,7 +944,7 @@ void armFskEnableCrc(arm_t* arm, bool enable)
 bool armFskIsEnableCrc(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_CRC)?true:false;
 	}
@@ -922,7 +956,7 @@ bool armFskIsEnableCrc(arm_t* arm)
 armError_t armFskEnableInfinityMode(arm_t* arm, bool enable)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		if(enable)
 		{
@@ -955,7 +989,7 @@ armError_t armFskEnableInfinityMode(arm_t* arm, bool enable)
 bool armFskIsEnableInfinityMode(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return (_ARM_REG8(N8LPLD, H, SETTING1)&_ARM_N8LPLD_REGH_SETTING1_INFINITY_MODE)?true:false;
 	}
@@ -967,7 +1001,7 @@ bool armFskIsEnableInfinityMode(arm_t* arm)
 void armFskEnableWhitening(arm_t* arm, bool enable)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		if(enable)//Enable whitening
 			_ARM_REG8(N8LPLD, H, SETTING2) |= _ARM_N8LPLD_REGH_SETTING2_WHITENING;
@@ -980,7 +1014,7 @@ void armFskEnableWhitening(arm_t* arm, bool enable)
 bool armFskIsEnableWhitening(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return (_ARM_REG8(N8LPLD, H, SETTING2)&_ARM_N8LPLD_REGH_SETTING2_WHITENING)?true:false;
 	}
@@ -992,7 +1026,7 @@ bool armFskIsEnableWhitening(arm_t* arm)
 armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t databits, armPortParity_t parity, armPortStopbit_t stopbit)
 {	
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Check if baud is compatible with wake up on uart if enable.
 		if(_ARM_REG8(N8LPLD, H, WAKE_UP_PWR)&_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART &&
@@ -1076,7 +1110,7 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
 void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databits, armPortParity_t* parity, armPortStopbit_t* stopbit)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Get baudrate
 		if(baud)
@@ -1160,7 +1194,7 @@ void armGetSerial(arm_t* arm, armPortBaudrate_t* baud, armPortDatabits_t* databi
 armError_t armFskSetWorMode(arm_t* arm, armFskWor_t mode, uint16_t periodTime, uint16_t postTime, int8_t rssiLevel, bool filterLongPreamble)
 {	
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Disable WOR mode
 		_ARM_REG8(N8LPLD, H, WAKE_UP_RF) &= ~_ARM_N8LPLD_REGH_WAKE_UP_RF_RF;
@@ -1235,7 +1269,7 @@ armError_t armFskSetWorMode(arm_t* arm, armFskWor_t mode, uint16_t periodTime, u
 void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint16_t* postTime, int8_t* rssiLevel, bool* filterLongPreamble)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Get WOR mode
 		if(mode)
@@ -1280,7 +1314,7 @@ void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint1
 armError_t armEnableWakeUpUart(arm_t* arm, bool enable)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Disable?
 		if(enable == false)
@@ -1312,7 +1346,7 @@ armError_t armEnableWakeUpUart(arm_t* arm, bool enable)
 bool armIsEnableWakeUpUart(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		return (_ARM_REG8(N8LPLD, H, WAKE_UP_PWR)&_ARM_N8LPLD_REGH_WAKE_UP_PWR_UART)?true:false;
 	}
@@ -1331,7 +1365,7 @@ void armSleep(arm_t* arm, bool sleep)
 armError_t armFskSetLbtAfaMode(arm_t* arm, armFskLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		armBaudrate_t baud;
 		int8_t power;
@@ -1384,7 +1418,7 @@ armError_t armFskSetLbtAfaMode(arm_t* arm, armFskLbtAfa_t mode, int8_t rssiLevel
 void armFskGetLbtAfaMode(arm_t* arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, uint16_t* nSamples, uint16_t* channel2)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		//Get LBT&AFA mode
 		if(mode)
@@ -1424,7 +1458,7 @@ void armFskGetLbtAfaMode(arm_t* arm, armFskLbtAfa_t* mode, int8_t* rssiLevel, ui
 void armSetLed(arm_t* arm, armLed_t led)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		_ARM_REG8(N8LPLD, H, ON_BOARD) &= ~(_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON|_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF);
 		
@@ -1476,7 +1510,7 @@ void armSetLed(arm_t* arm, armLed_t led)
 armLed_t armGetLed(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		if(_ARM_REG8(N8LPLD, H, ON_BOARD)&_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON)
 			return ARM_LED_ON_RF;
@@ -1980,7 +2014,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 armError_t armUpdateConfig(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		armError_t err = ARM_ERR_NONE;
 		bool reConfigPort = false;
@@ -2140,7 +2174,7 @@ int armSend(arm_t* arm, const void* buf, size_t nbyte)
 	int nwrite = 0;
 		
 	//#ifdef ARM_WITH_N8_LPLD
-	//_ARM_IMP2(N8_LP, N8_LD)
+	//_ARM_IMP1(N8_LP)
 	//{
 		//int n = 0;
 		//int baud = 0;
@@ -2326,24 +2360,23 @@ int _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout)
 		else if(n == 0)
 			return nread;
 		
-		#ifdef ARM_WITH_N8_LPLD
-		_ARM_IMP2(N8_LP, N8_LD)
+		//Check if stop read condition
+		for(i=nread; i<nread+n; i++)
 		{
-			//Check if stop read condition
-			for(i=nread; i<nread+n; i++)
+			if(((uint8_t*)buf)[i] == '\n')
 			{
-				if(((uint8_t*)buf)[i] == '\n')
+				lfcount++;
+				if(lfcount >= 2)
 				{
-					lfcount++;
-					if(lfcount >= 2)
-					{
-						nread += n;
-						return nread;
-					}
+					//Beginning frame.
+					if(nread >= 4)
+						nread--;
+						
+					nread += n;
+					return nread;
 				}
 			}
 		}
-		#endif
 		
 		nread += n;
 	}
@@ -2407,7 +2440,7 @@ armError_t _armBackAt(arm_t* arm)
 	
 	//Write 'ATI' or 'ATQ' for back AT commend and read reply
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_LP)
 	{
 		nread = _armWriteRead(arm, "ATI\r", 4, buf, sizeof buf, _ARM_TIME_TIMEOUT);
 	}
@@ -2431,7 +2464,7 @@ armError_t _armBackAt(arm_t* arm)
 	}
 		
 	//Wait arm ready
-	if(arm->_type&(ARM_TYPE_N8_LP|ARM_TYPE_N8_LD))
+	if(arm->_type&ARM_TYPE_N8_LP)
 		armPortDelay(_ARM_TIME_BACK_AT+_ARM_REG8(N8LPLD, H, POST_TIME)*10);
 	else
 		armPortDelay(_ARM_TIME_BACK_AT);
