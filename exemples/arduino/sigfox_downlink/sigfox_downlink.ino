@@ -83,7 +83,7 @@ void loop()
 	unsigned int i;
 	
 	//Send the message to sigfox
-	myArm.Send(msg, sizeof(msg));
+	myArm.Send(msg, sizeof(msg)-1);
 	
 	//Wait (60s of timeout) and receive the data from sigfox
 	myArm.Receive(data, sizeof(data), 60000);

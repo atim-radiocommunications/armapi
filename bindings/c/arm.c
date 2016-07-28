@@ -215,7 +215,6 @@ armError_t armReboot(arm_t* arm)
 		_ARM_REG8_INIT (N8LPLD, H, BRIDGE_SETTING);
 		_ARM_REG8_INIT (N8LPLD, H, ON_BOARD);
 		_ARM_REG16_INIT(N8LPLD, H, CHANNEL2);
-		_ARM_REG8_INIT (N8LPLD, H, APPLICATION5);
 		_ARM_REG8_INIT (N8LPLD, H, RSSI_LEVEL);
 		_ARM_REG16_INIT(N8LPLD, H, NSAMPLE);
 		_ARM_REG8_INIT (N8LPLD, H, USER_GAIN);
@@ -527,10 +526,14 @@ armError_t armSfxEnableDownlink(arm_t* arm, bool enable)
 	#ifdef ARM_WITH_N8_LPLD
 	_ARM_IMP1(N8_LP)
 	{
+		if(	(_ARM_REG8(N8LPLD, H, APPLICATION1) != _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX) &&
+			(_ARM_REG8(N8LPLD, H, APPLICATION1) != _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB))
+			return ARM_ERR_NO_SUPPORTED;
+			
 		if(enable)
-			_ARM_REG8(N8LPLD, H, APPLICATION5) |= _ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB;
 		else
-			_ARM_REG8(N8LPLD, H, APPLICATION5) &= ~_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK;
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX;
 			
 		return ARM_ERR_NONE;
 	}
@@ -544,7 +547,7 @@ bool armSfxIsEnableDownlink(arm_t* arm)
 	#ifdef ARM_WITH_N8_LPLD
 	_ARM_IMP1(N8_LP)
 	{
-		return (_ARM_REG8(N8LPLD, H, APPLICATION5)&_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK)?true:false;
+		return (_ARM_REG8(N8LPLD, H, APPLICATION1)==_ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB)?true:false;
 	}
 	#endif
 	
@@ -2312,10 +2315,7 @@ int _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout)
 {
 	size_t nread = 0;
 	int n = 0;
-	#ifdef ARM_WITH_N8_LPLD
 	size_t i = 0;
-	int lfcount = 0;
-	#endif
 	
 	while(1)
 	{
@@ -2326,24 +2326,15 @@ int _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout)
 		else if(n == 0)
 			return nread;
 		
-		#ifdef ARM_WITH_N8_LPLD
-		_ARM_IMP2(N8_LP, N8_LD)
+		//Check if stop read condition
+		for(i=nread; i<nread+n; i++)
 		{
-			//Check if stop read condition
-			for(i=nread; i<nread+n; i++)
+			if((((uint8_t*)buf)[i] == '\n') && (i>8))
 			{
-				if(((uint8_t*)buf)[i] == '\n')
-				{
-					lfcount++;
-					if(lfcount >= 2)
-					{
-						nread += n;
-						return nread;
-					}
-				}
+				nread += n;
+				return nread;
 			}
 		}
-		#endif
 		
 		nread += n;
 	}

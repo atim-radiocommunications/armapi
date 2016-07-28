@@ -77,7 +77,7 @@ void loop()
 	unsigned int i;
 	
 	//Send the message to sigfox
-	myArm.Send(msg, sizeof(msg));
+	myArm.Send(msg, sizeof(msg)-1);
 	
 	//Wait 10min
 	for(i=0; i<10; i++)
