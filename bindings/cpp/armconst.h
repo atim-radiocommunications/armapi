@@ -33,7 +33,7 @@
 #define ARM_CONST_H
 
 //Number of H registers for N8LPLD
-#define _ARM_N8LPLD_REGH_SIZE 	26
+#define _ARM_N8LPLD_REGH_SIZE 	25
 //Number of M registers for N8LW
 #define _ARM_N8LW_REGM_SIZE 	3
 //Number of O registers for N8LW
@@ -62,7 +62,6 @@
 #define _ARM_N8LPLD_IREGH_ON_BOARD				10
 #define _ARM_N8LPLD_IREGH_CHANNEL2_LSB 			11
 #define _ARM_N8LPLD_IREGH_CHANNEL2_MSB 			12
-#define _ARM_N8LPLD_IREGH_APPLICATION5 			13
 #define _ARM_N8LPLD_IREGH_RSSI_LEVEL			14
 #define _ARM_N8LPLD_IREGH_NSAMPLE_LSB 			15
 #define _ARM_N8LPLD_IREGH_NSAMPLE_MSB 			16
@@ -91,7 +90,6 @@
 #define _ARM_N8LPLD_REGH_ON_BOARD				25
 #define _ARM_N8LPLD_REGH_CHANNEL2_LSB 			26
 #define _ARM_N8LPLD_REGH_CHANNEL2_MSB 			27
-#define _ARM_N8LPLD_REGH_APPLICATION5 			30
 #define _ARM_N8LPLD_REGH_RSSI_LEVEL				32
 #define _ARM_N8LPLD_REGH_NSAMPLE_LSB 			43
 #define _ARM_N8LPLD_REGH_NSAMPLE_MSB 			44
@@ -109,6 +107,7 @@
 // Radio Application values
 #define _ARM_N8LPLD_REGH_APPLICATION1_UART_RF			0x10
 #define _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX			0x50
+#define _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB			0xd0
 			
 // Radio baudrate values	
 #define _ARM_N8LPLD_REGH_RADIO_BAUDRATE_1200			0x01
@@ -161,9 +160,6 @@
 // On board values
 #define	_ARM_N8LPLD_REGH_ON_BOARD_TXRX_ON				0x01
 #define	_ARM_N8LPLD_REGH_ON_BOARD_TXRX_OFF				0x02
-
-// Application 5 values
-#define	_ARM_N8LPLD_REGH_APPLICATION5_SFX_DOWNLINK		0x01
 		
 // Wake up pwr values
 #define _ARM_N8LPLD_REGH_WAKE_UP_PWR_UART				0x10
