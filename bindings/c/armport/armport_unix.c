@@ -267,7 +267,7 @@ int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
 	//Read data.
 	if(FD_ISSET(fd, &fd_read))
 	{
-		nread = read(fd, buf+nread, nbyte-nread);
+		nread = read(fd, buf, nbyte);
 		if((int)nread == -1)
 		{
 			fprintf(stderr, "ERROR - %s: %s\n", __func__, strerror(errno));
