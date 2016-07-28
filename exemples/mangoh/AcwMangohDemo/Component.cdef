@@ -1,0 +1,51 @@
+
+cflags:
+{
+    -std=c99
+    -I ../../bindings/c/
+}
+
+sources:
+{
+	main.c
+	i2c.c
+	lsm6ds3.c
+	../../bindings/c/arm.c
+	../../bindings/c/armport/armport_mangoh.c
+}
+
+requires:
+{
+    device:
+    {
+		//Get read and write access to the UART ports.
+		[rw]/dev/ttyHSL0 /dev/ttyHSL0
+		[rw]/dev/ttyHSL1 /dev/ttyHSL1
+		
+		//Get read and write access to the I2C ports.
+		[rw]/dev/i2c-0 /dev/i2c-0
+    }
+    
+    api:
+    {	
+		//Gpio iot0
+		mangoh_iot0_gpio1 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		mangoh_iot0_gpio2 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		mangoh_iot0_gpio3 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		//mangoh_iot0_gpio4 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+        
+		//Gpio iot1
+		mangoh_iot1_gpio1 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		mangoh_iot1_gpio2 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		mangoh_iot1_gpio3 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		//mangoh_iot1_gpio4 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+        
+		//Gpio iot2
+		mangoh_iot2_gpio1 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		mangoh_iot2_gpio2 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		mangoh_iot2_gpio3 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+		//mangoh_iot2_gpio4 = ${LEGATO_ROOT}/interfaces/le_gpio.api
+
+        ${MANGOH_ROOT}/apps/MuxControl/mangoh_muxCtrl.api
+    }
+}

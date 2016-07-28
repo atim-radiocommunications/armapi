@@ -1,0 +1,35 @@
+executables:
+{
+    AcwMangohDemo = (AcwMangohDemo)
+}
+
+processes:
+{
+    run:
+    {
+        (AcwMangohDemo)
+    }
+}
+
+bindings:
+{   
+	//Gpio iot0
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot0_gpio1 -> gpioService.le_gpioPin42
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot0_gpio2 -> gpioService.le_gpioPin33
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot0_gpio3 -> gpioService.le_gpioPin13
+	
+	//Gpio iot1
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot1_gpio1 -> gpioService.le_gpioPin25
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot1_gpio2 -> gpioService.le_gpioPin7
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot1_gpio3 -> gpioService.le_gpioPin32
+	
+	//Gpio iot2
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot2_gpio1 -> gpioService.le_gpioPin22
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot2_gpio2 -> gpioService.le_gpioPin23
+	AcwMangohDemo.AcwMangohDemo.mangoh_iot2_gpio3 -> gpioService.le_gpioPin24
+	
+    AcwMangohDemo.AcwMangohDemo.mangoh_muxCtrl -> muxCtrlService.mangoh_muxCtrl
+}
+
+
+

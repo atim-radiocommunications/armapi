@@ -157,9 +157,9 @@ typedef enum armFskLbtAfa_e
  */
 typedef enum armMode_e
 {
-	ARM_MODE_FSK,				//!< Mode for Fsk (local) radio.
+	ARM_MODE_FSK,		//!< Mode for Fsk (local) radio.
 	ARM_MODE_SFX,		//!< Mode for Sigfox network.
-	ARM_MODE_LORAWAN,		//!< Mode for Lora network (LoRaWan).
+	ARM_MODE_LORAWAN,	//!< Mode for Lora network (LoRaWan).
 }armMode_t;
 
 /*!	\ingroup group_main
@@ -169,10 +169,14 @@ typedef enum armMode_e
  */
 typedef enum armType_e
 {
-	ARM_TYPE_NONE	= 0x01,	//!< No \b Arm type.
-	ARM_TYPE_N8_LP	= 0x02, //!< \b ARM Nano in 868MHz low power version (and Sigfox). 
-	ARM_TYPE_N8_LD	= 0x04, //!< \b ARM Nano in 868MHz long distance version. 
-	ARM_TYPE_N8_LW	= 0x08, //!< \b ARM Nano in 868MHz LoraWan version. 
+	ARM_TYPE_NONE	= 0x0001,					//!< No \b Arm type.
+	//ARM_TYPE_N8_LP is base value.
+	ARM_TYPE_N8_LP	= 0x0010, 					//!< \b ARM Nano in 868MHz low power version.
+	ARM_TYPE_N8_LD	= 0x0020|ARM_TYPE_N8_LP, 	//!< \b ARM Nano in 868MHz long distance version. 
+	ARM_TYPE_N8_SFU	= 0x0040|ARM_TYPE_N8_LP, 	//!< \b ARM Nano in 868MHz low power version with Sigfox UpLink.
+	ARM_TYPE_N8_SFD	= 0x0080|ARM_TYPE_N8_SFU,	//!< \b ARM Nano in 868MHz low power version with Sigfox UpLink/Downlink.
+	//ARM_TYPE_N8_LW is base value.
+	ARM_TYPE_N8_LW	= 0x0100, 					//!< \b ARM Nano in 868MHz LoraWan version. 
 }armType_t;
 
 #ifndef __DOXYGEN__
@@ -281,8 +285,10 @@ class Arm
  * 
  * 
  * 
- * 	- \ref ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version (and Sigfox). 
- * 	- \ref ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version. 
+ * 	- \ref ARM_TYPE_N8_LP For \b ARM Nano in 868MHz low power version.
+ * 	- \ref ARM_TYPE_N8_SFU For \b ARM Nano in 868MHz low power version with Sigfox UpLink.
+ * 	- \ref ARM_TYPE_N8_SFD For \b ARM Nano in 868MHz low power version with Sigfox UpLink/Downlink.
+ * 	- \ref ARM_TYPE_N8_LD For \b ARM Nano in 868MHz long distance version.
  * 	- \ref ARM_TYPE_N8_LW For \b ARM Nano in 868MHz LoraWan version.
  * \param rev If the pointer is valid, the firmware version is copied.
  * This parameter must be a string buffer capacity equal or more of \b 16 \b bytes.
@@ -331,15 +337,13 @@ class Arm
 		/*! \ingroup group_sfx
  * \brief Enable/Disable the Sigfox downlink.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 
  * 
  * \param enable \e true to enable Sigfox downlink, false to disable.
  * 
  * \return Error available:
  *	- \ref ARM_ERR_NONE If successful.
- *	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ *	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function
+ * or if the mode (see \ref Arm::SetMode()) is not \ref ARM_MODE_SFX.
  * 
  * \note You need to call \ref Arm::UpdateConfig() to update the parameters in you \b ARM.
  * \warning In the case here Sigfox network is supporter by your \b ARM only on uplink, this
@@ -351,10 +355,7 @@ class Arm
 		/*! \ingroup group_sfx
  * \brief Get if the Sigfox downlink is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the Sigfox downlink is enable or \e false if disable.
@@ -362,6 +363,17 @@ class Arm
  * \see Arm::SfxEnableDownlink()
  */
 		bool SfxIsEnableDownlink();
+		/*! \ingroup group_sfx
+ * \brief Get Sigfox ID.
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value 0.
+ * 
+ * 
+ * \return The Id value.
+ * 
+ * \see Arm::SfxEnableDownlink()
+ */
+		uint64_t SfxGetId();
 		/*! \ingroup group_fsk
  * \brief Get The maximal possible power.
  * 
@@ -379,10 +391,6 @@ class Arm
  * \brief Setup the Fsk (local) radio configuration.
  * 
  * For more information, please consulate \ref fsk_page page.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * \param channel The main radio channel.
@@ -428,10 +436,6 @@ class Arm
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param channel If the pointer is valid, the \p channel is set.
  * \param baud If the pointer is valid, the \p baud is set. If \ref ARM_BAUDRATE_NONE is set, there is probably a error.
@@ -442,10 +446,6 @@ class Arm
 		void FskGetRadio(uint16_t* channel, armBaudrate_t* baud, int8_t* power);
 		/*! \ingroup group_fsk
  * \brief Set the radio remote address.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * \param add Remote address of 0 to 255. The 255 value is used for \e broadcast, the
@@ -466,11 +466,7 @@ class Arm
 		/*! \ingroup group_fsk
  * \brief Get the remote address.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is 255.
  * 
  * 
  * \return The remote address.
@@ -480,10 +476,6 @@ class Arm
 		uint8_t FskGetRemoteAdd();
 		/*! \ingroup group_fsk
  * \brief Set the radio local address.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * \param add Local address of 0 to 255.
@@ -503,11 +495,7 @@ class Arm
 		/*! \ingroup group_fsk
  * \brief Get the local address.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is 0.
  * 
  * 
  * \return The local address.
@@ -520,10 +508,6 @@ class Arm
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param enable \e true to enable \b Addressing or \e false to disable.
  * 
@@ -535,11 +519,7 @@ class Arm
 		/*! \ingroup group_fsk
  * \brief Get enable \b Addressing.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Addressing is enable or \e false if disable.
@@ -553,10 +533,6 @@ class Arm
  * \warning This functions disable automatically the \b infinity \b mode.
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param enable \e true to enable \b CRC or \e false to disable.
  * 
@@ -569,11 +545,7 @@ class Arm
 		/*! \ingroup group_fsk
  * \brief Get enable \b CRC.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b CRC is enable or \e false if disable.
@@ -585,10 +557,6 @@ class Arm
  * \brief Enable/Disable \b Infinity \b mode.
  * 
  * \warning This functions disable automatically the \b CRC.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * \param enable \e true to enable \b Infinity \b mode or \e false to disable.
@@ -607,11 +575,7 @@ class Arm
 		/*! \ingroup group_fsk
  * \brief Get enable \b Infinity \b mode.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Infinity \b mode is enable or \e false if disable.
@@ -624,10 +588,6 @@ class Arm
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param enable \e true to enable \b Whitening false to disable.
  * 
@@ -639,11 +599,7 @@ class Arm
 		/*! \ingroup group_fsk
  * \brief Get enable \b Whitening.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Whitening is enable or \e false if disable.
@@ -657,10 +613,6 @@ class Arm
  * \warning In the case or the port don't support one of below parameters,
  * this function don't return error. But, the error
  * \ref ARM_ERR_PORT_CONFIG will return to next call \ref Arm::UpdateConfig().
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * \param baud The serial baudrate.
@@ -710,10 +662,6 @@ class Arm
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param baud If the pointer is valid, the \p baud is set. If \ref ARMPORT_BAUDRATE_NONE is set, there is probably a error.
  * \param databits If the pointer is valid, the \p databits is set.
@@ -737,10 +685,6 @@ class Arm
  * \p mode is \ref ARM_FSK_WOR_CS the \p rssiLevel
  * is the same register in \b ARM, so if change this value with this function,
  * the \p rssiLevel value of the \b LBT is also modified.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * 
@@ -803,10 +747,6 @@ class Arm
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param mode If the pointer is valid, the \p mode is set.
  * \param periodTime If the pointer is valid, the \p periodTime is set. If
@@ -826,10 +766,6 @@ class Arm
  * 
  * \warning The \b Wake \b Up \b Uart don't supporter the serially baudrate
  * upper than 38400 bps. This function set the baudrate at 38400bps if necessary.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * \param enable \e true to enable \b Wake \b Up \b Uart false to disable.
@@ -855,11 +791,7 @@ class Arm
 		/*! \ingroup group_main
  * \brief Get if \b Wake \b Up \b Uart is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Wake \b Up \b Uart is enable or \e false if disable.
@@ -870,11 +802,6 @@ class Arm
 		#if defined ARMPORT_WITH_nSLEEP || defined __DOXYGEN__
 		/*! \ingroup group_main
  * \brief Enable/Disable sleep with pin.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * 
  * \param sleep \e true to enable sleep false to disable.
@@ -896,10 +823,6 @@ class Arm
  * \p mode is not \ref ARM_FSK_LBTAFA_DISABLE the \p rssiLevel
  * is the same register in \b ARM, so if change this value with this function,
  * the \p rssiLevel value of the \b WOR mode is also modified.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
  * 
  * 
  * 
@@ -949,10 +872,6 @@ class Arm
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 
  * 
  * \param mode If the pointer is valid, the \p mode is set.
  * \param rssiLevel If the pointer is valid, the \p rssiLevel is set. If
@@ -969,9 +888,6 @@ class Arm
  * \brief Setup the LoraWan radio configuration.
  * 
  * For more information, please consulate \ref lora_page page.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * \note If you don't want set a value, pass the 0 value to parameters.
  * \warning This functions disable automatically the \b Tx \b Adaptive \b Speed if the parameter \p txSf or \p power is not set to 0.
@@ -1026,9 +942,6 @@ class Arm
  * \note If you don't went get a parameter you can give the \b NULL value.
  * \note In the case where this function in not supported by your \b ARM the value of parameters is no modified.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
- * 
  * 
  * \param txChannel If the pointer is valid, the \p txChannel is set.
  * \param power If the pointer is valid, the \p power is set.
@@ -1041,11 +954,6 @@ class Arm
 		void LwGetRadio(uint8_t* txChannel, uint8_t* power, uint8_t* txSf, uint8_t* rx2Sf, uint8_t* rx2Channel);
 		/*! \ingroup group_lw
  * \brief Enable/Disable and set the confirmed frame.
- * 
- * \note In the case where this function in not supported by your \b ARM this functions is ignored.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * 
  * \param nbFrame the value available:
@@ -1079,10 +987,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get the setup of confirmed frame.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is 0.
  * 
  * 
  * \return The confirmed frame setup.
@@ -1122,9 +1027,6 @@ class Arm
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
- * 
  * 
  * \param port the value available:
  * 	- 0x00: indicates that the FRMPayload contains MAC commands only
@@ -1139,10 +1041,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get the port field.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is 0.
  * 
  * 
  * \return The port field.
@@ -1154,9 +1053,6 @@ class Arm
  * \brief Enable/Disable \b Over \b The \b Air \b Activation.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * 
  * \param enable \e true to enable \b Over \b The \b Air \b Activation or \e false to disable.
@@ -1170,7 +1066,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get if \b Over \b The \b Air \b Activation is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * This function is supported by:
  * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
@@ -1186,9 +1082,6 @@ class Arm
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
- * 
  * 
  * \param enable \e true to enable \b Rx \b windows or \e false to disable.
  * In the case where \p enable is true, the \b ARM will ignore the parameters \p rx2Sf and \p rx2Channel of the function 
@@ -1202,10 +1095,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get if \b Rx \b windows is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Rx \b windows is enable or \e false if disable.
@@ -1217,9 +1107,6 @@ class Arm
  * \brief Enable/Disable \b Tx \b Adaptive \b Speed.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * 
  * \param enable \e true to enable \b Tx \b Adaptive \b Speed or \e false to disable.
@@ -1234,10 +1121,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get if \b Tx \b Adaptive \b Speed is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Tx \b Adaptive \b Speed is enable or \e false if disable.
@@ -1251,9 +1135,6 @@ class Arm
  * \warning The \b Duty \b Cycle should be enable every time.
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
- * 
  * 
  * \param enable \e true to enable \\b Duty \b Cycle or \e false to disable.
  * 
@@ -1265,10 +1146,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get if \b Duty \b Cycle is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Duty \b Cycle is enable or \e false if disable.
@@ -1280,9 +1158,6 @@ class Arm
  * \brief Enable/Disable \b Tx \b Adaptive \b Channel.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * 
  * \param enable \e true to enable \b Tx \b Adaptive \b Channel or \e false to disable.
@@ -1297,10 +1172,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get if \b Tx \b Adaptive \b Channel is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Tx \b Adaptive \b Channel is enable or \e false if disable.
@@ -1312,9 +1184,6 @@ class Arm
  * \brief Enable/Disable \b Rx2 windows \b Adaptive.
  * 
  * \note In the case where this function in not supported by your \b ARM this functions is ignored.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
  * 
  * 
  * \param enable \e true to enable \b Rx2 windows \b Adaptive or \e false to disable.
@@ -1329,10 +1198,7 @@ class Arm
 		/*! \ingroup group_lw
  * \brief Get if \b Rx2 windows \b Adaptive is enable.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM the returned value is false.
  * 
  * 
  * \return \e true if the \b Rx2 windows \b Adaptive is enable or \e false if disable.
@@ -1341,10 +1207,7 @@ class Arm
  */
 		bool LwIsEnableRx2Adaptive();
 		/*! \ingroup group_lw
- * \brief Get the IDs.
- * 
- * This function is supported by:
- * 	- \b ARM_N8_LW, \b ARM Nano 868MHz in Lora Wan.
+ * \brief Get the LoraWan IDs.
  * 
  * \note If you don't went get a parameter you can give the \b NULL value.
  * 
@@ -1376,11 +1239,6 @@ class Arm
  * 
  * \note In the case where this function in not supported by your \b ARM this functions in ignored.
  * 
- * This function is supported by:
- * 	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- * 	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- * 	- \b ARM_N8_LW, \b ARM Nano in 868MHz Lora Wan.
- * 
  * 
  * \param led The behavior of the \a LED:
  * 		- \ref ARM_LED_OFF, The \a LED is 'off' all the time.
@@ -1395,12 +1253,7 @@ class Arm
 		/*! \ingroup group_main
  * \brief Get the \a LED behavior.
  * 
- * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
- * 
- * This function is supported by:
- *	- \b ARM_N8_LP, \b ARM Nano in 868Mhz Low Power (and Sigfox).
- *	- \b ARM_N8_LD, \b ARM Nano in 868MHz Long Distance.
- *	- \b ARM_N8_LW, \b ARM Nano 868MHz in Lora Wan.
+ * \note In the case where this function in not supported by your \b ARM, the returned value is \ref ARM_LED_OFF
  * 
  * 
  * \return The behavior of the \a LED:
@@ -1490,6 +1343,8 @@ class Arm
 
 	ArmPort	_port;
 	armType_t	_type;
+	uint64_t	_sn;
+	uint8_t		_rev[16];
 	union
 	{
 		#ifdef ARM_WITH_N8_LPLD
