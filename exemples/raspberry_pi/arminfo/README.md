@@ -1,5 +1,5 @@
 # ARM get information #
-This example for Raspberry Pi initialise armapi, get information about
+This example for Raspberry Pi initialise armapi, get informations about
 the ARM module and print this information.
 
 
