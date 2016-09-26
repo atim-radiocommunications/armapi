@@ -11,15 +11,18 @@ The serial port on RPi 1 and RPi 2 is /dev/ttyAMA0 and on the RPi 3 the serial p
 ## Compilation ###
 
 ### On raspberry pi ###
-You have need to executer the 'make' command into this folder.
+You have need to executer the 'make' command into this folder with
+the TTY parameter. For example on RPi 1 and 2 you neet to call:
+
+	$make TTY=/dev/ttyAMA0
+	
 ### On host ###
 You have need to executer the 'make' command 
-with TARGET option into this folder.
+with TARGET and TTY option into this folder.
 For example, if your cross comparator is installed on you system and
 is named by 'arm-linux-gnueabihf-', the commend to call is:
 
-	$'make TARGET=arm-linux-gnueabihf-'
-
+	$make TARGET=arm-linux-gnueabihf- TTY=/dev/ttyAMA0
 
 ## Installation ##
 
