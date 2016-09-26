@@ -64,7 +64,7 @@ uint8_t data[8] = {0};
 
 void setup()
 {
-	//Init Led for chow error
+	//Init Led for show error
 	pinMode(LED, OUTPUT);
 	digitalWrite(LED, LOW);
 	

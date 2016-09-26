@@ -42,10 +42,10 @@
 #define _ARM_TIME_BACK_AT				100		//100ms
 #define _ARM_TIME_SF_UPLINK_TIMEOUT		10000	//10s
 #define _ARM_TIME_SF_DOWNLINK_TIMEOUT	45000	//45s
-#define _ARM_TIME_BOOTING				100		//100ms
+#define _ARM_TIME_BOOTING				20		//20ms
 
 // Other values
-#define _ARM_NUMBER_OF_TRIALS_GO_AT 	3
+#define _ARM_NUMBER_OF_TRIALS_GO_AT 	35
 #define _ARM_SIGFOX_PAYLOAD_MAX			12
 #define _ARM_SIGFOX_PAYLOAD_DOWNLINK	8
 #define _ARM_RF_PAYLOAD_MAX				120
@@ -116,13 +116,13 @@ armError_t armInit(arm_t* arm, void* port)
 	arm->_type = ARM_TYPE_NONE;
 	
 	//Open the uart port
-	if(armPortOpen(&arm->_port))
+	if(armPortOpen(&arm->_port) == -1)
 		return ARM_ERR_PORT_OPEN;
 
 	if(armPortConfig(arm->_port, 	ARMPORT_BAUDRATE_19200,
 									ARMPORT_DATA_8BITS,
 									ARMPORT_PARITY_NO,
-									ARMPORT_STOPBIT_1))
+									ARMPORT_STOPBIT_1) == -1)
 		return ARM_ERR_PORT_CONFIG;
 	
 	//Reboot the arm
@@ -162,7 +162,8 @@ armError_t armReboot(arm_t* arm)
 		if(arm->_type != ARM_TYPE_NONE)
 		{
 			//Go to AT commend to reboot.
-			if((err = _armGoAt(arm)))
+			err = _armGoAt(arm);
+			if(err != ARM_ERR_NONE)
 				return err;
 			
 			//Reboot by "ATR" if ARM is already initialized/used/...
@@ -192,7 +193,7 @@ armError_t armReboot(arm_t* arm)
 	if(armPortConfig(arm->_port, 	ARMPORT_BAUDRATE_19200,
 									ARMPORT_DATA_8BITS,
 									ARMPORT_PARITY_NO,
-									ARMPORT_STOPBIT_1))
+									ARMPORT_STOPBIT_1) == -1)
 		return ARM_ERR_PORT_CONFIG;
 		
 	//Get info to get ARM type
@@ -246,7 +247,8 @@ armError_t armReboot(arm_t* arm)
 	#endif
 	
 	//Go to AT commend for get register
-	if((err = _armGoAt(arm)))
+	err = _armGoAt(arm);
+	if(err != ARM_ERR_NONE)
 		return err;
 	
 	#ifdef ARM_WITH_N8_LPLD
@@ -257,7 +259,8 @@ armError_t armReboot(arm_t* arm)
 		//Read all S register from arm
 		for(i=0; i<_ARM_N8LPLD_REGH_SIZE; i++)
 		{
-			if((err = _armGetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, &arm->_N8LPLD.regsH[i].val)))
+			err = _armGetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, &arm->_N8LPLD.regsH[i].val);
+			if(err != ARM_ERR_NONE)
 				return err;
 			arm->_N8LPLD.regsH[i].newVal = arm->_N8LPLD.regsH[i].val;
 		}
@@ -282,7 +285,8 @@ armError_t armReboot(arm_t* arm)
 		//Read all M register from arm
 		for(i=0; i<_ARM_N8LW_REGM_SIZE; i++)
 		{
-			if((err = _armGetReg(arm, 'M', arm->_N8LW.regsM[i].reg, &arm->_N8LW.regsM[i].val)))
+			err = _armGetReg(arm, 'M', arm->_N8LW.regsM[i].reg, &arm->_N8LW.regsM[i].val);
+			if(err != ARM_ERR_NONE)
 				return err;
 			arm->_N8LW.regsM[i].newVal = arm->_N8LW.regsM[i].val;
 		}
@@ -290,7 +294,8 @@ armError_t armReboot(arm_t* arm)
 		//Read all O register from arm
 		for(i=0; i<_ARM_N8LW_REGO_SIZE; i++)
 		{
-			if((err = _armGetReg(arm, 'O', arm->_N8LW.regsO[i].reg, &arm->_N8LW.regsO[i].val)))
+			err = _armGetReg(arm, 'O', arm->_N8LW.regsO[i].reg, &arm->_N8LW.regsO[i].val);
+			if(err != ARM_ERR_NONE)
 				return err;
 			arm->_N8LW.regsO[i].newVal = arm->_N8LW.regsO[i].val;
 		}
@@ -306,7 +311,8 @@ armError_t armReboot(arm_t* arm)
 	#endif
 	
 	//back AT
-	if((err = _armBackAt(arm)))
+	err = _armBackAt(arm);
+	if(err != ARM_ERR_NONE)
 		return err;
 	
 	//Send the new value of registers to arm
@@ -324,7 +330,7 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 	//Get arm type, rev and sn from 'ATV' commend
 	if((arm->_type==ARM_TYPE_NONE) || rev || sn)
 	{
-		uint8_t buf[68];
+		uint8_t buf[128];
 		int nread;
 	
 		//Go to AT commend
@@ -606,7 +612,7 @@ int8_t armFskMaxPower(uint16_t radioChannel, armBaudrate_t radioBaud)
 			maxPower = -1;
 	}
 
-	if((radioChannel>=_ARM_MIN_CHANNEL) & (radioChannel<512))
+	if((radioChannel>=_ARM_MIN_CHANNEL) && (radioChannel<512))
 	{
 	}
 	else if((radioChannel>512) && (radioChannel<532))
@@ -683,35 +689,35 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
 		//Set baudrate
 		switch(baud)
 		{
-			case 1200:
+			case ARM_BAUDRATE_1200:
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_1200;
 			break;
 			
-			case 2400:	                  
+			case ARM_BAUDRATE_2400:	                  
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_2400;
 			break;
 			
-			case 4800:	                  
+			case ARM_BAUDRATE_4800:	                  
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_4800;
 			break;
 			
-			case 9600:	                  
+			case ARM_BAUDRATE_9600:	                  
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_9600;
 			break;
 			
-			case 19200:	                  
+			case ARM_BAUDRATE_19200:	                  
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_19200;
 			break;
 			
-			case 38400:	                  
+			case ARM_BAUDRATE_38400:	                  
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_38400;
 			break;
 			
-			case 57600:	                  
+			case ARM_BAUDRATE_57600:	                  
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_57600;
 			break;
 			
-			case 115200:	              
+			case ARM_BAUDRATE_115200:	              
 				_ARM_REG8(N8LPLD, H, RADIO_BAUDRATE) = _ARM_N8LPLD_REGH_RADIO_BAUDRATE_115200;
 			break;
 			
@@ -725,7 +731,7 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
 			_ARM_REG16_SET(N8LPLD, H, CHANNEL1, channel);
 		
 		//Power is adjusted ?
-		if((power = ARM_FSK_POWER_AUTO))
+		if((power == ARM_FSK_POWER_AUTO))
 			_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_LIMIT;
 		else
 		{
@@ -1005,39 +1011,39 @@ armError_t armSetSerial(arm_t* arm, armPortBaudrate_t baud, armPortDatabits_t da
 		//Set baudrate
 		switch(baud)
 		{
-			case 1200:
+			case ARMPORT_BAUDRATE_1200:
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_1200;
 			break;
 			
-			case 2400:	                  
+			case ARMPORT_BAUDRATE_2400:	                  
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_2400;
 			break;
 			
-			case 4800:	                  
+			case ARMPORT_BAUDRATE_4800:	                  
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_4800;
 			break;
 			
-			case 9600:	                  
+			case ARMPORT_BAUDRATE_9600:	                  
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_9600;
 			break;
 			
-			case 19200:	                  
+			case ARMPORT_BAUDRATE_19200:	                  
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_19200;
 			break;
 			
-			case 38400:	                  
+			case ARMPORT_BAUDRATE_38400:	                  
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_38400;
 			break;
 			
-			case 57600:	                  
+			case ARMPORT_BAUDRATE_57600:	                  
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_57600;
 			break;
 			
-			case 115200:	              
+			case ARMPORT_BAUDRATE_115200:	              
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_115200;
 			break;
 			
-			case 230400:	              
+			case ARMPORT_BAUDRATE_230400:	              
 				_ARM_REG8(N8LPLD, H, SERIAL_BAUDRATE) = _ARM_N8LPLD_REGH_SERIAL_BAUDRATE_230400;
 			break;
 			
@@ -1914,60 +1920,66 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 			
 		if(devAddr)
 		{
-			bzero(devAddr, sizeof devAddr);
+			bzero(devAddr, sizeof(uint32_t));
 			for(i=0; i<_ARM_N8LW_SIZE_DEVADDR; i++)
 			{
-				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVADDR, ((uint8_t*)devAddr)+i)))
+				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVADDR, ((uint8_t*)devAddr)+i);
+				if(err != ARM_ERR_NONE)
 					return err;
 			}
 		}
 		
 		if(devEui)
 		{
-            		bzero(devEui, sizeof devEui);
+           	bzero(devEui, sizeof(uint64_t));
 			for(i=0; i<_ARM_N8LW_SIZE_DEVEUI; i++)
 			{
-				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVEUI, ((uint8_t*)devEui)+i)))
+				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVEUI, ((uint8_t*)devEui)+i);
+				if(err != ARM_ERR_NONE)
 					return err;
 			}
 		}
 		
 		if(appEui)
 		{
-            		bzero(appEui, sizeof appEui);
+           	bzero(appEui, sizeof(uint64_t));
 			for(i=0; i<_ARM_N8LW_SIZE_APPEUI; i++)
 			{
-				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPEUI, ((uint8_t*)appEui)+i)))
+				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPEUI, ((uint8_t*)appEui)+i);
+				if(err != ARM_ERR_NONE)
 					return err;
 			}
 		}
 		
 		if(appKey)
 		{
-            		bzero(appKey, sizeof appKey);
+           	bzero(appKey, sizeof(uint128_t));
 			for(i=0; i<_ARM_N8LW_SIZE_APPKEY; i++)
 			{
-				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPKEY, ((uint8_t*)appKey)+i)))
+				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPKEY, ((uint8_t*)appKey)+i);
+				if(err != ARM_ERR_NONE)
 					return err;
 			}
 		}
 			
 		if(nwkSKey)
 		{
-            		bzero(nwkSKey, sizeof nwkSKey);
+           	bzero(nwkSKey, sizeof(uint128_t));
 			for(i=0; i<_ARM_N8LW_SIZE_NWKSKEY; i++)
 			{
-				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_NWKSKEY, ((uint8_t*)nwkSKey)+i)))
+				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_NWKSKEY, ((uint8_t*)nwkSKey)+i);
+				if(err != ARM_ERR_NONE)
 					return err;
 			}
 		}
 
 		if(appSKey)
 		{
-            		bzero(appSKey, sizeof appSKey);
+           	bzero(appSKey, sizeof(uint128_t));
 			for(i=0; i<_ARM_N8LW_SIZE_APPSKEY; i++)
 			{
-				if((err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPSKEY, ((uint8_t*)appSKey)+i)))
+				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPSKEY, ((uint8_t*)appSKey)+i);
+				if(err != ARM_ERR_NONE)
 					return err;
 			}
 		}
@@ -1999,7 +2011,8 @@ armError_t armUpdateConfig(arm_t* arm)
 		//Registers changed found?
 		if(i<_ARM_N8LPLD_REGH_SIZE)
 		{
-			if((err = _armGoAt(arm)))
+			err = _armGoAt(arm);
+			if(err != ARM_ERR_NONE)
 				return err;
 				
 			//Write S register changed to arm
@@ -2008,7 +2021,8 @@ armError_t armUpdateConfig(arm_t* arm)
 				//Set the new value if the value was changed. 
 				if(arm->_N8LPLD.regsH[i].newVal != arm->_N8LPLD.regsH[i].val)
 				{
-					if((err = _armSetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, arm->_N8LPLD.regsH[i].newVal)))
+					err = _armSetReg(arm, 'H', arm->_N8LPLD.regsH[i].reg, arm->_N8LPLD.regsH[i].newVal);
+					if(err != ARM_ERR_NONE)
 						return err;
 						
 					arm->_N8LPLD.regsH[i].val = arm->_N8LPLD.regsH[i].newVal;
@@ -2018,7 +2032,8 @@ armError_t armUpdateConfig(arm_t* arm)
 						reConfigPort = true;
 				}
 			}
-			if((err = _armBackAt(arm)))
+			err = _armBackAt(arm);
+			if(err != ARM_ERR_NONE)
 				return err;
 		}
 		
@@ -2031,7 +2046,7 @@ armError_t armUpdateConfig(arm_t* arm)
 			armPortStopbit_t stopbit;
 			
 			armGetSerial(arm, &baudrate, &databits, &parity, &stopbit);
-			if(armPortConfig(arm->_port, baudrate, databits, parity, stopbit))
+			if(armPortConfig(arm->_port, baudrate, databits, parity, stopbit) == -1)
 				err = ARM_ERR_PORT_CONFIG;
 		}
 		
@@ -2054,12 +2069,14 @@ armError_t armUpdateConfig(arm_t* arm)
 			int nread = 0;
 	
 			//Go to at commend.
-			if((err = _armGoAt(arm)))
+			err = _armGoAt(arm);
+			if(err != ARM_ERR_NONE)
 				return err;
 				
 			//Enable or Disable OTAA
 			io = _ARM_N8LW_IREGO_CONFIG;
-			if((err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal)))
+			err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal);
+			if(err != ARM_ERR_NONE)
 				return err;
 							
 			//Save the configuration 'ATOS'.
@@ -2069,7 +2086,8 @@ armError_t armUpdateConfig(arm_t* arm)
 				return ARM_ERR_ARM_CMD;
 			
 			//Reboot the ARM
-			if((err = armReboot(arm)))
+			err = armReboot(arm);
+			if(err != ARM_ERR_NONE)
 				return err;
 		}
 		
@@ -2090,8 +2108,9 @@ armError_t armUpdateConfig(arm_t* arm)
 		//Registers changer ?
 		if((im<_ARM_N8LW_REGM_SIZE) || (io<_ARM_N8LW_REGO_SIZE))
 		{
-			if((err = _armGoAt(arm)))
-					return err;
+			err = _armGoAt(arm);
+			if(err != ARM_ERR_NONE)
+				return err;
 
 			//Registers M changed found?
 			if(im<_ARM_N8LW_REGM_SIZE)
@@ -2102,7 +2121,8 @@ armError_t armUpdateConfig(arm_t* arm)
 					//Set the new value if the value was changed. 
 					if(arm->_N8LW.regsM[im].newVal != arm->_N8LW.regsM[im].val)
 					{
-						if((err = _armSetReg(arm, 'M', arm->_N8LW.regsM[im].reg, arm->_N8LW.regsM[im].newVal)))
+						err = _armSetReg(arm, 'M', arm->_N8LW.regsM[im].reg, arm->_N8LW.regsM[im].newVal);
+						if(err != ARM_ERR_NONE)
 							return err;
 							
 						arm->_N8LW.regsM[im].val = arm->_N8LW.regsM[im].newVal;
@@ -2119,7 +2139,8 @@ armError_t armUpdateConfig(arm_t* arm)
 					//Set the new value if the value was changed. 
 					if(arm->_N8LW.regsO[io].newVal != arm->_N8LW.regsO[io].val)
 					{
-						if((err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal)))
+						err = _armSetReg(arm, 'O', arm->_N8LW.regsO[io].reg, arm->_N8LW.regsO[io].newVal);
+						if(err != ARM_ERR_NONE)
 							return err;
 							
 						arm->_N8LW.regsO[io].val = arm->_N8LW.regsO[io].newVal;
@@ -2127,7 +2148,8 @@ armError_t armUpdateConfig(arm_t* arm)
 				}
 			}
 			
-			if((err = _armBackAt(arm)))
+			err = _armBackAt(arm);
+			if(err != ARM_ERR_NONE)
 				return err;
 		}
 		
@@ -2142,71 +2164,8 @@ int armSend(arm_t* arm, const void* buf, size_t nbyte)
 {
 	int nwrite = 0;
 		
-	//#ifdef ARM_WITH_N8_LPLD
-	//_ARM_IMP2(N8_LP, N8_LD)
-	//{
-		//int n = 0;
-		//int baud = 0;
-		
-		//armFskGetRadio(arm, NULL, (armBaudrate_t*)&baud, NULL);
-		//if(baud <= 0)
-			//return -1;
-		
-		////if(infini mode disabel)
-		//if(1)
-		//{
-			////Send _ARM_RF_PAYLOAD_MAX by _ARM_RF_PAYLOAD_MAX
-			//while((nbyte-nwrite) > _ARM_RF_PAYLOAD_MAX)
-			//{
-				//n = armPortWrite(arm->_port, (const uint8_t*)buf+nwrite, _ARM_RF_PAYLOAD_MAX);
-				//if(n == -1)
-					//return -1;
-				//nwrite += n;
-				
-				//armPortDelay(((n*8000)/baud)+100);
-			//}
-			
-			////Send last data
-			//n = armPortWrite(arm->_port, (const uint8_t*)buf+nwrite, (nbyte-nwrite));
-			//if(n == -1)
-				//return -1;
-				
-			//nwrite += n;
-			
-			////TODO temporaier aven de trouver mieu ce qui serai bine ce cerai de lancer un timer
-			////et de verifier si le timer a finie aven char ehnvoi de nouvelle données ou
-			//// aven de rentrer en commende AT
-			////armPortDelay((n*8000)/baud+100);
-			
-			////Wait Te+Ta+Tb+Tc+Tpreamble+Tsync+Tdata+Tcrc
-			////Te: 3 byte time
-			////Ta: 5ms if "listen before talk" is enable else 0ms
-			////Tb: Pseudorandom if "listen before talk" is enable
-			////Tc: Time before radio Tx 0 by default
-			////Tpreamble:
-			////Tsync:
-			////Tdata: nbyte * byte time
-			////Tcrc: 2 byte time if crc is enable
-			//armPortDelay(((n*8000)/baud)+100);
-		//}
-		//else 
-		//{
-			////Send all buf
-			//nwrite = armPortWrite(arm->_port, buf, nbyte);
-			
-			////Wait end send
-			////armPortDelay();
-		//}
-	//}
-	//#endif
-	
-	//#ifdef ARM_WITH_N8_LW
-	//_ARM_IMP1(N8_LW)
-	//{
-		//Send all buf
-		nwrite = armPortWrite(arm->_port, buf, nbyte);
-	//}
-	//#endif
+	//Send all buf
+	nwrite = armPortWrite(arm->_port, buf, nbyte);
 	
 	return nwrite;
 }
@@ -2381,9 +2340,16 @@ armError_t _armGoAt(arm_t* arm)
 		if(nread < 0)
 			return ARM_ERR_PORT_WRITE_READ;
 			
+		//If "a" is read, send "g" to quit bootloader.
+		if((nread <= 3) && (buf[0] == 'a')) 
+		{
+			//Write 'g' to quit bootloader.
+			armPortWrite(arm->_port, "g", 1);
+			armPortDelay(_ARM_TIME_BOOTING);
+		}
 		//In AT commend if timeout or receive 3 char (3*'+')
 		//or if "ARM" is read.
-		if(	(nread == 0) ||	(nread == 3) ||
+		else if(	(nread == 0) ||	(nread == 3) ||
 			(memmem(buf, nread, "ARM", 3) != NULL)) 
 			return ARM_ERR_NONE;
 	}
