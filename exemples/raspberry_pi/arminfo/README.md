@@ -16,7 +16,7 @@ You have need to executer the 'make' command into this folder.
 You have need to executer the 'make' command 
 with TARGET option into this folder.
 For example, if your cross comparator is installed on you system and
-is normed by 'arm-linux-gnueabihf-' the commend to call is:
+is named by 'arm-linux-gnueabihf-', the commend to call is:
 
 	$'make TARGET=arm-linux-gnueabihf-'
 
@@ -29,10 +29,8 @@ makefile, call './arminfo'.
 Or install into the system with the 'make install' command.
 ### On host (with scp) ###
 Execute the 'make installscp' command with your parameters USER, IP and
-DIRECTORY.
-
-For example, if the username is 'pi' and if the IP addressee is
-'192.168.0.1' finally you can specific the installation folder in user
+DIRECTORY. For example, if the username is 'pi' and if the IP addressee is
+'192.168.0.1', finally you can specific the installation folder in user
 home.
 
 	$make installscp USER=pi IP=192.168.0.1 DIRECTORY=.
