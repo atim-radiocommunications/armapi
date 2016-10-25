@@ -111,7 +111,7 @@ armError_t _armSetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t val);
 armError_t armInit(arm_t* arm, void* port)
 {	
 	//Initialize the arm structure
-	bzero(arm, sizeof(arm_t));
+	memset(arm, 0, sizeof(arm_t));
 	arm->_port = port;
 	arm->_type = ARM_TYPE_NONE;
 	
@@ -1947,7 +1947,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 			
 		if(devAddr)
 		{
-			bzero(devAddr, sizeof(uint32_t));
+			memset(devAddr, 0, sizeof(uint32_t));
 			for(i=0; i<_ARM_N8LW_SIZE_DEVADDR; i++)
 			{
 				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVADDR, ((uint8_t*)devAddr)+i);
@@ -1958,7 +1958,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		
 		if(devEui)
 		{
-           	bzero(devEui, sizeof(uint64_t));
+           	memset(devEui, 0, sizeof(uint64_t));
 			for(i=0; i<_ARM_N8LW_SIZE_DEVEUI; i++)
 			{
 				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_DEVEUI, ((uint8_t*)devEui)+i);
@@ -1969,7 +1969,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		
 		if(appEui)
 		{
-           	bzero(appEui, sizeof(uint64_t));
+           	memset(appEui, 0, sizeof(uint64_t));
 			for(i=0; i<_ARM_N8LW_SIZE_APPEUI; i++)
 			{
 				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPEUI, ((uint8_t*)appEui)+i);
@@ -1980,7 +1980,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		
 		if(appKey)
 		{
-           	bzero(appKey, sizeof(uint128_t));
+           	memset(appKey, 0, sizeof(uint128_t));
 			for(i=0; i<_ARM_N8LW_SIZE_APPKEY; i++)
 			{
 				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPKEY, ((uint8_t*)appKey)+i);
@@ -1991,7 +1991,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 			
 		if(nwkSKey)
 		{
-           	bzero(nwkSKey, sizeof(uint128_t));
+           	memset(nwkSKey, 0, sizeof(uint128_t));
 			for(i=0; i<_ARM_N8LW_SIZE_NWKSKEY; i++)
 			{
 				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_NWKSKEY, ((uint8_t*)nwkSKey)+i);
@@ -2002,7 +2002,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 
 		if(appSKey)
 		{
-           	bzero(appSKey, sizeof(uint128_t));
+           	memset(appSKey, 0, sizeof(uint128_t));
 			for(i=0; i<_ARM_N8LW_SIZE_APPSKEY; i++)
 			{
 				err = _armGetReg(arm, 'O', i+_ARM_N8LW_REGO_APPSKEY, ((uint8_t*)appSKey)+i);

@@ -47,8 +47,8 @@ extern "C"
 #endif
 
 #ifndef __DOXYGEN__
-//Memories functions at to define by port
-extern void bzero(void *s, size_t n);
+//Memories functions to define by port
+extern void *memset(void *s, int c, size_t n);
 extern void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen);
 #endif
  
