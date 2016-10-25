@@ -48,13 +48,12 @@
 // ---------------------------------------------------------------------
 // Global variables
 // ---------------------------------------------------------------------
-//Instance of  the class Arm
+//Instance of the class Arm
 Arm myArm;
 //Buffer for radio echo
 uint8_t buff[32];
 //Number of byte in buff
 int nBuff = 0;
-
 
 // ---------------------------------------------------------------------
 // Implemented functions
@@ -62,7 +61,7 @@ int nBuff = 0;
 
 void setup()
 {
-	//Init Led for chow error
+	//Init Led for show error
 	pinMode(LED, OUTPUT);
 	digitalWrite(LED, LOW);
 	

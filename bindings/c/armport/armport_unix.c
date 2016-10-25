@@ -46,12 +46,12 @@ int armPortOpen(void** ptrPort)
 	
 	//Open uart file port
 	fd = open(*ptrPort, O_RDWR);
-	*ptrPort = NULL;
 	if(fd == -1)
 	{
-		fprintf(stderr, "ERROR - %s: %s\n", __func__, strerror(errno));
+		fprintf(stderr, "ERROR - %s(\"%s\"): %s\n", __func__, (char*)*ptrPort, strerror(errno));
 		return -1;
 	}
+	*ptrPort = NULL;
 	
 	//Create new int for save fd.
 	ptrFd = malloc(sizeof(int));
@@ -89,10 +89,10 @@ int armPortConfig(void* port, 	armPortBaudrate_t baudrate,
 	
 	//Setup input/output flag
 	cfg.c_iflag = 0;
-	cfg.c_oflag = OPOST;
+	cfg.c_oflag = 0;
 	
 	//Setup control flag
-	cfg.c_cflag  = 0;
+	cfg.c_cflag = CREAD|CLOCAL;
 	
 	//Set data bits
 	switch(databits)
@@ -113,7 +113,7 @@ int armPortConfig(void* port, 	armPortBaudrate_t baudrate,
 		break;
 		
 		case ARMPORT_PARITY_ODD:
-		cfg.c_cflag |= PARODD;
+		cfg.c_cflag |= PARENB|PARODD;
 		
 		case ARMPORT_PARITY_EVEN:
 		cfg.c_cflag |= PARENB;

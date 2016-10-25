@@ -60,7 +60,7 @@ uint8_t msg[] = "Hello world!";
 
 void setup()
 {
-	//Init Led for chow error
+	//Init Led for show error
 	pinMode(LED, OUTPUT);
 	digitalWrite(LED, LOW);
 	
