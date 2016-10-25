@@ -86,7 +86,7 @@
 typedef enum armError_e
 {
 	ARM_ERR_NONE,					//!< No error.
-	ARM_ERR_NO_SUPPORTED,			//!< Functionality no supported by the\b ARM.
+	ARM_ERR_NO_SUPPORTED,			//!< Functionality no supported by the \b ARM.
 
 	ARM_ERR_PORT_OPEN,				//!< Port Error, at the port opening.
 	ARM_ERR_PORT_CONFIG,			//!< Port Error, at the port configuring.
@@ -192,8 +192,9 @@ typedef enum armMode_e
 {
 	ARM_MODE_FSK,		//!< Mode for Fsk (local) radio.
 	ARM_MODE_SFX,		//!< Mode for Sigfox network.
+	//ARM_MODE_SFXU,		//!< Mode for Sigfox network in uplink.
+	//ARM_MODE_SFXD,		//!< Mode for Sigfox network in downlink.
 	ARM_MODE_LORAWAN,	//!< Mode for Lora network (LoRaWan).
-	
 	//ARM_MODE_LWA,		//!< Mode for Lora network in class A (LoRaWan).
 	//ARM_MODE_LWB,		//!< Mode for Lora network in class B (LoRaWan).
 	//ARM_MODE_LWC,		//!< Mode for Lora network in class C (LoRaWan).
@@ -428,6 +429,33 @@ armError_t armSfxEnableDownlink(arm_t* arm, bool enable);
  * \see armSfxEnableDownlink()
  */
 bool armSfxIsEnableDownlink(arm_t* arm);
+
+/*! \ingroup group_sfx
+ * \brief Send and receive data to/from sigfox.
+ * 
+ * This function can be call even if the mode chose by \ref armSetMode() is not a Sigfox mode.
+ * \note This function is blocked during the posses of send en receive. Which can during 1 minute.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param bufu, buffer to send data to Sigfox. Can be NULL value if \p nbyte equal at 0.
+ * \param nbyte, number of byte to send at Sigfox (size of \p bufu).
+ * \param bufd, buffer to receive data from Sigfox. This buffer must equal or more at 8 bytes.
+ * Pass NULL value if you went just do uplink.
+ * 
+ * \return Error available:
+ *	- \ref ARM_ERR_NONE If successful send/receive data to/from Sigfox.
+ *	- \ref ARM_ERR_NO_SUPPORTED If you \b ARM don't support Sigfox. This value is also
+ * returned if you try to send downlink message (\p bufd no NULL) and you \b ARM don't supporte
+ * the downlink message.
+ *	- \ref ARM_ERR_PARAM_OUT_OF_RANGE, If \p nbyte is upper at 12.
+ * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
+ * 	- \ref ARM_ERR_PORT_READ If can't read through the port.
+ * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
+ * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 	- \ref ARM_ERR_ARM_CMD Error when execute a AT commend from \b ARM,
+ * data can't sand or error at the receiving.
+ */
+armError_t armSfxSendReceive(arm_t* arm, const void* bufu, size_t nbyte, void* bufd);
 
 /*! \ingroup group_sfx
  * \brief Get Sigfox ID.
@@ -859,7 +887,7 @@ void armFskGetWorMode(arm_t* arm, armFskWor_t* mode, uint16_t* periodTime, uint1
  * \return Error available:
  * - \ref ARM_ERR_NONE If successful.
  * - \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
- * - \ref ARM_ERR_WOR_ENABLE This errors is returned if you went disable the \b Wake \b Up \b Uart (\p enable = false)
+ * - \ref ARM_ERR_WOR_ENABLE This errors is returned if you want disable the \b Wake \b Up \b Uart (\p enable = false)
  * and the \b ARMPORT_WITH_nSLEEP is not define and the \b WOR is
  * enable in \ref ARM_FSK_WOR_CS or \ref ARM_FSK_WOR_PQT.
  * 
@@ -1390,11 +1418,15 @@ armLed_t armGetLed(arm_t* arm);
  * 		- \ref ARM_KEEPALIVE_7DAY, Each 7 day.
  * 		- \ref ARM_KEEPALIVE_30DAY, Each 30 day.
  * 
+ *  \return Error available:
+ *	- \ref ARM_ERR_NONE If successful.
+ *	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
  * 
  * \see armSfxGetKeepAlive()
  */
-void armSfxSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive);
+armError_t armSfxSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive);
 
 /*! \ingroup group_sfx
  * \brief Get the \a Keep \a Alive Frame
@@ -1428,11 +1460,15 @@ armKeepAlive_t armSfxGetKeepAlive(arm_t* arm);
  * 		- \ref ARM_KEEPALIVE_7DAY, Each 7 day.
  * 		- \ref ARM_KEEPALIVE_30DAY, Each 30 day.
  * 
+ *   \return Error available:
+ *	- \ref ARM_ERR_NONE If successful.
+ *	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
+ * 
  * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
  * 
  * \see armLwGetKeepAlive()
  */
-void armLwSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive);
+armError_t armLwSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive);
 
 /*! \ingroup group_lw
  * \brief Get the \a Keep \a Alive Frame

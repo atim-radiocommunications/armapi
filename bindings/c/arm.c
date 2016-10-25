@@ -62,9 +62,9 @@
 #define _ARM_FLAGS_IN_AT 				0x01
 #define _ARM_FLAGS_KEEP_AT 				0x02
 
-
-#define _ARM_IMP1(t1) if(arm->_type & (ARM_TYPE_##t1))
-#define _ARM_IMP2(t1, t2) if(arm->_type & (ARM_TYPE_##t1|ARM_TYPE_##t2))
+#define _ARM_IMP1(t1) 		if(	(arm->_type&ARM_TYPE_##t1) == ARM_TYPE_##t1)
+#define _ARM_IMP2(t1, t2) 	if(	((arm->_type&ARM_TYPE_##t1) == ARM_TYPE_##t1) ||\
+								((arm->_type&ARM_TYPE_##t2) == ARM_TYPE_##t2))
 
 // Helper for manipulate registers
 #define _ARM_REG8_INIT(armType, regType, regName) \
@@ -91,7 +91,7 @@
 // ---------------------------------------------------------------------
 
 uint8_t* _armUintToStr(uint64_t val, uint8_t* str, uint8_t base, int n);
-uint64_t _armStrToUint(uint8_t* str, uint8_t base);
+uint64_t _armStrToUint(uint8_t* str, uint8_t base, int n);
 
 int _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout);
 int _armWriteRead(arm_t* arm, const void* tbuf, size_t tnbyte, void* rbuf, size_t rnbyte, unsigned int rtimeout);
@@ -448,7 +448,7 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		#endif
 		
 		//Convert serial number string to uint
-		arm->_sn = _armStrToUint(ptrstr, _ARM_BASE_HEX);
+		arm->_sn = _armStrToUint(ptrstr, _ARM_BASE_HEX, -1);
 	}
 	else
 	{		
@@ -504,12 +504,6 @@ armError_t armSetMode(arm_t* arm, armMode_t mode)
 			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_RF;
 			return ARM_ERR_NONE;
 		}
-		
-		if(mode == ARM_MODE_SFX)
-		{
-			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX;
-			return ARM_ERR_NONE;
-		}
 	}
 	
 	_ARM_IMP1(N8_LD)
@@ -517,6 +511,16 @@ armError_t armSetMode(arm_t* arm, armMode_t mode)
 		if(mode == ARM_MODE_FSK)
 		{
 			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_RF;
+			return ARM_ERR_NONE;
+		}
+	}
+	
+	
+	_ARM_IMP1(N8_SFU)
+	{
+		if(mode == ARM_MODE_SFX)
+		{
+			_ARM_REG8(N8LPLD, H, APPLICATION1) = _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX;
 			return ARM_ERR_NONE;
 		}
 	}
@@ -540,6 +544,7 @@ armMode_t armGetMode(arm_t* arm)
 	{
 		if(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_RF)
 			return ARM_MODE_FSK;
+			
 		if(	(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFX) ||
 			(_ARM_REG8(N8LPLD, H, APPLICATION1) == _ARM_N8LPLD_REGH_APPLICATION1_UART_SFXB))
 			return ARM_MODE_SFX;
@@ -589,10 +594,96 @@ bool armSfxIsEnableDownlink(arm_t* arm)
 	return false;
 }
 
+armError_t armSfxSendReceive(arm_t* arm, const void* bufu, size_t nbyte, void* bufd)
+{
+	armError_t err = ARM_ERR_NONE;
+	
+	#ifdef ARM_WITH_N8_LPLD
+	_ARM_IMP1(N8_SFU)
+	{
+		size_t i = 0;
+		unsigned int rtimeout = 0;
+		int nread;
+		int nnread;
+		uint8_t buf[32] = "AT$SF=";
+		uint8_t* ptrbuf = NULL;
+		
+		//Check size
+		if(nbyte > _ARM_SIGFOX_PAYLOAD_MAX)
+			return ARM_ERR_PARAM_OUT_OF_RANGE;
+			
+		//Converter bufu to acii
+		for(i=0; i<nbyte; i++)
+			_armUintToStr(((uint8_t*)bufu)[i], buf+6+i*2, _ARM_BASE_HEX, 2);
+			
+		i = 6+i*2;
+		
+		buf[i++] = ',';
+		//Uplink msg ?
+		if(bufd == NULL)
+		{
+			buf[i] = '0';
+			rtimeout = _ARM_TIME_SF_UPLINK_TIMEOUT;
+		}
+		//Downlink msg
+		else _ARM_IMP1(N8_SFD)
+		{
+			buf[i] = '1';
+			rtimeout = _ARM_TIME_SF_DOWNLINK_TIMEOUT;
+		}
+		else
+			return ARM_ERR_NO_SUPPORTED;
+			
+		i++;
+		buf[i++] = '\r';
+			
+		//Go to AT
+		err = _armGoAt(arm);
+		if(err != ARM_ERR_NONE)
+			return err;
+		
+		//Write AT commend and read reply
+		nread = _armWriteRead(arm, buf, i, buf, sizeof(buf), rtimeout);
+		if(nread < 0)
+			return ARM_ERR_PORT_WRITE_READ;
+			
+		//Receive msg from Sigfox
+		ptrbuf = memmem(buf, nread, "+RX=", 4);
+		if(ptrbuf != NULL)
+		{
+			//End of reading
+			nnread = _armRead(arm, buf+nread, sizeof(buf)-nread, _ARM_TIME_TIMEOUT);
+			if(nread < 0)
+				return ARM_ERR_PORT_READ;
+				
+			//Convert data
+			for(i=0; i<8; i++)
+			{
+				((uint8_t*)bufd)[i] = _armStrToUint(ptrbuf+4+i*2, _ARM_BASE_HEX, 2);
+			}
+			
+			nread += nnread;
+		}
+		
+		//Check if ok
+		if(memmem(buf, nread, "OK", 2) == NULL)
+		{
+			_armBackAt(arm);
+			return ARM_ERR_ARM_CMD;
+		}
+			
+		//Back AT
+		return _armBackAt(arm);
+	}
+	#endif
+	
+	return ARM_ERR_NO_SUPPORTED;
+}
+
 uint64_t armSfxGetId(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP1(N8_SFD)
+	_ARM_IMP1(N8_SFU)
 	{
 		return arm->_sn;
 	}
@@ -1553,20 +1644,23 @@ armLed_t armGetLed(arm_t* arm)
 	return ARM_LED_OFF;
 }
 
-void armSfxSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive)
+armError_t armSfxSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_SFU)
 	{
 		_ARM_REG8(N8LPLD, H, SFX_KEEPALIVE) = (uint8_t)keepAlive;
+		return ARM_ERR_NONE;
 	}
 	#endif
+	
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 armKeepAlive_t armSfxGetKeepAlive(arm_t* arm)
 {
 	#ifdef ARM_WITH_N8_LPLD
-	_ARM_IMP2(N8_LP, N8_LD)
+	_ARM_IMP1(N8_SFU)
 	{
 		return (armKeepAlive_t)_ARM_REG8(N8LPLD, H, SFX_KEEPALIVE);
 	}
@@ -1575,14 +1669,17 @@ armKeepAlive_t armSfxGetKeepAlive(arm_t* arm)
 	return ARM_KEEPALIVE_DISABLE;
 }
 
-void armLwSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive)
+armError_t armLwSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive)
 {
 	#ifdef ARM_WITH_N8_LW
 	_ARM_IMP1(N8_LW)
 	{
 		_ARM_REG8(N8LW, M, LW_KEEPALIVE) = (uint8_t)keepAlive;
+		return ARM_ERR_NONE;
 	}
 	#endif
+	
+	return ARM_ERR_NO_SUPPORTED;
 }
 
 armKeepAlive_t armLwGetKeepAlive(arm_t* arm)
@@ -2319,12 +2416,12 @@ uint8_t* _armUintToStr(uint64_t val, uint8_t* str, uint8_t base, int n)
 	return str;
 }
 
-uint64_t _armStrToUint(uint8_t* str, uint8_t base)
+uint64_t _armStrToUint(uint8_t* str, uint8_t base, int n)
 {	
 	uint64_t val = 0;
 
 	//Convert digits
-	while(1)
+	while(n!=0)
 	{
 		if((*str >= '0') && (*str <= '9'))
 		{
@@ -2345,6 +2442,7 @@ uint64_t _armStrToUint(uint8_t* str, uint8_t base)
 			break;
 			
 		str++;
+		n--;
 	}
 	
 	return val;
@@ -2368,7 +2466,7 @@ int _armRead(arm_t* arm, void* buf, size_t nbyte, unsigned int timeout)
 		//Check if stop read condition
 		for(i=nread; i<nread+n; i++)
 		{
-			if((((uint8_t*)buf)[i] == '\n') && (i>8))
+			if((((uint8_t*)buf)[i] == '\n') && (i>4))
 			{
 				nread += n;
 				return nread;
@@ -2416,6 +2514,7 @@ armError_t _armGoAt(arm_t* arm)
 			if(nread == 0)
 			{
 				_armWriteRead(arm, "ATQ\r", 4, buf, sizeof buf, _ARM_TIME_TIMEOUT);
+				armPortDelay(_ARM_TIME_BACK_AT);
 				continue;
 			}
 		}
@@ -2524,7 +2623,7 @@ armError_t _armGetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t* val)
 	ptrrbuf += 5;
 	if(ptrrbuf[0] == '\0' && ptrrbuf[1] == '\0')
 		return ARM_ERR_ARM_GET_REG;
-	*val = _armStrToUint(ptrrbuf, _ARM_BASE_HEX);
+	*val = _armStrToUint(ptrrbuf, _ARM_BASE_HEX, -1);
 	
 	return ARM_ERR_NONE;
 }
