@@ -94,6 +94,14 @@ void setup()
 		SerialUSB.print("ARM_TYPE_N8_LD Detected.\r\n");
 		break;
 		
+		case ARM_TYPE_N8_SFU:
+		SerialUSB.print("ARM_TYPE_N8_SFU Detected.\r\n");
+		break;
+		
+		case ARM_TYPE_N8_SFD:
+		SerialUSB.print("ARM_TYPE_N8_SFD Detected.\r\n");
+		break;
+		
 		case ARM_TYPE_N8_LW:
 		SerialUSB.print("ARM_TYPE_N8_LW Detected.\r\n");
 		break;

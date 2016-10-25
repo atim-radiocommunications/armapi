@@ -143,12 +143,12 @@ armError_t armReboot(arm_t* arm)
 	armError_t err = ARM_ERR_NONE;
 	
 	#ifdef ARMPORT_WITH_nSLEEP
-	//nSLEEP to '1'
+	//nSLEEP to '1', No sleep
 	armPortGpioSet(arm->_port, ARMPORT_PIN_nSLEEP, true);
 	#endif
 	
 	#ifdef ARMPORT_WITH_nBOOT
-	//nBOOT to '1'
+	//nBOOT to '1', baypass bootloader
 	armPortGpioSet(arm->_port, ARMPORT_PIN_nBOOT, true);
 	#endif
 	
@@ -179,12 +179,8 @@ armError_t armReboot(arm_t* arm)
 		_ARM_IMP1(N8_LP)
 		{
 			#ifdef ARMPORT_WITH_nBOOT
-				//nBOOT to '0'
+				//nBOOT to '0', (set CTS to '0')
 				armPortGpioSet(arm->_port, ARMPORT_PIN_nBOOT, false);
-			#else
-				//Wait booting
-				if(arm->_type != ARM_TYPE_NONE)
-					armPortDelay(_ARM_N8LPLD_TIME_BOOTING);
 			#endif
 		}
 	#endif
@@ -218,6 +214,7 @@ armError_t armReboot(arm_t* arm)
 		_ARM_REG16_INIT(N8LPLD, H, CHANNEL2);
 		_ARM_REG8_INIT (N8LPLD, H, RSSI_LEVEL);
 		_ARM_REG16_INIT(N8LPLD, H, NSAMPLE);
+		_ARM_REG8_INIT (N8LPLD, H, SFX_KEEPALIVE);
 		_ARM_REG8_INIT (N8LPLD, H, USER_GAIN);
 		_ARM_REG8_INIT (N8LPLD, H, WAKE_UP_PWR);
 		_ARM_REG8_INIT (N8LPLD, H, WAKE_UP_RF);
@@ -236,6 +233,7 @@ armError_t armReboot(arm_t* arm)
 		_ARM_REG8_INIT (N8LW, M, CONFIGURATION);
 		_ARM_REG8_INIT (N8LW, M, LOW_POWER);
 		_ARM_REG8_INIT (N8LW, M, LED);
+		_ARM_REG8_INIT (N8LW, M, LW_KEEPALIVE);
 		
 		_ARM_REG8_INIT (N8LW, O, TXRX2_SF);
 		_ARM_REG8_INIT (N8LW, O, POWER);
@@ -1539,6 +1537,50 @@ armLed_t armGetLed(arm_t* arm)
 	return ARM_LED_OFF;
 }
 
+void armSfxSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive)
+{
+	#ifdef ARM_WITH_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		_ARM_REG8(N8LPLD, H, SFX_KEEPALIVE) = (uint8_t)keepAlive;
+	}
+	#endif
+}
+
+armKeepAlive_t armSfxGetKeepAlive(arm_t* arm)
+{
+	#ifdef ARM_WITH_N8_LPLD
+	_ARM_IMP2(N8_LP, N8_LD)
+	{
+		return (armKeepAlive_t)_ARM_REG8(N8LPLD, H, SFX_KEEPALIVE);
+	}
+	#endif
+	
+	return ARM_KEEPALIVE_DISABLE;
+}
+
+void armLwSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive)
+{
+	#ifdef ARM_WITH_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		_ARM_REG8(N8LW, M, LW_KEEPALIVE) = (uint8_t)keepAlive;
+	}
+	#endif
+}
+
+armKeepAlive_t armLwGetKeepAlive(arm_t* arm)
+{
+	#ifdef ARM_WITH_N8_LW
+	_ARM_IMP1(N8_LW)
+	{
+		return (armKeepAlive_t)_ARM_REG8(N8LW, M, LW_KEEPALIVE);
+	}
+	#endif
+	
+	return ARM_KEEPALIVE_DISABLE;
+}
+
 armError_t armLwSetRadio(arm_t* arm, uint8_t txChannel, uint8_t power, uint8_t txSf, uint8_t rx2Sf, uint8_t rx2Channel)
 {
 	#ifdef ARM_WITH_N8_LW
@@ -2336,7 +2378,7 @@ int _armWriteRead(arm_t* arm, const void* tbuf, size_t tnbyte, void* rbuf, size_
 armError_t _armGoAt(arm_t* arm)
 {
 	uint8_t ntry = 0;
-	uint8_t buf[40];
+	uint8_t buf[64];
 	int nread;
 	
 	while(ntry < _ARM_NUMBER_OF_TRIALS_GO_AT)
@@ -2363,16 +2405,19 @@ armError_t _armGoAt(arm_t* arm)
 			return ARM_ERR_PORT_WRITE_READ;
 			
 		//If "a" is read, send "g" to quit bootloader.
-		if((nread <= 3) && (buf[0] == 'a')) 
+		#if defined ARM_WITH_N8_LW && !defined ARMPORT_WITH_nBOOT
+		if((nread >= 1) && (nread <= 3) && (buf[0] == 'a')) 
 		{
 			//Write 'g' to quit bootloader.
 			armPortWrite(arm->_port, "g", 1);
 			armPortDelay(_ARM_TIME_BOOTING);
 		}
+		else
+		#endif
 		//In AT commend if timeout or receive 3 char (3*'+')
 		//or if "ARM" is read.
-		else if(	(nread == 0) ||	(nread == 3) ||
-			(memmem(buf, nread, "ARM", 3) != NULL)) 
+		if((nread == 0) ||	(nread == 3) ||
+				(memmem(buf, nread, "ARM", 3) != NULL)) 
 			return ARM_ERR_NONE;
 	}
 	

@@ -153,6 +153,23 @@ typedef enum armLed_e
 	ARM_LED_ON_RF		//!< The LED is 'on' on RF activity and 'off' other time.
 }armLed_t;
 
+/*!	\ingroup group_sfx
+ * \ingroup group_lw
+ * \brief Constant to define the time between each keep alive frame.
+ * 
+ * \see armSfxSetKeepAlive()
+ * \see armLwSetKeepAlive()
+ */
+typedef enum armKeepAlive_e
+{
+	ARM_KEEPALIVE_DISABLE	= 0x00,	//!< Disable keep alive frame.
+	ARM_KEEPALIVE_10MIN		= 0x04,	//!< Each 10 minutes.
+	ARM_KEEPALIVE_1HOUR		= 0x05,	//!< Each 1 hour.
+	ARM_KEEPALIVE_1DAY		= 0x06,	//!< Each 1 day.
+	ARM_KEEPALIVE_7DAY		= 0x07,	//!< Each 7 day.
+	ARM_KEEPALIVE_30DAY		= 0x08	//!< Each 30 day.
+}armKeepAlive_t;
+
 /*!	\ingroup group_fsk
  * \brief Constant to define the LBT&AFA mode 'Listen before talk' and 'Adaptive Frequency Agility'.
  * 
@@ -1357,6 +1374,82 @@ void armSetLed(arm_t* arm, armLed_t led);
  * \see armSetLed()
  */
 armLed_t armGetLed(arm_t* arm);
+
+/*! \ingroup group_sfx
+ * \brief Enable the \a Keep \a Alive Frame.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions in ignored.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param keepAlive Time between each keep alive frame:
+ * 		- \ref ARM_KEEPALIVE_DISABLE, Disable keep alive frame.
+ * 		- \ref ARM_KEEPALIVE_10MIN, Each 10 minutes.
+ * 		- \ref ARM_KEEPALIVE_1HOUR, Each 1 hour.
+ * 		- \ref ARM_KEEPALIVE_1DAY, Each 1 day.
+ * 		- \ref ARM_KEEPALIVE_7DAY, Each 7 day.
+ * 		- \ref ARM_KEEPALIVE_30DAY, Each 30 day.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armSfxGetKeepAlive()
+ */
+void armSfxSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive);
+
+/*! \ingroup group_sfx
+ * \brief Get the \a Keep \a Alive Frame
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return Time between each keep alive frame:
+ * 		- \ref ARM_KEEPALIVE_DISABLE, Disable keep alive frame.
+ * 		- \ref ARM_KEEPALIVE_10MIN, Each 10 minutes.
+ * 		- \ref ARM_KEEPALIVE_1HOUR, Each 1 hour.
+ * 		- \ref ARM_KEEPALIVE_1DAY, Each 1 day.
+ * 		- \ref ARM_KEEPALIVE_7DAY, Each 7 day.
+ * 		- \ref ARM_KEEPALIVE_30DAY, Each 30 day.
+ * 
+ * \see armSfxSetKeepAlive()
+ */
+armKeepAlive_t armSfxGetKeepAlive(arm_t* arm);
+
+/*! \ingroup group_lw
+ * \brief Enable the \a Keep \a Alive Frame.
+ * 
+ * \note In the case where this function in not supported by your \b ARM this functions in ignored.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \param keepAlive Time between each keep alive frame:
+ * 		- \ref ARM_KEEPALIVE_DISABLE, Disable keep alive frame.
+ * 		- \ref ARM_KEEPALIVE_10MIN, Each 10 minutes.
+ * 		- \ref ARM_KEEPALIVE_1HOUR, Each 1 hour.
+ * 		- \ref ARM_KEEPALIVE_1DAY, Each 1 day.
+ * 		- \ref ARM_KEEPALIVE_7DAY, Each 7 day.
+ * 		- \ref ARM_KEEPALIVE_30DAY, Each 30 day.
+ * 
+ * \note You need to call \ref armUpdateConfig() to update the parameters in you \b ARM.
+ * 
+ * \see armLwGetKeepAlive()
+ */
+void armLwSetKeepAlive(arm_t* arm, armKeepAlive_t keepAlive);
+
+/*! \ingroup group_lw
+ * \brief Get the \a Keep \a Alive Frame
+ * 
+ * \note In the case where this function in not supported by your \b ARM the returned value is unfeasible.
+ * 
+ * \param arm Pointer to your \b ARM structure.
+ * \return Time between each keep alive frame:
+ * 		- \ref ARM_KEEPALIVE_DISABLE, Disable keep alive frame.
+ * 		- \ref ARM_KEEPALIVE_10MIN, Each 10 minutes.
+ * 		- \ref ARM_KEEPALIVE_1HOUR, Each 1 hour.
+ * 		- \ref ARM_KEEPALIVE_1DAY, Each 1 day.
+ * 		- \ref ARM_KEEPALIVE_7DAY, Each 7 day.
+ * 		- \ref ARM_KEEPALIVE_30DAY, Each 30 day.
+ * 
+ * \see armLwSetKeepAlive()
+ */
+armKeepAlive_t armLwGetKeepAlive(arm_t* arm);
 
 /*! \ingroup group_main
  * \brief Update the configuration in \b ARM.

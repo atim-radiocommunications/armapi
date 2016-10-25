@@ -85,6 +85,14 @@ int main()
 		printf("ARM_TYPE_N8_LD Detected.\n");
 		break;
 		
+		case ARM_TYPE_N8_SFU:
+		printf("ARM_TYPE_N8_SFU Detected.\n");
+		break;
+		
+		case ARM_TYPE_N8_SFD:
+		printf("ARM_TYPE_N8_SFD Detected.\n");
+		break;
+		
 		case ARM_TYPE_N8_LW:
 		printf("ARM_TYPE_N8_LW Detected.\n");
 		break;
