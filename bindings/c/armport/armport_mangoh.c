@@ -84,10 +84,10 @@ int armPortConfig(void* port, 	armPortBaudrate_t baudrate,
 	
 	//Setup input/output flag
 	cfg.c_iflag = 0;
-	cfg.c_oflag = OPOST;
+	cfg.c_oflag = 0;
 	
 	//Setup control flag
-	cfg.c_cflag  = 0;
+	cfg.c_cflag = CREAD|CLOCAL;
 	
 	//Set data bits
 	switch(databits)

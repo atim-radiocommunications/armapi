@@ -758,7 +758,7 @@ armError_t armFskSetRadio(arm_t* arm, uint16_t channel, armBaudrate_t baud, int8
 			_ARM_REG16_SET(N8LPLD, H, CHANNEL1, channel);
 		
 		//Power is adjusted ?
-		if((power == ARM_FSK_POWER_AUTO))
+		if(power == ARM_FSK_POWER_AUTO)
 			_ARM_REG8(N8LPLD, H, POWER) = _ARM_N8LPLD_REGH_POWER_LIMIT;
 		else
 		{

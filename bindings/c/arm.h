@@ -176,20 +176,12 @@ typedef enum armMode_e
 	ARM_MODE_FSK,		//!< Mode for Fsk (local) radio.
 	ARM_MODE_SFX,		//!< Mode for Sigfox network.
 	ARM_MODE_LORAWAN,	//!< Mode for Lora network (LoRaWan).
+	
+	//ARM_MODE_LWA,		//!< Mode for Lora network in class A (LoRaWan).
+	//ARM_MODE_LWB,		//!< Mode for Lora network in class B (LoRaWan).
+	//ARM_MODE_LWC,		//!< Mode for Lora network in class C (LoRaWan).
+	//ARM_MODE_LR,		//!< Mode for Lora (local) radio.
 }armMode_t;
-
-///*!	\ingroup group_main
- //* \brief Type of \b ARM
- //* 
- //* \see armInfo()
- //*/
-//typedef enum armType_e
-//{
-	//ARM_TYPE_NONE	= 0x01,	//!< No \b Arm type.
-	//ARM_TYPE_N8_LP	= 0x02, //!< \b ARM Nano in 868MHz low power version (and Sigfox). 
-	//ARM_TYPE_N8_LD	= 0x04, //!< \b ARM Nano in 868MHz long distance version. 
-	//ARM_TYPE_N8_LW	= 0x08, //!< \b ARM Nano in 868MHz LoraWan version. 
-//}armType_t;
 
 /*!	\ingroup group_main
  * \brief Type of \b ARM
