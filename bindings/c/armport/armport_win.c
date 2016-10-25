@@ -205,7 +205,7 @@ int armPortWrite(void* port, const void* buf, size_t nbyte)
 	HANDLE fd = *((int*)port);
 	int n = 0;
 	
-	if(WriteFile(_hComm, (LPVOID)buf, (DWORD)nbyte, (LPDWORD)&n, NULL) == 0)
+	if(WriteFile(fd, (LPVOID)buf, (DWORD)nbyte, (LPDWORD)&n, NULL) == 0)
 	{
 		fprintf(stderr, "ERROR:%d - %s\n", (int)GetLastError(), __func__);
 		return -1;
@@ -231,13 +231,13 @@ int armPortRead(void* port, void* buf, size_t nbyte, unsigned int timeout)
 	commTimeouts.WriteTotalTimeoutMultiplier = 0;
 	commTimeouts.WriteTotalTimeoutConstant = 0;
 	
-	if(SetCommTimeouts(_hComm, &commTimeouts) == 0)
+	if(SetCommTimeouts(fd, &commTimeouts) == 0)
 	{
 		fprintf(stderr, "ERROR:%d - %s\n", (int)GetLastError(), __func__);
 		return -1;
 	}
 
-    if(ReadFile(_hComm, (LPVOID)buf, 1, (LPDWORD)&n, NULL) == 0)
+    if(ReadFile(fd, (LPVOID)buf, 1, (LPDWORD)&n, NULL) == 0)
 	{
 		fprintf(stderr, "ERROR:%d - %s\n", (int)GetLastError(), __func__);
 		return -1;
