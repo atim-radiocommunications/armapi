@@ -267,6 +267,7 @@ typedef struct arm_s
 	armType_t	_type;
 	uint64_t	_sn;
 	uint8_t		_rev[16];
+	uint8_t		_flags; //See _ARM_FLAGS_** in arm.c for detail.
 	union
 	{
 		#ifdef ARM_WITH_N8_LPLD

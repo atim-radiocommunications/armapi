@@ -57,6 +57,11 @@
 #define _ARM_BASE_DEC					10
 #define _ARM_BASE_HEX					16
 
+// Other values
+#define _ARM_FLAGS_NONE 				0x00
+#define _ARM_FLAGS_IN_AT 				0x01
+#define _ARM_FLAGS_KEEP_AT 				0x02
+
 
 #define _ARM_IMP1(t1) if(arm->_type & (ARM_TYPE_##t1))
 #define _ARM_IMP2(t1, t2) if(arm->_type & (ARM_TYPE_##t1|ARM_TYPE_##t2))
@@ -141,6 +146,7 @@ armError_t armDeInit(arm_t* arm)
 armError_t armReboot(arm_t* arm)
 {
 	armError_t err = ARM_ERR_NONE;
+	arm->_flags = _ARM_FLAGS_NONE;
 	
 	#ifdef ARMPORT_WITH_nSLEEP
 	//nSLEEP to '1', No sleep
@@ -169,6 +175,10 @@ armError_t armReboot(arm_t* arm)
 			//Reboot by "ATR" if ARM is already initialized/used/...
 			if(armPortWrite(arm->_port, "ATR\n", 4) != 4)
 				return ARM_ERR_PORT_WRITE;
+				
+			//Clean flag. In this stat, the flag _ARM_FLAGS_IN_AT is up after call _armGoAt
+			//but the module is restarted by "ATR", so it is not into AT command.
+			arm->_flags = _ARM_FLAGS_NONE;
 		}
 	#endif
 	
@@ -192,7 +202,10 @@ armError_t armReboot(arm_t* arm)
 									ARMPORT_STOPBIT_1) == -1)
 		return ARM_ERR_PORT_CONFIG;
 		
-	//Get info to get ARM type
+	//Keep in AT commend in this function.
+	arm->_flags |= _ARM_FLAGS_KEEP_AT;
+		
+	//Get all info
 	err = armInfo(arm, NULL, NULL, NULL, NULL, NULL);
 	if(err != ARM_ERR_NONE)
 		return err;
@@ -306,15 +319,18 @@ armError_t armReboot(arm_t* arm)
 			_ARM_REG8(N8LW, M, LOW_POWER) &=  ~_ARM_N8LW_REGM_LOW_POWER_ENABLE;
 		#endif
 	}
-	#endif
+	#endif	
 	
-	//back AT
-	err = _armBackAt(arm);
+	//Send the new value of registers to arm
+	err = armUpdateConfig(arm);
 	if(err != ARM_ERR_NONE)
 		return err;
 	
-	//Send the new value of registers to arm
-	return armUpdateConfig(arm);
+	//End keep in AT commend.
+	arm->_flags &= ~_ARM_FLAGS_KEEP_AT;
+	
+	//Back AT
+	return _armBackAt(arm);
 }
 
 armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower)
@@ -2381,6 +2397,12 @@ armError_t _armGoAt(arm_t* arm)
 	uint8_t buf[64];
 	int nread;
 	
+	//Already AT ?
+	if(arm->_flags&_ARM_FLAGS_IN_AT)
+	{
+		return ARM_ERR_NONE;
+	}
+	
 	while(ntry < _ARM_NUMBER_OF_TRIALS_GO_AT)
 	{
 		ntry++;
@@ -2417,8 +2439,11 @@ armError_t _armGoAt(arm_t* arm)
 		//In AT commend if timeout or receive 3 char (3*'+')
 		//or if "ARM" is read.
 		if((nread == 0) ||	(nread == 3) ||
-				(memmem(buf, nread, "ARM", 3) != NULL)) 
+				(memmem(buf, nread, "ARM", 3) != NULL))
+		{
+			arm->_flags |= _ARM_FLAGS_IN_AT;
 			return ARM_ERR_NONE;
+		}
 	}
 	
 	return ARM_ERR_ARM_GO_AT;
@@ -2428,6 +2453,13 @@ armError_t _armBackAt(arm_t* arm)
 {
 	uint8_t buf[32];
 	int nread = 0;
+	
+	//Keep AT ? or already out of AT ?
+	if(	(arm->_flags&_ARM_FLAGS_KEEP_AT) ||
+		!(arm->_flags&_ARM_FLAGS_IN_AT))
+	{
+		return ARM_ERR_NONE;
+	}
 	
 	//Write 'ATI' or 'ATQ' for back AT commend and read reply
 	#ifdef ARM_WITH_N8_LPLD
@@ -2460,6 +2492,7 @@ armError_t _armBackAt(arm_t* arm)
 	else
 		armPortDelay(_ARM_TIME_BACK_AT);
 	
+	arm->_flags &= ~_ARM_FLAGS_IN_AT;
 	return ARM_ERR_NONE;
 }
 
