@@ -41,7 +41,7 @@
 #define _ARM_TIME_TIMEOUT 				20		//20ms
 #define _ARM_TIME_BACK_AT				100		//100ms
 #define _ARM_TIME_SF_UPLINK_TIMEOUT		10000	//10s
-#define _ARM_TIME_SF_DOWNLINK_TIMEOUT	45000	//45s
+#define _ARM_TIME_SF_DOWNLINK_TIMEOUT	50000	//50s
 #define _ARM_TIME_BOOTING				20		//20ms
 
 // Other values
@@ -648,7 +648,8 @@ armError_t armSfxSendReceive(arm_t* arm, const void* bufu, size_t nbyte, void* b
 			return ARM_ERR_PORT_WRITE_READ;
 			
 		//Receive msg from Sigfox
-		ptrbuf = memmem(buf, nread, "+RX=", 4);
+		if(bufd != NULL)
+			ptrbuf = memmem(buf, nread, "+RX=", 4);
 		if(ptrbuf != NULL)
 		{
 			//End of reading
@@ -673,7 +674,14 @@ armError_t armSfxSendReceive(arm_t* arm, const void* bufu, size_t nbyte, void* b
 		}
 			
 		//Back AT
-		return _armBackAt(arm);
+		err = _armBackAt(arm);
+		if(err != ARM_ERR_NONE)
+			return err;
+			
+		if((ptrbuf==NULL) == (bufd != NULL))
+			return ARM_ERR_NO_DATA;
+			
+		return ARM_ERR_NONE;
 	}
 	#endif
 	

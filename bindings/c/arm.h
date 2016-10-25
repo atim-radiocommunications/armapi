@@ -86,6 +86,7 @@
 typedef enum armError_e
 {
 	ARM_ERR_NONE,					//!< No error.
+	ARM_ERR_NO_DATA,				//!< No data \b ARM.
 	ARM_ERR_NO_SUPPORTED,			//!< Functionality no supported by the \b ARM.
 
 	ARM_ERR_PORT_OPEN,				//!< Port Error, at the port opening.
@@ -440,19 +441,20 @@ bool armSfxIsEnableDownlink(arm_t* arm);
  * \param bufu, buffer to send data to Sigfox. Can be NULL value if \p nbyte equal at 0.
  * \param nbyte, number of byte to send at Sigfox (size of \p bufu).
  * \param bufd, buffer to receive data from Sigfox. This buffer must equal or more at 8 bytes.
- * Pass NULL value if you went just do uplink.
+ * Pass NULL value for only uplink message.
  * 
  * \return Error available:
  *	- \ref ARM_ERR_NONE If successful send/receive data to/from Sigfox.
  *	- \ref ARM_ERR_NO_SUPPORTED If you \b ARM don't support Sigfox. This value is also
- * returned if you try to send downlink message (\p bufd no NULL) and you \b ARM don't supporte
+ * returned if you try to send downlink message (\p bufd no NULL) and you \b ARM don't support
  * the downlink message.
  *	- \ref ARM_ERR_PARAM_OUT_OF_RANGE, If \p nbyte is upper at 12.
  * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 	- \ref ARM_ERR_PORT_READ If can't read through the port.
  * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
  * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
- * 	- \ref ARM_ERR_ARM_CMD Error when execute a AT commend from \b ARM,
+ * 	- \ref ARM_ERR_ARM_CMD If can't execute a AT commend from \b ARM.
+ * 	- \ref ARM_ERR_NO_DATA If no data received, in the case of downlink message (\p bufd no NULL).
  * data can't sand or error at the receiving.
  */
 armError_t armSfxSendReceive(arm_t* arm, const void* bufu, size_t nbyte, void* bufd);
