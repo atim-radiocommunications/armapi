@@ -2518,7 +2518,7 @@ armError_t _armGoAt(arm_t* arm)
 		if(arm->_type&(ARM_TYPE_NONE))
 		{
 			nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_N8LPLD_TIME_BOOTING/_ARM_NUMBER_OF_TRIALS_GO_AT);
-			//Soit on est dans le boot du N8_LPLD ou deja en commend AT
+			//Int to boot of N8_LPLD or in AT command.
 			if(nread == 0)
 			{
 				_armWriteRead(arm, "ATQ\r", 4, buf, sizeof buf, _ARM_TIME_TIMEOUT);
@@ -2528,18 +2528,19 @@ armError_t _armGoAt(arm_t* arm)
 		}
 		else
 		#endif
-			nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_TIME_TIMEOUT);
+			nread = _armWriteRead(arm, "+++", 3, buf, sizeof buf, _ARM_N8LPLD_TIME_BOOTING/_ARM_NUMBER_OF_TRIALS_GO_AT);
 		
 		if(nread < 0)
 			return ARM_ERR_PORT_WRITE_READ;
 			
 		//If "a" is read, send "g" to quit bootloader.
 		#if defined ARM_WITH_N8_LW && !defined ARMPORT_WITH_nBOOT
-		if((nread >= 1) && (nread <= 3) && (buf[0] == 'a')) 
+		if((nread == 3) && (buf[0] == 'a'))
 		{
 			//Write 'g' to quit bootloader.
 			armPortWrite(arm->_port, "g", 1);
 			armPortDelay(_ARM_TIME_BOOTING);
+			armPortConfig(arm->_port, ARMPORT_BAUDRATE_19200, ARMPORT_DATA_8BITS, ARMPORT_PARITY_NO, ARMPORT_STOPBIT_1);
 		}
 		else
 		#endif
