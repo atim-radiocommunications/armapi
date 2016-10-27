@@ -394,7 +394,8 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		if(arm->_type&(ARM_TYPE_N8_LP))
 		{
 			ptrstr = (uint8_t*)memmem(buf, nread, "REV. ", 5);
-			ptrstr += 5;
+			if(ptrstr != NULL)
+				ptrstr += 5;
 			
 			//N8_LP with Sigfox ?
 			if(*ptrstr == '5')
@@ -412,12 +413,13 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		if(arm->_type&(ARM_TYPE_N8_LW))
 		{
 			ptrstr = (uint8_t*)memmem(buf, nread, "Rev:", 4);
-			ptrstr += 4;
+			if(ptrstr != NULL)
+				ptrstr += 4;
 		}
 		#endif
 		
 		//Copy string rev
-		if(ptrstr)
+		if(ptrstr != NULL)
 		{
 			i=0;
 			while(!(ptrstr[i] == ' ' ||
@@ -435,7 +437,8 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		if(arm->_type&(ARM_TYPE_N8_LP))
 		{
 			ptrstr = (uint8_t*)memmem(buf, nread, "S/N: ", 5);
-			ptrstr += 5;
+			if(ptrstr != NULL)
+				ptrstr += 5;
 		}
 		#endif
 		
@@ -443,12 +446,14 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		if(arm->_type&(ARM_TYPE_N8_LW))
 		{
 			ptrstr = (uint8_t*)memmem(buf, nread, "S/N:", 4);
-			ptrstr += 4;
+			if(ptrstr != NULL)
+				ptrstr += 4;
 		}
 		#endif
 		
 		//Convert serial number string to uint
-		arm->_sn = _armStrToUint(ptrstr, _ARM_BASE_HEX, -1);
+		if(ptrstr != NULL)
+			arm->_sn = _armStrToUint(ptrstr, _ARM_BASE_HEX, -1);
 	}
 	else
 	{		
