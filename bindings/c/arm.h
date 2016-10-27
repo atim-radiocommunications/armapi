@@ -103,11 +103,11 @@ typedef enum armError_e
 	ARM_ERR_WOR_ENABLE,				//!< Error, the WOR mode is enable.
 									//!< \note To fix this error, you can disable the WOR mode with \ref armFskSetWorMode() function.
 
-	ARM_ERR_ARM_GO_AT,				//!< \b ARM commend Error, can't switch to AT commend.
-	ARM_ERR_ARM_BACK_AT,			//!< \b ARM commend Error, can't quit AT commend.
-	ARM_ERR_ARM_CMD,				//!< \b ARM commend Error, from AT commend.
-	ARM_ERR_ARM_GET_REG,			//!< \b ARM commend Error, from get register.
-	ARM_ERR_ARM_SET_REG,			//!< \b ARM commend Error, from set register.
+	ARM_ERR_ARM_GO_AT,				//!< \b ARM command Error, can't switch to AT command.
+	ARM_ERR_ARM_BACK_AT,			//!< \b ARM command Error, can't quit AT command.
+	ARM_ERR_ARM_CMD,				//!< \b ARM command Error, from AT command.
+	ARM_ERR_ARM_GET_REG,			//!< \b ARM command Error, from get register.
+	ARM_ERR_ARM_SET_REG,			//!< \b ARM command Error, from set register.
 }armError_t;
 
 /*!	\ingroup group_main
@@ -302,8 +302,8 @@ typedef struct arm_s
  * 		- \ref ARM_ERR_PORT_WRITE If can't write through the port.
  * 		- \ref ARM_ERR_PORT_READ If can't read through the port.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
- * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT command.
+ * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT command.
  * 		- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
  * 		- \ref ARM_ERR_ARM_SET_REG If can't set register from \b ARM.
  */
@@ -334,8 +334,8 @@ armError_t armDeInit(arm_t* arm);
  * 		- \ref ARM_ERR_PORT_WRITE If can't write through the port.
  * 		- \ref ARM_ERR_PORT_READ If can't read through the port.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
- * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT command.
+ * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT command.
  * 		- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
  * 		- \ref ARM_ERR_ARM_SET_REG If can't set register from \b ARM.
  */
@@ -363,8 +363,8 @@ armError_t armReboot(arm_t* arm);
  * \return Error available:
  * 		- \ref ARM_ERR_NONE If success.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
- * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT command.
+ * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT command.
  */
 armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, uint16_t* rfFreq, uint8_t* rfPower);
 
@@ -451,9 +451,9 @@ bool armSfxIsEnableDownlink(arm_t* arm);
  *	- \ref ARM_ERR_PARAM_OUT_OF_RANGE, If \p nbyte is upper at 12.
  * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 	- \ref ARM_ERR_PORT_READ If can't read through the port.
- * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
- * 	- \ref ARM_ERR_ARM_CMD If can't execute a AT commend from \b ARM.
+ * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT command.
+ * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT command.
+ * 	- \ref ARM_ERR_ARM_CMD If can't execute a AT command from \b ARM.
  * 	- \ref ARM_ERR_NO_DATA If no data received, in the case of downlink message (\p bufd no NULL).
  * data can't sand or error at the receiving.
  */
@@ -1363,8 +1363,8 @@ bool armLwIsEnableRx2Adaptive(arm_t* arm);
  * 	- \ref ARM_ERR_NO_SUPPORTED If your \b ARM don't support this function.
  * 	- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
  * 	- \ref ARM_ERR_ARM_GET_REG If can't get register from \b ARM.
- * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 	- \ref ARM_ERR_ARM_GO_AT If can't go to AT command.
+ * 	- \ref ARM_ERR_ARM_BACK_AT If can't back AT command.
  * 
  */
 armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
@@ -1506,10 +1506,10 @@ armKeepAlive_t armLwGetKeepAlive(arm_t* arm);
  * 			In this case you can call \ref armInit() and check the returned error.
  * 		- \ref ARM_ERR_PORT_CONFIG If the port can't be configured.
  * 		- \ref ARM_ERR_PORT_WRITE_READ If can't write or read through the port.
- * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT commend.
- * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT commend.
+ * 		- \ref ARM_ERR_ARM_GO_AT If can't go to AT command.
+ * 		- \ref ARM_ERR_ARM_BACK_AT If can't back AT command.
  * 		- \ref ARM_ERR_ARM_SET_REG If can't set register from \b ARM.
- * 		- \ref ARM_ERR_ARM_CMD If can't execute a AT commend from \b ARM.
+ * 		- \ref ARM_ERR_ARM_CMD If can't execute a AT command from \b ARM.
  */
 armError_t armUpdateConfig(arm_t* arm);
 

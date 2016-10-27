@@ -63,7 +63,7 @@ typedef struct entity_e entity_t;
 struct entity_e
 {
 	entType_t type;
-	char str[5*1024];
+	char str[8*1024];
 	
 	entity_t* nextEntity;
 	entity_t* backEntity;

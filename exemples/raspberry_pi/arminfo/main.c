@@ -176,23 +176,23 @@ void printArmErr(armError_t err)
 		break;
 
 		case ARM_ERR_ARM_GO_AT:
-			printf("ARM_ERR_ARM_GO_AT: 'ARM commend Error, can't switch to AT commend.'\n");
+			printf("ARM_ERR_ARM_GO_AT: 'ARM command Error, can't switch to AT command.'\n");
 		break;
 
 		case ARM_ERR_ARM_BACK_AT:
-			printf("ARM_ERR_ARM_BACK_AT: 'ARM commend Error, can't quit AT commend.'\n");
+			printf("ARM_ERR_ARM_BACK_AT: 'ARM command Error, can't quit AT command.'\n");
 		break;
 
 		case ARM_ERR_ARM_CMD:
-			printf("ARM_ERR_ARM_CMD: 'ARM commend Error, from AT commend.'\n");
+			printf("ARM_ERR_ARM_CMD: 'ARM command Error, from AT command.'\n");
 		break;
 
 		case ARM_ERR_ARM_GET_REG:
-			printf("ARM_ERR_ARM_GET_REG: 'ARM commend Error, from get register.'\n");
+			printf("ARM_ERR_ARM_GET_REG: 'ARM command Error, from get register.'\n");
 		break;
 
 		case ARM_ERR_ARM_SET_REG:
-			printf("ARM_ERR_ARM_SET_REG: 'ARM commend Error, from set register.'\n");
+			printf("ARM_ERR_ARM_SET_REG: 'ARM command Error, from set register.'\n");
 		break;
 
 		default:

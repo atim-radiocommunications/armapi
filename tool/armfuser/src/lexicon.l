@@ -65,7 +65,7 @@ comm1			[/]{2}[^\n]*[\n]*
 /* delete: comment */
 comm2			\/\*[^!][^\/]*\*\/[\n]*
 /* delete: instruction ... */
-init_arm				bzero[^\n]*
+init_arm				memset[^\n]*arm_t[^\n]*
 init_port				"arm->_port = port;"[\n]*
 
 /* #error */

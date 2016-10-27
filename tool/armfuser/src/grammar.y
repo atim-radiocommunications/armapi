@@ -44,7 +44,7 @@ void yyerror(const char * msg);
 extern FILE * yyin;				
 %} 
 
-%union {char str[8*1024];}
+%union {char str[32*1024];}
 %type<str> INCLUDE
 %type<str> ERROR
 %type<str> MAC_IF

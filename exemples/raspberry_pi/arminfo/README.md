@@ -20,7 +20,7 @@ the TTY parameter. For example on RPi 1 and 2 you neet to call:
 You have need to executer the 'make' command 
 with TARGET and TTY option into this folder.
 For example, if your cross comparator is installed on you system and
-is named by 'arm-linux-gnueabihf-', the commend to call is:
+is named by 'arm-linux-gnueabihf-', the command to call is:
 
 	$make TARGET=arm-linux-gnueabihf- TTY=/dev/ttyAMA0
 

@@ -167,7 +167,7 @@ armError_t armReboot(arm_t* arm)
 		//No need rebooting because initialization (type == ARM_TYPE_NONE)
 		if(arm->_type != ARM_TYPE_NONE)
 		{
-			//Go to AT commend to reboot.
+			//Go to AT command to reboot.
 			err = _armGoAt(arm);
 			if(err != ARM_ERR_NONE)
 				return err;
@@ -202,7 +202,7 @@ armError_t armReboot(arm_t* arm)
 									ARMPORT_STOPBIT_1) == -1)
 		return ARM_ERR_PORT_CONFIG;
 		
-	//Keep in AT commend in this function.
+	//Keep in AT command in this function.
 	arm->_flags |= _ARM_FLAGS_KEEP_AT;
 		
 	//Get all info
@@ -257,7 +257,7 @@ armError_t armReboot(arm_t* arm)
 	}
 	#endif
 	
-	//Go to AT commend for get register
+	//Go to AT command for get register
 	err = _armGoAt(arm);
 	if(err != ARM_ERR_NONE)
 		return err;
@@ -326,7 +326,7 @@ armError_t armReboot(arm_t* arm)
 	if(err != ARM_ERR_NONE)
 		return err;
 	
-	//End keep in AT commend.
+	//End keep in AT command.
 	arm->_flags &= ~_ARM_FLAGS_KEEP_AT;
 	
 	//Back AT
@@ -342,13 +342,13 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 	uint8_t* ptrstr = NULL;
 	size_t i=0;
 		
-	//Get arm type from 'ATV' commend
+	//Get arm type from 'ATV' command
 	if((arm->_type==ARM_TYPE_NONE))
 	{
 		uint8_t buf[128];
 		int nread;
 	
-		//Go to AT commend
+		//Go to AT command
 		err = _armGoAt(arm);
 		if(err != ARM_ERR_NONE)
 			return err;
@@ -358,7 +358,7 @@ armError_t armInfo(arm_t* arm, armType_t* armType, uint8_t* rev, uint64_t* sn, u
 		if(nread < 0)
 			return ARM_ERR_PORT_WRITE_READ;
 		
-		//Quit AT commend
+		//Quit AT command
 		err = _armBackAt(arm);
 		if(err != ARM_ERR_NONE)
 			return err;
@@ -647,7 +647,7 @@ armError_t armSfxSendReceive(arm_t* arm, const void* bufu, size_t nbyte, void* b
 		if(err != ARM_ERR_NONE)
 			return err;
 		
-		//Write AT commend and read reply
+		//Write AT command and read reply
 		nread = _armWriteRead(arm, buf, i, buf, sizeof(buf), rtimeout);
 		if(nread < 0)
 			return ARM_ERR_PORT_WRITE_READ;
@@ -2108,7 +2108,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 		armError_t err = ARM_ERR_NONE;
 		int i;
 		
-		//Go to AT commend
+		//Go to AT command
 		err = _armGoAt(arm);
 		if(err != ARM_ERR_NONE)
 			return err;
@@ -2179,7 +2179,7 @@ armError_t armLwIds(arm_t* arm, 	uint32_t* devAddr,
 			}
 		}
 		
-		//Quit AT commend
+		//Quit AT command
 		return _armBackAt(arm);
 	}
 	#endif
@@ -2263,7 +2263,7 @@ armError_t armUpdateConfig(arm_t* arm)
 			uint8_t buf[32];
 			int nread = 0;
 	
-			//Go to at commend.
+			//Go to at command.
 			err = _armGoAt(arm);
 			if(err != ARM_ERR_NONE)
 				return err;
@@ -2518,7 +2518,7 @@ armError_t _armGoAt(arm_t* arm)
 	{
 		ntry++;
 		
-		//Write '+++' to go to AT commend and read reply
+		//Write '+++' to go to AT command and read reply
 		#if defined ARM_WITH_N8_LPLD && !defined ARMPORT_WITH_nBOOT
 		if(arm->_type&(ARM_TYPE_NONE))
 		{
@@ -2549,7 +2549,7 @@ armError_t _armGoAt(arm_t* arm)
 		}
 		else
 		#endif
-		//In AT commend if timeout or receive 3 char (3*'+')
+		//In AT command if timeout or receive 3 char (3*'+')
 		//or if "ARM" is read.
 		if((nread == 0) ||	(nread == 3) ||
 				(memmem(buf, nread, "ARM", 3) != NULL))
@@ -2574,7 +2574,7 @@ armError_t _armBackAt(arm_t* arm)
 		return ARM_ERR_NONE;
 	}
 	
-	//Write 'ATI' or 'ATQ' for back AT commend and read reply
+	//Write 'ATI' or 'ATQ' for back AT command and read reply
 	#ifdef ARM_WITH_N8_LPLD
 	_ARM_IMP1(N8_LP)
 	{
@@ -2616,12 +2616,12 @@ armError_t _armGetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t* val)
 	uint8_t* ptrrbuf = NULL;
 	uint8_t tbuf[8] = "AT";
 	
-	//Create AT commend
+	//Create AT command
 	tbuf[2] = type;
 	_armUintToStr(num, tbuf+3, _ARM_BASE_DEC, 3);
 	tbuf[6] = '\r';
 	
-	//Write AT commend and read reply
+	//Write AT command and read reply
 	nread = _armWriteRead(arm, tbuf, 7, rbuf, sizeof(rbuf)-1, _ARM_TIME_TIMEOUT);
 	if(nread < 0)
 		return ARM_ERR_PORT_WRITE_READ;
@@ -2648,14 +2648,14 @@ armError_t _armSetReg(arm_t* arm, uint8_t type, uint8_t num, uint8_t val)
 	int nread;
 	uint8_t tbuf[10] = "AT";
 	
-	//Create AT commend
+	//Create AT command
 	tbuf[2] = type;
 	_armUintToStr(num, tbuf+3, _ARM_BASE_DEC, 3);
 	tbuf[6] = '=';
 	_armUintToStr(val, tbuf+7, _ARM_BASE_HEX, 2);
 	tbuf[9] = '\r';
 		
-	//Write AT commend and read reply
+	//Write AT command and read reply
 	nread = _armWriteRead(arm, tbuf, 10, rbuf, sizeof rbuf, _ARM_TIME_TIMEOUT);
 	if(nread < 0)
 		return ARM_ERR_PORT_WRITE_READ;

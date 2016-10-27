@@ -28,14 +28,11 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=6
-FILE_NAME_0=7122;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Ftool%2Farmfuser%2Fsrc%2Fmain.c;0;4
-FILE_NAME_1=3506;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Ftool%2Farmfuser%2Fsrc%2Flexicon.l;0;4
-FILE_NAME_2=1576;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Ftool%2Farmfuser%2Fsrc%2Fgrammar.y;0;4
-FILE_NAME_3=5878;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Ftool%2Farmfuser%2Fsrc%2Fentity.c;0;4
-FILE_NAME_4=3944;C++;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Fbindings%2Fcpp%2Farmport%2Farmport_arduino.cpp;0;4
-FILE_NAME_5=3600;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Fbindings%2Fcpp%2Farmport.h;0;4
-FILE_NAME_6=2444;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProjects%2Fatim%2Farmapi%2Fexemples%2Fn8LpLd%2Fcpp%2Farduino%2Ffsk_echo%2Ffsk_echo.ino;0;4
+current_page=3
+FILE_NAME_0=5293;C;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProject%2Farmapi%2Ftool%2Farmfuser%2Fsrc%2Fmain.c;0;4
+FILE_NAME_1=932;Sh;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProject%2Farmapi%2Ftool%2Farmfuser%2Farmfuser.sh;0;4
+FILE_NAME_2=485;Sh;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2FProject%2Farmapi%2Ftool%2Fpkg%2Fmakepkg.sh;0;4
+FILE_NAME_3=0;C++;0;EUTF-8;1;1;0;%2Fhome%2Fantoine%2F.cache%2F.fr-nzRmNp%2Farmapi%2Fsrc%2Farm.cpp;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;

@@ -108,8 +108,11 @@ int main(int argc, char *argv[])
 	
 	//Write files
 	writeHeaderArmPortClass(treeHeaderArmPort, NULL, fdHeaderArmPort);
+	printf("File:\"%s\" -> Wrote!\n", headerFileArmPort);
 	writeHeaderArmClass(treeHeaderArm, treeSourceArm, fdHeaderArm);
+	printf("File:\"%s\" -> Wrote!\n", headerFileArm);
 	writeSourceArmClass(treeHeaderArm, treeSourceArm, fdSourceArm);
+	printf("File:\"%s\" -> Wrote!\n", sourceFileArm);
 	
 	close(fdHeaderArmPort);
 	close(fdHeaderArm);
