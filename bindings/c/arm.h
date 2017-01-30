@@ -985,7 +985,7 @@ void armSleep(arm_t* arm, bool sleep);
 armError_t armFskSetLbtAfaMode(arm_t* arm, armFskLbtAfa_t mode, int8_t rssiLevel, uint16_t nSamples, uint16_t channel2);
 
 /*! \ingroup group_fsk
- * \brief Get the wake up on mode configuration.
+ * \brief Get the LBT&AFA configuration.
  * 
  * Please, for more information about parameters consult the documentation of the \ref  armFskSetLbtAfaMode() function.
  * \note If you don't went get a parameter you can give the \b NULL value.

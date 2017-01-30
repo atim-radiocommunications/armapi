@@ -38,7 +38,7 @@ void *memset(void *s, int c, size_t n)
 {
 	if(n > 0)
 	{
-		for(n--; n>=0; n--)
+		for(n--; n!=(size_t)(-1); n--)
 		{
 			((char*)s)[n] = c;
 		}
